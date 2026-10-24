@@ -154,6 +154,9 @@ class SettingsPage {
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=gateway_matrix' ) ); ?>" class="nav-tab <?php echo 'gateway_matrix' === $active_tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'Payment Gateway Matrix', 'settlex-multi-currency' ); ?>
 				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=sales_by_currency' ) ); ?>" class="nav-tab <?php echo 'sales_by_currency' === $active_tab ? 'nav-tab-active' : ''; ?>">
+					📊 <?php esc_html_e( 'Sales by Currency', 'settlex-multi-currency' ); ?>
+				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=diagnostics' ) ); ?>" class="nav-tab <?php echo 'diagnostics' === $active_tab ? 'nav-tab-active' : ''; ?>">
 					<?php esc_html_e( 'System & Diagnostics', 'settlex-multi-currency' ); ?>
 				</a>
@@ -165,6 +168,8 @@ class SettingsPage {
 					$this->render_currencies_tab();
 				} elseif ( 'gateway_matrix' === $active_tab ) {
 					$this->render_gateway_matrix_tab();
+				} elseif ( 'sales_by_currency' === $active_tab ) {
+					$this->render_sales_by_currency_tab();
 				} else {
 					$this->render_diagnostics_tab();
 				}
@@ -489,6 +494,113 @@ class SettingsPage {
 							?>
 						</td>
 					</tr>
+				</tbody>
+			</table>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render Sales by Currency Report Tab.
+	 */
+	protected function render_sales_by_currency_tab(): void {
+		$base_curr = $this->currency_registry->get_base_currency();
+		$orders    = wc_get_orders(
+			array(
+				'limit'  => 250,
+				'status' => array( 'wc-completed', 'wc-processing' ),
+			)
+		);
+
+		$stats = array();
+		$total_store_revenue_base = 0.0;
+		$total_order_count        = count( $orders );
+
+		foreach ( $orders as $order ) {
+			$charge_curr   = $order->get_currency();
+			$charge_total  = (float) $order->get_total();
+			$rate          = (float) $order->get_meta( '_settlex_exchange_rate' );
+			$order_base_eq = ( $rate > 0 && 1.0 !== $rate ) ? ( $charge_total / $rate ) : $charge_total;
+
+			if ( ! isset( $stats[ $charge_curr ] ) ) {
+				$stats[ $charge_curr ] = array(
+					'orders_count'       => 0,
+					'native_total'       => 0.0,
+					'base_eq_total'      => 0.0,
+				);
+			}
+
+			$stats[ $charge_curr ]['orders_count']  += 1;
+			$stats[ $charge_curr ]['native_total']  += $charge_total;
+			$stats[ $charge_curr ]['base_eq_total'] += $order_base_eq;
+			$total_store_revenue_base               += $order_base_eq;
+		}
+
+		?>
+		<div class="settlex-panel">
+			<h2><?php esc_html_e( 'Sales & Revenue Breakdown by Currency', 'settlex-multi-currency' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Analyzes your last 250 completed/processing orders and calculates true normalized revenue in your store base currency.', 'settlex-multi-currency' ); ?>
+			</p>
+
+			<div class="settlex-stat-cards" style="display: flex; gap: 20px; margin: 20px 0;">
+				<div class="settlex-stat-card" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 6px; flex: 1;">
+					<span style="font-size: 12px; color: #64748b;"><?php esc_html_e( 'Total Orders Sampled', 'settlex-multi-currency' ); ?></span>
+					<div style="font-size: 24px; font-weight: bold; color: #1e293b;"><?php echo esc_html( (string) $total_order_count ); ?></div>
+				</div>
+				<div class="settlex-stat-card" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px 20px; border-radius: 6px; flex: 1;">
+					<span style="font-size: 12px; color: #1d4ed8;"><?php printf( esc_html__( 'Total Normalized Revenue (%s)', 'settlex-multi-currency' ), esc_html( $base_curr ) ); ?></span>
+					<div style="font-size: 24px; font-weight: bold; color: #1e40af;">
+						<?php echo esc_html( wc_price( $total_store_revenue_base, array( 'currency' => $base_curr ) ) ); ?>
+					</div>
+				</div>
+			</div>
+
+			<table class="widefat fixed striped settlex-table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Settlement Currency', 'settlex-multi-currency' ); ?></th>
+						<th style="width: 120px; text-align: center;"><?php esc_html_e( 'Orders Count', 'settlex-multi-currency' ); ?></th>
+						<th style="text-align: right;"><?php esc_html_e( 'Revenue in Currency', 'settlex-multi-currency' ); ?></th>
+						<th style="text-align: right;"><?php printf( esc_html__( 'Normalized Total (%s)', 'settlex-multi-currency' ), esc_html( $base_curr ) ); ?></th>
+						<th style="width: 120px; text-align: right;"><?php esc_html_e( 'Share of Sales', 'settlex-multi-currency' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php if ( empty( $stats ) ) : ?>
+						<tr>
+							<td colspan="5" style="text-align:center; padding: 20px;">
+								<?php esc_html_e( 'No completed or processing orders found yet.', 'settlex-multi-currency' ); ?>
+							</td>
+						</tr>
+					<?php else : ?>
+						<?php foreach ( $stats as $curr => $data ) : ?>
+							<?php
+							$pct = $total_store_revenue_base > 0 ? ( ( $data['base_eq_total'] / $total_store_revenue_base ) * 100 ) : 0.0;
+							?>
+							<tr>
+								<td>
+									<strong><?php echo esc_html( $curr ); ?></strong>
+									<?php if ( $curr === $base_curr ) : ?>
+										<span class="settlex-tag-base"><?php esc_html_e( 'Base', 'settlex-multi-currency' ); ?></span>
+									<?php endif; ?>
+								</td>
+								<td style="text-align: center;"><?php echo esc_html( (string) $data['orders_count'] ); ?></td>
+								<td style="text-align: right; font-weight: 600;">
+									<?php echo esc_html( wc_price( $data['native_total'], array( 'currency' => $curr ) ) ); ?>
+								</td>
+								<td style="text-align: right; color: #16a34a; font-weight: 600;">
+									<?php echo esc_html( wc_price( $data['base_eq_total'], array( 'currency' => $base_curr ) ) ); ?>
+								</td>
+								<td style="text-align: right;">
+									<div style="font-weight: 600;"><?php echo esc_html( number_format( $pct, 1 ) ); ?>%</div>
+									<div style="background: #e2e8f0; height: 4px; border-radius: 2px; width: 100%; margin-top: 3px;">
+										<div style="background: #4f46e5; height: 4px; border-radius: 2px; width: <?php echo esc_attr( min( 100, $pct ) ); ?>%;"></div>
+									</div>
+								</td>
+							</tr>
+						<?php endforeach; ?>
+					<?php endif; ?>
 				</tbody>
 			</table>
 		</div>
