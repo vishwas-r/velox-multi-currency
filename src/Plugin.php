@@ -1,0 +1,89 @@
+<?php
+/**
+ * Main Plugin Orchestrator and Service Container for SettleX.
+ *
+ * @package SettleX\MultiCurrency
+ */
+
+namespace SettleX\MultiCurrency;
+
+use SettleX\MultiCurrency\Admin\SettingsPage;
+use SettleX\MultiCurrency\Currency\CurrencyRegistry;
+use SettleX\MultiCurrency\Currency\PriceConverter;
+use SettleX\MultiCurrency\Currency\RateService;
+use SettleX\MultiCurrency\Frontend\Switcher;
+use SettleX\MultiCurrency\GatewayRouter\GatewayCapabilityRegistry;
+use SettleX\MultiCurrency\GatewayRouter\GatewayRouter;
+use SettleX\MultiCurrency\GatewayRouter\SettlementResolver;
+use SettleX\MultiCurrency\Orders\OrderRecorder;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Plugin singleton class.
+ */
+class Plugin {
+
+	/**
+	 * Singleton instance.
+	 *
+	 * @var self|null
+	 */
+	protected static ?self $instance = null;
+
+	/**
+	 * Services.
+	 */
+	public CurrencyRegistry $currency_registry;
+	public RateService $rate_service;
+	public PriceConverter $price_converter;
+	public GatewayCapabilityRegistry $capability_registry;
+	public SettlementResolver $settlement_resolver;
+	public GatewayRouter $gateway_router;
+	public OrderRecorder $order_recorder;
+	public Switcher $switcher;
+	public SettingsPage $settings_page;
+
+	/**
+	 * Get singleton instance.
+	 *
+	 * @return self
+	 */
+	public static function instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Protected constructor.
+	 */
+	protected function __construct() {
+		// Initialize service container dependencies.
+		$this->currency_registry   = new CurrencyRegistry();
+		$this->rate_service        = new RateService( $this->currency_registry );
+		$this->price_converter     = new PriceConverter( $this->currency_registry );
+		$this->capability_registry = new GatewayCapabilityRegistry();
+		$this->settlement_resolver = new SettlementResolver( $this->capability_registry, $this->currency_registry );
+		$this->gateway_router      = new GatewayRouter( $this->capability_registry, $this->currency_registry, $this->settlement_resolver );
+		$this->order_recorder      = new OrderRecorder( $this->currency_registry, $this->settlement_resolver );
+		$this->switcher            = new Switcher( $this->currency_registry );
+		$this->settings_page       = new SettingsPage( $this->currency_registry, $this->rate_service, $this->capability_registry );
+	}
+
+	/**
+	 * Boot all plugin modules.
+	 */
+	public function boot(): void {
+		$this->rate_service->init();
+		$this->price_converter->init();
+		$this->gateway_router->init();
+		$this->order_recorder->init();
+		$this->switcher->init();
+
+		if ( is_admin() ) {
+			$this->settings_page->init();
+		}
+	}
+}

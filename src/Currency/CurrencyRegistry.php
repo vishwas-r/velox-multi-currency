@@ -1,0 +1,217 @@
+<?php
+/**
+ * Currency Registry for managing supported, enabled, and active currencies.
+ *
+ * @package SettleX\MultiCurrency\Currency
+ */
+
+namespace SettleX\MultiCurrency\Currency;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * CurrencyRegistry manages ISO-4217 definitions and active customer currency.
+ */
+class CurrencyRegistry {
+
+	/**
+	 * Cookie name for storing active visitor currency.
+	 */
+	const COOKIE_NAME = 'settlex_currency';
+
+	/**
+	 * Option name for enabled currencies configuration.
+	 */
+	const OPTION_ENABLED = 'settlex_enabled_currencies';
+
+	/**
+	 * Currently active currency code in request.
+	 *
+	 * @var string|null
+	 */
+	protected ?string $active_currency = null;
+
+	/**
+	 * Base store currency code.
+	 *
+	 * @var string|null
+	 */
+	protected ?string $base_currency = null;
+
+	/**
+	 * Get the store base currency.
+	 *
+	 * @return string 3-letter ISO code.
+	 */
+	public function get_base_currency(): string {
+		if ( null === $this->base_currency ) {
+			$this->base_currency = strtoupper( get_woocommerce_currency() );
+		}
+		return $this->base_currency;
+	}
+
+	/**
+	 * Get the customer's currently active display currency.
+	 *
+	 * @return string
+	 */
+	public function get_active_currency(): string {
+		if ( null !== $this->active_currency ) {
+			return $this->active_currency;
+		}
+
+		$base = $this->get_base_currency();
+
+		// 1. Check for cookie (user's explicit selection).
+		if ( ! empty( $_COOKIE[ self::COOKIE_NAME ] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$cookie_val = sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE_NAME ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( $this->is_currency_enabled( $cookie_val ) ) {
+				$this->active_currency = strtoupper( $cookie_val );
+				return $this->active_currency;
+			}
+		}
+
+		// 2. Allow filters (e.g. GeoIP auto-detect module).
+		$detected = apply_filters( 'settlex_detected_currency', $base );
+		if ( $this->is_currency_enabled( $detected ) ) {
+			$this->active_currency = strtoupper( $detected );
+			return $this->active_currency;
+		}
+
+		$this->active_currency = $base;
+		return $this->active_currency;
+	}
+
+	/**
+	 * Set active currency for current session & cookie.
+	 *
+	 * @param string $currency ISO-4217 currency code.
+	 * @return bool True if set successfully.
+	 */
+	public function set_active_currency( string $currency ): bool {
+		$code = strtoupper( trim( $currency ) );
+		if ( ! $this->is_currency_enabled( $code ) ) {
+			return false;
+		}
+
+		$this->active_currency = $code;
+
+		// Set cookie if headers not sent.
+		if ( ! headers_sent() ) {
+			setcookie(
+				self::COOKIE_NAME,
+				$code,
+				time() + ( 30 * DAY_IN_SECONDS ),
+				COOKIEPATH ? COOKIEPATH : '/',
+				COOKIE_DOMAIN,
+				is_ssl(),
+				false // httpOnly false so frontend switcher JS can read if needed
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check if a currency code is enabled in SettleX settings.
+	 *
+	 * @param string $currency ISO code.
+	 * @return bool
+	 */
+	public function is_currency_enabled( string $currency ): bool {
+		$code = strtoupper( trim( $currency ) );
+		if ( $code === $this->get_base_currency() ) {
+			return true;
+		}
+
+		$enabled = $this->get_enabled_currencies();
+		return isset( $enabled[ $code ] );
+	}
+
+	/**
+	 * Get array of all enabled currencies with their configuration.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public function get_enabled_currencies(): array {
+		$base = $this->get_base_currency();
+
+		$defaults = array(
+			$base => array(
+				'code'          => $base,
+				'name'          => $this->get_all_currencies()[ $base ]['name'] ?? $base,
+				'symbol'        => get_woocommerce_currency_symbol( $base ),
+				'rate'          => 1.0,
+				'markup'        => 0.0,
+				'rounding'      => 'none',
+				'position'      => get_option( 'woocommerce_currency_pos', 'left' ),
+				'decimals'      => wc_get_price_decimals(),
+				'decimal_sep'   => wc_get_price_decimal_separator(),
+				'thousand_sep'  => wc_get_price_thousand_separator(),
+				'is_base'       => true,
+			),
+		);
+
+		$saved = get_option( self::OPTION_ENABLED, array() );
+		if ( ! is_array( $saved ) || empty( $saved ) ) {
+			return $defaults;
+		}
+
+		// Ensure base currency is always present and marked as base.
+		$saved[ $base ]            = array_merge( $defaults[ $base ], $saved[ $base ] ?? array() );
+		$saved[ $base ]['rate']    = 1.0;
+		$saved[ $base ]['is_base'] = true;
+
+		return $saved;
+	}
+
+	/**
+	 * Save enabled currencies array.
+	 *
+	 * @param array $currencies Configured currencies.
+	 * @return bool
+	 */
+	public function save_enabled_currencies( array $currencies ): bool {
+		return update_option( self::OPTION_ENABLED, $currencies );
+	}
+
+	/**
+	 * Get full reference list of world currencies (ISO-4217).
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public function get_all_currencies(): array {
+		return array(
+			'USD' => array( 'name' => 'United States Dollar', 'symbol' => '$', 'decimals' => 2 ),
+			'EUR' => array( 'name' => 'Euro', 'symbol' => '€', 'decimals' => 2 ),
+			'GBP' => array( 'name' => 'British Pound', 'symbol' => '£', 'decimals' => 2 ),
+			'INR' => array( 'name' => 'Indian Rupee', 'symbol' => '₹', 'decimals' => 2 ),
+			'CAD' => array( 'name' => 'Canadian Dollar', 'symbol' => 'CA$', 'decimals' => 2 ),
+			'AUD' => array( 'name' => 'Australian Dollar', 'symbol' => 'AU$', 'decimals' => 2 ),
+			'JPY' => array( 'name' => 'Japanese Yen', 'symbol' => '¥', 'decimals' => 0 ),
+			'SGD' => array( 'name' => 'Singapore Dollar', 'symbol' => 'S$', 'decimals' => 2 ),
+			'AED' => array( 'name' => 'United Arab Emirates Dirham', 'symbol' => 'AED', 'decimals' => 2 ),
+			'SAR' => array( 'name' => 'Saudi Riyal', 'symbol' => 'SR', 'decimals' => 2 ),
+			'CHF' => array( 'name' => 'Swiss Franc', 'symbol' => 'CHF', 'decimals' => 2 ),
+			'CNY' => array( 'name' => 'Chinese Yuan', 'symbol' => '¥', 'decimals' => 2 ),
+			'HKD' => array( 'name' => 'Hong Kong Dollar', 'symbol' => 'HK$', 'decimals' => 2 ),
+			'NZD' => array( 'name' => 'New Zealand Dollar', 'symbol' => 'NZ$', 'decimals' => 2 ),
+			'SEK' => array( 'name' => 'Swedish Krona', 'symbol' => 'kr', 'decimals' => 2 ),
+			'NOK' => array( 'name' => 'Norwegian Krone', 'symbol' => 'kr', 'decimals' => 2 ),
+			'DKK' => array( 'name' => 'Danish Krone', 'symbol' => 'kr', 'decimals' => 2 ),
+			'PLN' => array( 'name' => 'Polish Zloty', 'symbol' => 'zł', 'decimals' => 2 ),
+			'BRL' => array( 'name' => 'Brazilian Real', 'symbol' => 'R$', 'decimals' => 2 ),
+			'MXN' => array( 'name' => 'Mexican Peso', 'symbol' => 'MX$', 'decimals' => 2 ),
+			'ZAR' => array( 'name' => 'South African Rand', 'symbol' => 'R', 'decimals' => 2 ),
+			'THB' => array( 'name' => 'Thai Baht', 'symbol' => '฿', 'decimals' => 2 ),
+			'MYR' => array( 'name' => 'Malaysian Ringgit', 'symbol' => 'RM', 'decimals' => 2 ),
+			'IDR' => array( 'name' => 'Indonesian Rupiah', 'symbol' => 'Rp', 'decimals' => 2 ),
+			'PHP' => array( 'name' => 'Philippine Peso', 'symbol' => '₱', 'decimals' => 2 ),
+			'TRY' => array( 'name' => 'Turkish Lira', 'symbol' => '₺', 'decimals' => 2 ),
+			'KRW' => array( 'name' => 'South Korean Won', 'symbol' => '₩', 'decimals' => 0 ),
+			'KWD' => array( 'name' => 'Kuwaiti Dinar', 'symbol' => 'KD', 'decimals' => 3 ),
+			'BHD' => array( 'name' => 'Bahraini Dinar', 'symbol' => 'BD', 'decimals' => 3 ),
+			'OMR' => array( 'name' => 'Omani Rial', 'symbol' => 'OMR', 'decimals' => 3 ),
+		);
+	}
+}

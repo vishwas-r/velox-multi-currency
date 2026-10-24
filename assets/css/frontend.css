@@ -1,0 +1,43 @@
+/**
+ * SettleX Frontend Styles
+ */
+.settlex-currency-switcher-wrap {
+	display: inline-block;
+	position: relative;
+	margin: 5px 0;
+	font-family: inherit;
+}
+
+.settlex-currency-select {
+	appearance: none;
+	-webkit-appearance: none;
+	background-color: #ffffff;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 6px 30px 6px 12px;
+	font-size: 14px;
+	line-height: 1.5;
+	color: #1f2937;
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3e%3cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3e%3c/svg%3e");
+	background-repeat: no-repeat;
+	background-position: right 8px center;
+	background-size: 16px 16px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settlex-currency-select:focus {
+	outline: none;
+	border-color: #4f46e5;
+	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.settlex-disclosure-notice {
+	border-left: 4px solid #4f46e5 !important;
+	background-color: #f5f3ff !important;
+	color: #4338ca !important;
+	padding: 10px 14px !important;
+	border-radius: 4px;
+	font-weight: 500;
+}
