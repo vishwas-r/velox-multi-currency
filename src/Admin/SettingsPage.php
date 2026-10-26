@@ -860,7 +860,7 @@ class SettingsPage {
 		check_admin_referer( 'nammawp_save_settings', 'nammawp_nonce' );
 
 		// 1. Process Dedicated Routing Rules.
-		$raw_dedicated   = isset( $_POST['dedicated_routing'] ) ? (array) wp_unslash( $_POST['dedicated_routing'] ) : array();
+		$raw_dedicated   = isset( $_POST['dedicated_routing'] ) ? (array) wp_unslash( $_POST['dedicated_routing'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$clean_dedicated = array();
 
 		foreach ( $raw_dedicated as $curr => $data ) {
@@ -880,7 +880,7 @@ class SettingsPage {
 		$this->capability_registry->save_dedicated_routing_rules( $clean_dedicated );
 
 		// 2. Process Matrix Rules.
-		$matrix       = isset( $_POST['matrix'] ) ? (array) wp_unslash( $_POST['matrix'] ) : array();
+		$matrix       = isset( $_POST['matrix'] ) ? (array) wp_unslash( $_POST['matrix'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$clean_matrix = array();
 
 		foreach ( $matrix as $gateway_id => $currencies ) {
