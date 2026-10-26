@@ -1,5 +1,5 @@
 === VeloX - Multi-Currency & Payment Gateway for WooCommerce ===
-Contributors: velox
+Contributors: vishwas-r
 Tags: currency switcher, multi currency, payment gateway, razorpay, woocommerce
 Requires at least: 6.5
 Tested up to: 7.1
