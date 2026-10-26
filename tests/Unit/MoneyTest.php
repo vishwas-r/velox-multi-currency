@@ -2,13 +2,13 @@
 /**
  * Money unit tests.
  *
- * @package SettleX\MultiCurrency\Tests\Unit
+ * @package NammaWP\MultiCurrency\Tests\Unit
  */
 
-namespace SettleX\MultiCurrency\Tests\Unit;
+namespace NammaWP\MultiCurrency\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SettleX\MultiCurrency\Currency\Money;
+use NammaWP\MultiCurrency\Currency\Money;
 
 /**
  * MoneyTest class.

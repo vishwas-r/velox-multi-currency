@@ -2,12 +2,12 @@
 /**
  * GatewayRouter hooks into Classic and Block checkout to filter gateways and apply disclosures.
  *
- * @package SettleX\MultiCurrency\GatewayRouter
+ * @package NammaWP\MultiCurrency\GatewayRouter
  */
 
-namespace SettleX\MultiCurrency\GatewayRouter;
+namespace NammaWP\MultiCurrency\GatewayRouter;
 
-use SettleX\MultiCurrency\Currency\CurrencyRegistry;
+use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -68,8 +68,8 @@ class GatewayRouter {
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'render_checkout_disclosure' ) );
 
 		// 4. AJAX handler for refreshing disclosure when payment method is toggled.
-		add_action( 'wp_ajax_settlex_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
-		add_action( 'wp_ajax_nopriv_settlex_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
+		add_action( 'wp_ajax_nammawp_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
+		add_action( 'wp_ajax_nopriv_nammawp_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
 	}
 
 	/**
@@ -172,8 +172,8 @@ class GatewayRouter {
 
 		$settlement = $this->resolver->resolve( $cart_total, $display_currency, $chosen_gateway );
 
-		echo '<div id="settlex-disclosure-wrapper" style="' . ( $settlement->disclosure_required ? '' : 'display:none;' ) . '">';
-		echo '<div class="woocommerce-info settlex-disclosure-notice" style="margin: 15px 0; font-size: 0.9em;">';
+		echo '<div id="nammawp-disclosure-wrapper" style="' . ( $settlement->disclosure_required ? '' : 'display:none;' ) . '">';
+		echo '<div class="woocommerce-info nammawp-disclosure-notice" style="margin: 15px 0; font-size: 0.9em;">';
 		echo esc_html( $settlement->disclosure_message );
 		echo '</div>';
 		echo '</div>';
@@ -183,7 +183,7 @@ class GatewayRouter {
 	 * AJAX endpoint to return disclosure info when customer clicks a payment radio button.
 	 */
 	public function ajax_get_disclosure(): void {
-		check_ajax_referer( 'settlex_nonce', 'nonce' );
+		check_ajax_referer( 'nammawp_nonce', 'nonce' );
 
 		$gateway_id = sanitize_text_field( wp_unslash( $_POST['gateway_id'] ?? '' ) );
 		if ( empty( $gateway_id ) || ! WC()->cart ) {

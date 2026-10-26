@@ -2,10 +2,10 @@
 /**
  * Interface for exchange rate providers.
  *
- * @package SettleX\MultiCurrency\Currency\RateProvider
+ * @package NammaWP\MultiCurrency\Currency\RateProvider
  */
 
-namespace SettleX\MultiCurrency\Currency\RateProvider;
+namespace NammaWP\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,3 +39,4 @@ interface RateProviderInterface {
 	 */
 	public function fetch_rates( string $base_currency );
 }
+

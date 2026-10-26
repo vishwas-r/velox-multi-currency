@@ -2,12 +2,12 @@
 /**
  * SettlementResult value object holding resolved charge currency, amount and disclosure.
  *
- * @package SettleX\MultiCurrency\GatewayRouter
+ * @package NammaWP\MultiCurrency\GatewayRouter
  */
 
-namespace SettleX\MultiCurrency\GatewayRouter;
+namespace NammaWP\MultiCurrency\GatewayRouter;
 
-use SettleX\MultiCurrency\Currency\Money;
+use NammaWP\MultiCurrency\Currency\Money;
 
 defined( 'ABSPATH' ) || exit;
 

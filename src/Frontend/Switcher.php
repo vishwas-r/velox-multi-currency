@@ -2,12 +2,12 @@
 /**
  * Frontend Switcher UI, Header Switcher, Floating Widget, and No-Reload AJAX Currency Switching.
  *
- * @package SettleX\MultiCurrency\Frontend
+ * @package NammaWP\MultiCurrency\Frontend
  */
 
-namespace SettleX\MultiCurrency\Frontend;
+namespace NammaWP\MultiCurrency\Frontend;
 
-use SettleX\MultiCurrency\Currency\CurrencyRegistry;
+use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -19,7 +19,7 @@ class Switcher {
 	/**
 	 * Option key for switcher display settings.
 	 */
-	const OPTION_SETTINGS = 'settlex_switcher_settings';
+	const OPTION_SETTINGS = 'nammawp_mc_switcher_settings';
 
 	/**
 	 * CurrencyRegistry instance.
@@ -67,8 +67,8 @@ class Switcher {
 	 */
 	public function init(): void {
 		// Shortcodes.
-		add_shortcode( 'settlex_switcher', array( $this, 'render_shortcode' ) );
-		add_shortcode( 'settlex_currency_switcher', array( $this, 'render_shortcode' ) );
+		add_shortcode( 'nammawp_switcher', array( $this, 'render_shortcode' ) );
+		add_shortcode( 'nammawp_currency_switcher', array( $this, 'render_shortcode' ) );
 
 		// Floating Widget (hooked into footer).
 		add_action( 'wp_footer', array( $this, 'render_floating_widget' ) );
@@ -78,8 +78,8 @@ class Switcher {
 		add_action( 'wp_body_open', array( $this, 'render_header_bar' ), 5 );
 
 		// AJAX handler for seamless switching without reloading page.
-		add_action( 'wp_ajax_settlex_switch_currency', array( $this, 'ajax_switch_currency' ) );
-		add_action( 'wp_ajax_nopriv_settlex_switch_currency', array( $this, 'ajax_switch_currency' ) );
+		add_action( 'wp_ajax_nammawp_switch_currency', array( $this, 'ajax_switch_currency' ) );
+		add_action( 'wp_ajax_nopriv_nammawp_switch_currency', array( $this, 'ajax_switch_currency' ) );
 
 		// Enqueue frontend scripts & styles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -101,8 +101,8 @@ class Switcher {
 
 		ob_start();
 		?>
-		<div class="settlex-currency-switcher-wrap" data-active="<?php echo esc_attr( $active_currency ); ?>">
-			<select class="settlex-currency-select" aria-label="<?php esc_attr_e( 'Select Currency', 'settlex-multi-currency' ); ?>">
+		<div class="nammawp-currency-switcher-wrap" data-active="<?php echo esc_attr( $active_currency ); ?>">
+			<select class="nammawp-currency-select" aria-label="<?php esc_attr_e( 'Select Currency', 'nammawp-multi-currency' ); ?>">
 				<?php foreach ( $enabled as $code => $data ) : ?>
 					<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $active_currency, $code ); ?>>
 						<?php echo esc_html( sprintf( '%s (%s) - %s', $code, $data['symbol'] ?? '', $data['name'] ?? '' ) ); ?>
@@ -130,38 +130,40 @@ class Switcher {
 			return;
 		}
 
-		$pos_class   = 'settlex-pos-' . sanitize_html_class( $settings['floating_position'] );
+		$pos_class   = 'nammawp-pos-' . sanitize_html_class( $settings['floating_position'] );
 		$active_data = $enabled[ $active_currency ] ?? reset( $enabled );
 		$act_symbol  = html_entity_decode( (string) ( $active_data['symbol'] ?? '$' ), ENT_QUOTES, 'UTF-8' );
 
 		?>
-		<div class="settlex-floating-widget <?php echo esc_attr( $pos_class ); ?>" id="settlex-floating-widget">
-			<button type="button" class="settlex-floating-trigger" aria-haspopup="true" aria-expanded="false" title="<?php esc_attr_e( 'Change currency', 'settlex-multi-currency' ); ?>">
-				<span class="settlex-trigger-symbol"><?php echo wp_kses_post( $act_symbol ); ?></span>
-				<span class="settlex-trigger-code"><?php echo esc_html( $active_currency ); ?></span>
-				<svg class="settlex-chevron" width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+		<div class="nammawp-floating-widget <?php echo esc_attr( $pos_class ); ?>" id="nammawp-floating-widget">
+			<button type="button" class="nammawp-floating-trigger" aria-haspopup="true" aria-expanded="false" title="<?php esc_attr_e( 'Change currency', 'nammawp-multi-currency' ); ?>">
+				<span class="nammawp-trigger-symbol"><?php echo wp_kses_post( $act_symbol ); ?></span>
+				<span class="nammawp-trigger-code"><?php echo esc_html( $active_currency ); ?></span>
+				<svg class="nammawp-chevron" width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
 					<path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
 				</svg>
+				<svg class="nammawp-trigger-spinner nammawp-spin" width="12" height="12" viewBox="0 0 16 16" fill="none" style="display:none;">
+					<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-opacity="0.25"/>
+					<path d="M14 8A6 6 0 0 0 8 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				</svg>
 			</button>
-			<div class="settlex-floating-dropdown" role="menu">
-				<div class="settlex-floating-header">
-					<?php esc_html_e( 'Select Currency', 'settlex-multi-currency' ); ?>
+			<div class="nammawp-floating-dropdown" role="menu">
+				<div class="nammawp-floating-header">
+					<?php esc_html_e( 'Select Currency', 'nammawp-multi-currency' ); ?>
 				</div>
-				<ul class="settlex-floating-list">
+				<ul class="nammawp-floating-list">
 					<?php foreach ( $enabled as $code => $data ) : ?>
 						<?php
 						$is_selected = ( $code === $active_currency );
 						$item_symbol = html_entity_decode( (string) ( $data['symbol'] ?? '' ), ENT_QUOTES, 'UTF-8' );
 						?>
-						<li class="settlex-floating-item <?php echo $is_selected ? 'is-active' : ''; ?>" data-currency="<?php echo esc_attr( $code ); ?>">
-							<span class="settlex-item-symbol"><?php echo wp_kses_post( $item_symbol ); ?></span>
-							<span class="settlex-item-code"><strong><?php echo esc_html( $code ); ?></strong></span>
-							<span class="settlex-item-name"><?php echo esc_html( $data['name'] ?? '' ); ?></span>
-							<?php if ( $is_selected ) : ?>
-								<svg class="settlex-item-check" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-									<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-								</svg>
-							<?php endif; ?>
+						<li class="nammawp-floating-item <?php echo $is_selected ? 'is-active' : ''; ?>" data-currency="<?php echo esc_attr( $code ); ?>">
+							<span class="nammawp-item-symbol"><?php echo wp_kses_post( $item_symbol ); ?></span>
+							<span class="nammawp-item-code"><strong><?php echo esc_html( $code ); ?></strong></span>
+							<span class="nammawp-item-name"><?php echo esc_html( $data['name'] ?? '' ); ?></span>
+							<svg class="nammawp-item-check" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+								<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+							</svg>
 						</li>
 					<?php endforeach; ?>
 				</ul>
@@ -192,9 +194,9 @@ class Switcher {
 
 		ob_start();
 		?>
-		<li class="menu-item settlex-menu-currency-item">
-			<div class="settlex-header-inline-switcher">
-				<select class="settlex-currency-select settlex-header-select" aria-label="<?php esc_attr_e( 'Select Currency', 'settlex-multi-currency' ); ?>">
+		<li class="menu-item nammawp-menu-currency-item">
+			<div class="nammawp-header-inline-switcher">
+				<select class="nammawp-currency-select nammawp-header-select" aria-label="<?php esc_attr_e( 'Select Currency', 'nammawp-multi-currency' ); ?>">
 					<?php foreach ( $enabled as $code => $data ) : ?>
 						<?php $sym = html_entity_decode( (string) ( $data['symbol'] ?? '' ), ENT_QUOTES, 'UTF-8' ); ?>
 						<option value="<?php echo esc_attr( $code ); ?>" <?php selected( $active_currency, $code ); ?>>
@@ -226,16 +228,16 @@ class Switcher {
 		}
 
 		?>
-		<div class="settlex-top-header-bar" id="settlex-top-header-bar">
-			<div class="settlex-container">
-				<span class="settlex-header-label"><?php esc_html_e( 'Currency:', 'settlex-multi-currency' ); ?></span>
-				<div class="settlex-header-currencies">
+		<div class="nammawp-top-header-bar" id="nammawp-top-header-bar">
+			<div class="nammawp-container">
+				<span class="nammawp-header-label"><?php esc_html_e( 'Currency:', 'nammawp-multi-currency' ); ?></span>
+				<div class="nammawp-header-currencies">
 					<?php foreach ( $enabled as $code => $data ) : ?>
 						<?php
 						$is_active = ( $code === $active_currency );
 						$sym       = html_entity_decode( (string) ( $data['symbol'] ?? '' ), ENT_QUOTES, 'UTF-8' );
 						?>
-						<button type="button" class="settlex-header-curr-btn <?php echo $is_active ? 'is-active' : ''; ?>" data-currency="<?php echo esc_attr( $code ); ?>">
+						<button type="button" class="nammawp-header-curr-btn <?php echo $is_active ? 'is-active' : ''; ?>" data-currency="<?php echo esc_attr( $code ); ?>">
 							<?php echo esc_html( sprintf( '%s %s', $sym, $code ) ); ?>
 						</button>
 					<?php endforeach; ?>
@@ -250,7 +252,7 @@ class Switcher {
 	 * Calculates real-time prices for visible products and refreshed cart/checkout fragments.
 	 */
 	public function ajax_switch_currency(): void {
-		check_ajax_referer( 'settlex_nonce', 'nonce' );
+		check_ajax_referer( 'nammawp_nonce', 'nonce' );
 
 		$currency    = sanitize_text_field( wp_unslash( $_POST['currency'] ?? '' ) );
 		$product_ids = isset( $_POST['product_ids'] ) ? array_map( 'absint', (array) $_POST['product_ids'] ) : array();
@@ -258,7 +260,7 @@ class Switcher {
 		$success = $this->registry->set_active_currency( $currency );
 
 		if ( ! $success ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid or disabled currency.', 'settlex-multi-currency' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid or disabled currency.', 'nammawp-multi-currency' ) ) );
 		}
 
 		// 1. Automatically include all items currently in WooCommerce cart.
@@ -323,7 +325,7 @@ class Switcher {
 				'cart_subtotal' => $cart_subtotal,
 				'cart_total'    => $cart_total,
 				'fragments'     => $fragments,
-				'message'       => __( 'Currency switched successfully.', 'settlex-multi-currency' ),
+				'message'       => __( 'Currency switched successfully.', 'nammawp-multi-currency' ),
 			)
 		);
 	}
@@ -333,26 +335,26 @@ class Switcher {
 	 */
 	public function enqueue_assets(): void {
 		wp_enqueue_style(
-			'settlex-frontend',
-			SETTLEX_PLUGIN_URL . 'assets/css/frontend.css',
+			'nammawp-frontend',
+			NAMMAWP_MC_PLUGIN_URL . 'assets/css/frontend.css',
 			array(),
-			SETTLEX_VERSION
+			NAMMAWP_MC_VERSION
 		);
 
 		wp_enqueue_script(
-			'settlex-frontend',
-			SETTLEX_PLUGIN_URL . 'assets/js/frontend.js',
+			'nammawp-frontend',
+			NAMMAWP_MC_PLUGIN_URL . 'assets/js/frontend.js',
 			array( 'jquery' ),
-			SETTLEX_VERSION,
+			NAMMAWP_MC_VERSION,
 			true
 		);
 
 		wp_localize_script(
-			'settlex-frontend',
-			'settlex_params',
+			'nammawp-frontend',
+			'nammawp_params',
 			array(
 				'ajax_url'        => admin_url( 'admin-ajax.php' ),
-				'nonce'           => wp_create_nonce( 'settlex_nonce' ),
+				'nonce'           => wp_create_nonce( 'nammawp_nonce' ),
 				'active_currency' => $this->registry->get_active_currency(),
 			)
 		);

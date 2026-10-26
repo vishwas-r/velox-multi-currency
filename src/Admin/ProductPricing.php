@@ -2,12 +2,12 @@
 /**
  * ProductPricing provides UI inputs for per-product and per-variation fixed pricing per currency.
  *
- * @package SettleX\MultiCurrency\Admin
+ * @package NammaWP\MultiCurrency\Admin
  */
 
-namespace SettleX\MultiCurrency\Admin;
+namespace NammaWP\MultiCurrency\Admin;
 
-use SettleX\MultiCurrency\Currency\CurrencyRegistry;
+use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -70,20 +70,20 @@ class ProductPricing {
 			return;
 		}
 
-		echo '<div class="options_group settlex-product-pricing-group" style="background:#f8fafc; padding: 10px 15px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 10px;">';
-		echo '<p><strong>' . esc_html__( 'SettleX Multi-Currency Fixed Pricing (Optional)', 'settlex-multi-currency' ) . '</strong><br>';
-		echo '<span class="description" style="font-size: 11px;">' . esc_html__( 'Set fixed prices for specific currencies. Leave blank to automatically convert using live exchange rates.', 'settlex-multi-currency' ) . '</span></p>';
+		echo '<div class="options_group nammawp-product-pricing-group" style="background:#f8fafc; padding: 10px 15px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 10px;">';
+		echo '<p><strong>' . esc_html__( 'NammaWP Multi-Currency Fixed Pricing (Optional)', 'nammawp-multi-currency' ) . '</strong><br>';
+		echo '<span class="description" style="font-size: 11px;">' . esc_html__( 'Set fixed prices for specific currencies. Leave blank to automatically convert using live exchange rates.', 'nammawp-multi-currency' ) . '</span></p>';
 
 		foreach ( $secondary as $code => $data ) {
-			$reg_meta  = get_post_meta( $post->ID, '_settlex_regular_price_' . $code, true );
-			$sale_meta = get_post_meta( $post->ID, '_settlex_sale_price_' . $code, true );
+			$reg_meta  = get_post_meta( $post->ID, '_nammawp_regular_price_' . $code, true );
+			$sale_meta = get_post_meta( $post->ID, '_nammawp_sale_price_' . $code, true );
 			$symbol    = $data['symbol'] ?? $code;
 
 			woocommerce_wp_text_input(
 				array(
-					'id'          => '_settlex_regular_price_' . $code,
-					'label'       => sprintf( __( '%s Regular Price (%s)', 'settlex-multi-currency' ), $code, $symbol ),
-					'placeholder' => __( 'Auto-convert', 'settlex-multi-currency' ),
+					'id'          => '_nammawp_regular_price_' . $code,
+					'label'       => sprintf( __( '%s Regular Price (%s)', 'nammawp-multi-currency' ), $code, $symbol ),
+					'placeholder' => __( 'Auto-convert', 'nammawp-multi-currency' ),
 					'value'       => $reg_meta,
 					'data_type'   => 'price',
 				)
@@ -91,9 +91,9 @@ class ProductPricing {
 
 			woocommerce_wp_text_input(
 				array(
-					'id'          => '_settlex_sale_price_' . $code,
-					'label'       => sprintf( __( '%s Sale Price (%s)', 'settlex-multi-currency' ), $code, $symbol ),
-					'placeholder' => __( 'Optional sale price', 'settlex-multi-currency' ),
+					'id'          => '_nammawp_sale_price_' . $code,
+					'label'       => sprintf( __( '%s Sale Price (%s)', 'nammawp-multi-currency' ), $code, $symbol ),
+					'placeholder' => __( 'Optional sale price', 'nammawp-multi-currency' ),
 					'value'       => $sale_meta,
 					'data_type'   => 'price',
 				)
@@ -118,7 +118,7 @@ class ProductPricing {
 			}
 
 			// Regular price.
-			$reg_key = '_settlex_regular_price_' . $code;
+			$reg_key = '_nammawp_regular_price_' . $code;
 			if ( isset( $_POST[ $reg_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = wc_clean( wp_unslash( $_POST[ $reg_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
@@ -129,7 +129,7 @@ class ProductPricing {
 			}
 
 			// Sale price.
-			$sale_key = '_settlex_sale_price_' . $code;
+			$sale_key = '_nammawp_sale_price_' . $code;
 			if ( isset( $_POST[ $sale_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = wc_clean( wp_unslash( $_POST[ $sale_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
@@ -164,30 +164,30 @@ class ProductPricing {
 			return;
 		}
 
-		echo '<div class="settlex-variation-pricing-wrap" style="width: 100%; clear: both; padding: 10px 0; border-top: 1px dashed #cbd5e1; margin-top: 10px;">';
-		echo '<p style="margin: 0 0 5px 0;"><strong>' . esc_html__( 'SettleX Multi-Currency Fixed Prices', 'settlex-multi-currency' ) . '</strong></p>';
+		echo '<div class="nammawp-variation-pricing-wrap" style="width: 100%; clear: both; padding: 10px 0; border-top: 1px dashed #cbd5e1; margin-top: 10px;">';
+		echo '<p style="margin: 0 0 5px 0;"><strong>' . esc_html__( 'NammaWP Multi-Currency Fixed Prices', 'nammawp-multi-currency' ) . '</strong></p>';
 
 		foreach ( $secondary as $code => $data ) {
-			$reg_meta  = get_post_meta( $variation->ID, '_settlex_regular_price_' . $code, true );
-			$sale_meta = get_post_meta( $variation->ID, '_settlex_sale_price_' . $code, true );
+			$reg_meta  = get_post_meta( $variation->ID, '_nammawp_regular_price_' . $code, true );
+			$sale_meta = get_post_meta( $variation->ID, '_nammawp_sale_price_' . $code, true );
 			$symbol    = $data['symbol'] ?? $code;
 
 			?>
-			<div class="settlex-var-row" style="display: flex; gap: 10px; margin-bottom: 6px;">
+			<div class="nammawp-var-row" style="display: flex; gap: 10px; margin-bottom: 6px;">
 				<div style="flex: 1;">
 					<label style="font-size: 11px;"><?php echo esc_html( sprintf( '%s Regular (%s)', $code, $symbol ) ); ?></label>
 					<input type="text"
-						name="_settlex_var_reg_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
+						name="_nammawp_var_reg_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
 						value="<?php echo esc_attr( $reg_meta ); ?>"
-						placeholder="<?php esc_attr_e( 'Auto-convert', 'settlex-multi-currency' ); ?>"
+						placeholder="<?php esc_attr_e( 'Auto-convert', 'nammawp-multi-currency' ); ?>"
 						style="width: 100%; font-size: 12px;">
 				</div>
 				<div style="flex: 1;">
 					<label style="font-size: 11px;"><?php echo esc_html( sprintf( '%s Sale (%s)', $code, $symbol ) ); ?></label>
 					<input type="text"
-						name="_settlex_var_sale_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
+						name="_nammawp_var_sale_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
 						value="<?php echo esc_attr( $sale_meta ); ?>"
-						placeholder="<?php esc_attr_e( 'Optional sale', 'settlex-multi-currency' ); ?>"
+						placeholder="<?php esc_attr_e( 'Optional sale', 'nammawp-multi-currency' ); ?>"
 						style="width: 100%; font-size: 12px;">
 				</div>
 			</div>
@@ -213,24 +213,24 @@ class ProductPricing {
 			}
 
 			// Regular price.
-			$reg_field = '_settlex_var_reg_price_' . $code;
+			$reg_field = '_nammawp_var_reg_price_' . $code;
 			if ( isset( $_POST[ $reg_field ][ $i ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = wc_clean( wp_unslash( $_POST[ $reg_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
-					update_post_meta( $variation_id, '_settlex_regular_price_' . $code, wc_format_decimal( $val ) );
+					update_post_meta( $variation_id, '_nammawp_regular_price_' . $code, wc_format_decimal( $val ) );
 				} else {
-					delete_post_meta( $variation_id, '_settlex_regular_price_' . $code );
+					delete_post_meta( $variation_id, '_nammawp_regular_price_' . $code );
 				}
 			}
 
 			// Sale price.
-			$sale_field = '_settlex_var_sale_price_' . $code;
+			$sale_field = '_nammawp_var_sale_price_' . $code;
 			if ( isset( $_POST[ $sale_field ][ $i ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = wc_clean( wp_unslash( $_POST[ $sale_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
-					update_post_meta( $variation_id, '_settlex_sale_price_' . $code, wc_format_decimal( $val ) );
+					update_post_meta( $variation_id, '_nammawp_sale_price_' . $code, wc_format_decimal( $val ) );
 				} else {
-					delete_post_meta( $variation_id, '_settlex_sale_price_' . $code );
+					delete_post_meta( $variation_id, '_nammawp_sale_price_' . $code );
 				}
 			}
 		}

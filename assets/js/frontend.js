@@ -1,5 +1,5 @@
 /**
- * SettleX Frontend JS: Pure AJAX real-time currency switching without page reload,
+ * NammaWP Frontend JS: Pure AJAX real-time currency switching without page reload,
  * dynamic price updating, floating switcher interaction, and checkout recalculation.
  */
 (function($) {
@@ -67,32 +67,80 @@
 			return;
 		}
 
-		var productIds = getVisibleProductIds();
-		$('body').addClass('settlex-currency-updating');
+		var params = window.nammawp_params || {};
+		if (!params.ajax_url) {
+			return;
+		}
 
-		// Indicate loading state on floating trigger if present
-		var $floatingWidget = $('#settlex-floating-widget');
+		var $floatingWidget = $('#nammawp-floating-widget');
+
+		// 1. Instant 0ms visual feedback: Add loading spinners
 		$floatingWidget.addClass('is-loading');
 
+		// 2. Add top progress bar and dim prices
+		$('body').addClass('nammawp-currency-updating');
+		if (!$('#nammawp-top-progress').length) {
+			$('body').append('<div id="nammawp-top-progress" class="nammawp-top-progress"></div>');
+		}
+
+		// 3. Immediately update checkmark and active state in dropdown
+		$floatingWidget.find('.nammawp-floating-item').removeClass('is-active is-switching');
+		var $clickedItem = $floatingWidget.find('.nammawp-floating-item[data-currency="' + targetCurrency + '"]');
+		if ($clickedItem.length) {
+			$clickedItem.addClass('is-active is-switching');
+			var newSym = $clickedItem.find('.nammawp-item-symbol').html();
+			if (newSym) {
+				$floatingWidget.find('.nammawp-trigger-symbol').html(newSym);
+			}
+		}
+		$floatingWidget.find('.nammawp-trigger-code').text(targetCurrency);
+
+		// 4. Immediately highlight header buttons
+		$('.nammawp-header-curr-btn').removeClass('is-active');
+		$('.nammawp-header-curr-btn[data-currency="' + targetCurrency + '"]').addClass('is-active is-loading');
+
+		var productIds = getVisibleProductIds();
+
 		$.ajax({
-			url: settlex_params.ajax_url,
+			url: params.ajax_url,
 			type: 'POST',
 			data: {
-				action: 'settlex_switch_currency',
-				nonce: settlex_params.nonce,
+				action: 'nammawp_switch_currency',
+				nonce: params.nonce,
 				currency: targetCurrency,
 				product_ids: productIds
 			},
 			success: function(response) {
-				$('body').removeClass('settlex-currency-updating');
+				$('body').removeClass('nammawp-currency-updating');
+				$('#nammawp-top-progress').remove();
 				$floatingWidget.removeClass('is-loading');
+				$('.nammawp-floating-item').removeClass('is-switching');
+				$('.nammawp-header-curr-btn').removeClass('is-loading');
 
 				if (response.success && response.data) {
 					var data = response.data;
 					var newCurrency = data.currency;
 					var newSymbol = data.symbol;
 
-					// 1. Real-time update product prices on page
+					// 1. Update dropdown active checkmark and triggers
+					$floatingWidget.find('.nammawp-floating-item').removeClass('is-active');
+					$floatingWidget.find('.nammawp-floating-item[data-currency="' + newCurrency + '"]').addClass('is-active');
+					$floatingWidget.find('.nammawp-trigger-code').text(newCurrency);
+					$floatingWidget.find('.nammawp-trigger-symbol').html(newSymbol);
+
+					// Close floating dropdown smoothly after selection
+					setTimeout(function() {
+						$floatingWidget.removeClass('is-open');
+					}, 220);
+
+					// Update header buttons
+					$('.nammawp-header-curr-btn').removeClass('is-active');
+					$('.nammawp-header-curr-btn[data-currency="' + newCurrency + '"]').addClass('is-active');
+
+					// Update standard dropdowns
+					$('.nammawp-currency-select').val(newCurrency);
+
+					// 2. Real-time update product prices on page
 					if (data.prices && typeof data.prices === 'object') {
 						$.each(data.prices, function(productId, priceData) {
 							if (!priceData) {
@@ -104,9 +152,7 @@
 							if ($productContainer.length && priceData.price_html) {
 								var $priceEl = $productContainer.find('.price').first();
 								if ($priceEl.length) {
-									$priceEl.fadeOut(120, function() {
-										$(this).html(priceData.price_html).fadeIn(150);
-									});
+									$priceEl.html(priceData.price_html);
 								}
 							}
 
@@ -120,9 +166,7 @@
 							if ($('body').hasClass('single-product')) {
 								var $singlePrice = $('.summary .price').first();
 								if ($singlePrice.length && priceData.price_html) {
-									$singlePrice.fadeOut(120, function() {
-										$(this).html(priceData.price_html).fadeIn(150);
-									});
+									$singlePrice.html(priceData.price_html);
 								}
 							}
 
@@ -133,7 +177,7 @@
 						});
 					}
 
-					// 2. Real-time update all currency symbols and totals on page
+					// 3. Real-time update all currency symbols and totals on page
 					$('.woocommerce-Price-currencySymbol, .wc-block-components-formatted-money-amount__currency').html(newSymbol);
 
 					if (data.cart_subtotal) {
@@ -141,20 +185,6 @@
 					}
 					if (data.cart_total) {
 						$('.order-total .amount, .wc-block-components-totals-footer-item .wc-block-formatted-money-amount').html(data.cart_total);
-					}
-
-					// 3. Update all dropdowns & switchers on page
-					$('.settlex-currency-select').val(newCurrency);
-					$('.settlex-header-curr-btn').removeClass('is-active');
-					$('.settlex-header-curr-btn[data-currency="' + newCurrency + '"]').addClass('is-active');
-
-					// Update floating widget label & active item
-					if ($floatingWidget.length) {
-						$floatingWidget.find('.settlex-trigger-code').text(newCurrency);
-						$floatingWidget.find('.settlex-trigger-symbol').html(newSymbol);
-						$floatingWidget.find('.settlex-floating-item').removeClass('is-active');
-						$floatingWidget.find('.settlex-floating-item[data-currency="' + newCurrency + '"]').addClass('is-active');
-						$floatingWidget.removeClass('is-open');
 					}
 
 					// 4. Mini-cart fragments update
@@ -208,8 +238,11 @@
 				}
 			},
 			error: function() {
-				$('body').removeClass('settlex-currency-updating');
+				$('body').removeClass('nammawp-currency-updating');
+				$('#nammawp-top-progress').remove();
 				$floatingWidget.removeClass('is-loading');
+				$('.nammawp-floating-item').removeClass('is-switching');
+				$('.nammawp-header-curr-btn').removeClass('is-loading');
 				alert('Network error while switching currency.');
 			}
 		});
@@ -217,26 +250,26 @@
 
 	$(document).ready(function() {
 		// 1. Standard dropdown switch handler
-		$(document).on('change', '.settlex-currency-select', function() {
+		$(document).on('change', '.nammawp-currency-select', function() {
 			var selected = $(this).val();
 			switchCurrency(selected, $(this));
 		});
 
 		// 2. Header bar button switch handler
-		$(document).on('click', '.settlex-header-curr-btn', function(e) {
+		$(document).on('click', '.nammawp-header-curr-btn', function(e) {
 			e.preventDefault();
 			var selected = $(this).data('currency');
 			switchCurrency(selected, $(this));
 		});
 
 		// 3. Floating widget trigger toggle
-		$(document).on('click', '.settlex-floating-trigger', function(e) {
+		$(document).on('click', '.nammawp-floating-trigger', function(e) {
 			e.stopPropagation();
-			$('#settlex-floating-widget').toggleClass('is-open');
+			$('#nammawp-floating-widget').toggleClass('is-open');
 		});
 
 		// 4. Floating widget item select
-		$(document).on('click', '.settlex-floating-item', function(e) {
+		$(document).on('click', '.nammawp-floating-item', function(e) {
 			e.preventDefault();
 			e.stopPropagation();
 			var selected = $(this).data('currency');
@@ -245,31 +278,32 @@
 
 		// Close floating widget on outside click
 		$(document).on('click', function(e) {
-			if (!$(e.target).closest('#settlex-floating-widget').length) {
-				$('#settlex-floating-widget').removeClass('is-open');
+			if (!$(e.target).closest('#nammawp-floating-widget').length) {
+				$('#nammawp-floating-widget').removeClass('is-open');
 			}
 		});
 
 		// 5. Checkout Payment Gateway switch listener
 		$(document.body).on('change', 'input[name="payment_method"]', function() {
 			var chosenGateway = $(this).val();
-			var $wrapper = $('#settlex-disclosure-wrapper');
+			var $wrapper = $('#nammawp-disclosure-wrapper');
+			var params = window.nammawp_params || {};
 
-			if (!chosenGateway || !$wrapper.length) {
+			if (!chosenGateway || !$wrapper.length || !params.ajax_url) {
 				return;
 			}
 
 			$.ajax({
-				url: settlex_params.ajax_url,
+				url: params.ajax_url,
 				type: 'POST',
 				data: {
-					action: 'settlex_get_gateway_disclosure',
-					nonce: settlex_params.nonce,
+					action: 'nammawp_get_gateway_disclosure',
+					nonce: params.nonce,
 					gateway_id: chosenGateway
 				},
 				success: function(response) {
 					if (response.success && response.data.required) {
-						$wrapper.find('.settlex-disclosure-notice').text(response.data.message);
+						$wrapper.find('.nammawp-disclosure-notice').text(response.data.message);
 						$wrapper.slideDown(200);
 					} else {
 						$wrapper.slideUp(200);

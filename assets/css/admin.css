@@ -1,7 +1,7 @@
 /**
- * SettleX Admin Styles
+ * nammawp Admin Styles
  */
-.settlex-settings-wrap h1 {
+.nammawp-settings-wrap h1 {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -9,7 +9,7 @@
 	font-weight: 600;
 }
 
-.settlex-badge {
+.nammawp-badge {
 	font-size: 11px;
 	font-weight: 600;
 	background: #4f46e5;
@@ -27,14 +27,14 @@
 	font-weight: 500;
 }
 
-.settlex-tab-icon {
+.nammawp-tab-icon {
 	width: 15px;
 	height: 15px;
 	display: inline-block;
 	vertical-align: middle;
 }
 
-.settlex-panel {
+.nammawp-panel {
 	background: #fff;
 	border: 1px solid #e2e8f0;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -43,7 +43,7 @@
 	border-radius: 8px;
 }
 
-.settlex-panel-header {
+.nammawp-panel-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -54,27 +54,27 @@
 	gap: 12px;
 }
 
-.settlex-panel-header h2 {
+.nammawp-panel-header h2 {
 	margin: 0;
 	font-size: 1.25rem;
 	font-weight: 600;
 	color: #0f172a;
 }
 
-.settlex-sync-actions {
+.nammawp-sync-actions {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	flex-wrap: wrap;
 }
 
-.settlex-last-sync {
+.nammawp-last-sync {
 	font-size: 12px;
 	color: #64748b;
 }
 
 /* Sync Button and Loading State */
-.settlex-sync-btn {
+.nammawp-sync-btn {
 	display: inline-flex !important;
 	align-items: center !important;
 	justify-content: center !important;
@@ -92,13 +92,13 @@
 	vertical-align: middle !important;
 }
 
-.settlex-sync-btn svg {
+.nammawp-sync-btn svg {
 	flex-shrink: 0;
 	display: inline-block;
 }
 
-.settlex-sync-btn:disabled,
-.settlex-sync-btn.is-loading {
+.nammawp-sync-btn:disabled,
+.nammawp-sync-btn.is-loading {
 	opacity: 0.85 !important;
 	cursor: not-allowed !important;
 	background: #2563eb !important;
@@ -107,14 +107,14 @@
 	box-shadow: none !important;
 }
 
-.settlex-spin {
-	animation: settlex-spin 0.8s linear infinite !important;
+.nammawp-spin {
+	animation: nammawp-spin 0.8s linear infinite !important;
 	display: inline-block;
 	vertical-align: middle;
 	transform-origin: center center;
 }
 
-@keyframes settlex-spin {
+@keyframes nammawp-spin {
 	from {
 		transform: rotate(0deg);
 	}
@@ -123,7 +123,7 @@
 	}
 }
 
-.settlex-tag-base {
+.nammawp-tag-base {
 	background: #eff6ff;
 	color: #1d4ed8;
 	font-size: 10px;
@@ -136,14 +136,14 @@
 	border: 1px solid #dbeafe;
 }
 
-.settlex-table {
+.nammawp-table {
 	border: 1px solid #e2e8f0;
 	border-radius: 6px;
 	overflow: hidden;
 	margin-top: 10px;
 }
 
-.settlex-table th {
+.nammawp-table th {
 	background: #f8fafc;
 	font-weight: 600;
 	color: #334155;
@@ -151,28 +151,28 @@
 	vertical-align: middle;
 }
 
-.settlex-table td {
+.nammawp-table td {
 	padding: 10px 14px;
 	vertical-align: middle;
 }
 
-.settlex-table td input[type="text"],
-.settlex-table td input[type="number"],
-.settlex-table td select {
+.nammawp-table td input[type="text"],
+.nammawp-table td input[type="number"],
+.nammawp-table td select {
 	height: 32px;
 	border-color: #cbd5e1;
 	border-radius: 4px;
 	box-shadow: none;
 }
 
-.settlex-table td input:focus,
-.settlex-table td select:focus {
+.nammawp-table td input:focus,
+.nammawp-table td select:focus {
 	border-color: #4f46e5;
 	box-shadow: 0 0 0 1px #4f46e5;
 }
 
 /* Delete / Remove Currency Action Button */
-.settlex-btn-delete {
+.nammawp-btn-delete {
 	display: inline-flex !important;
 	align-items: center;
 	justify-content: center;
@@ -188,30 +188,30 @@
 	outline: none;
 }
 
-.settlex-btn-delete svg {
+.nammawp-btn-delete svg {
 	width: 14px;
 	height: 14px;
 	transition: transform 0.15s ease;
 }
 
-.settlex-btn-delete:hover {
+.nammawp-btn-delete:hover {
 	background: #ef4444 !important;
 	border-color: #ef4444 !important;
 	color: #ffffff !important;
 }
 
-.settlex-btn-delete:hover svg {
+.nammawp-btn-delete:hover svg {
 	transform: scale(1.1);
 }
 
-.settlex-badge-locked {
+.nammawp-badge-locked {
 	color: #94a3b8;
 	font-size: 16px;
 	display: inline-block;
 }
 
 /* Add Currency Toolbar */
-.settlex-add-row {
+.nammawp-add-row {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -223,18 +223,18 @@
 	flex-wrap: wrap;
 }
 
-.settlex-add-row label {
+.nammawp-add-row label {
 	font-weight: 600;
 	color: #334155;
 	font-size: 13px;
 }
 
-.settlex-add-row select {
+.nammawp-add-row select {
 	min-width: 220px;
 	height: 32px;
 }
 
-.settlex-btn-add {
+.nammawp-btn-add {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -243,39 +243,39 @@
 }
 
 /* Payment Gateway Matrix */
-.settlex-matrix-scroll {
+.nammawp-matrix-scroll {
 	overflow-x: auto;
 	margin: 18px 0;
 	border: 1px solid #e2e8f0;
 	border-radius: 6px;
 }
 
-.settlex-matrix-table th {
+.nammawp-matrix-table th {
 	background: #f8fafc;
 	text-align: center;
 	vertical-align: middle;
 	padding: 12px 14px;
 }
 
-.settlex-matrix-table td {
+.nammawp-matrix-table td {
 	vertical-align: top;
 	text-align: center;
 	padding: 12px 14px;
 }
 
-.settlex-matrix-table td:first-child,
-.settlex-matrix-table th:first-child {
+.nammawp-matrix-table td:first-child,
+.nammawp-matrix-table th:first-child {
 	text-align: left;
 }
 
-.settlex-mode-select {
+.nammawp-mode-select {
 	font-size: 12px;
 	width: 100%;
 	max-width: 155px;
 	height: 32px;
 }
 
-.settlex-convert-to-wrap {
+.nammawp-convert-to-wrap {
 	background: #f8fafc;
 	padding: 6px 8px;
 	border-radius: 4px;
@@ -284,14 +284,14 @@
 }
 
 /* Sales by Currency Stat Cards */
-.settlex-stat-cards {
+.nammawp-stat-cards {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	gap: 16px;
 	margin: 20px 0;
 }
 
-.settlex-stat-card {
+.nammawp-stat-card {
 	padding: 18px 20px;
 	border-radius: 8px;
 	background: #ffffff;
@@ -299,7 +299,7 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-.settlex-stat-card .settlex-stat-label {
+.nammawp-stat-card .nammawp-stat-label {
 	font-size: 12px;
 	font-weight: 600;
 	text-transform: uppercase;
@@ -309,39 +309,39 @@
 	margin-bottom: 6px;
 }
 
-.settlex-stat-card .settlex-stat-value {
+.nammawp-stat-card .nammawp-stat-value {
 	font-size: 26px;
 	font-weight: 700;
 	color: #0f172a;
 	line-height: 1.2;
 }
 
-.settlex-stat-card.settlex-card-primary {
+.nammawp-stat-card.nammawp-card-primary {
 	background: #f0f7ff;
 	border-color: #bfdbfe;
 }
 
-.settlex-stat-card.settlex-card-primary .settlex-stat-label {
+.nammawp-stat-card.nammawp-card-primary .nammawp-stat-label {
 	color: #1d4ed8;
 }
 
-.settlex-stat-card.settlex-card-primary .settlex-stat-value {
+.nammawp-stat-card.nammawp-card-primary .nammawp-stat-value {
 	color: #1e40af;
 }
 
 /* Switcher Form Table */
-.settlex-form-table th {
+.nammawp-form-table th {
 	width: 240px;
 	padding: 20px 10px 20px 0;
 	font-weight: 600;
 	color: #1e293b;
 }
 
-.settlex-form-table td {
+.nammawp-form-table td {
 	padding: 16px 10px;
 }
 
-.settlex-checkbox-label {
+.nammawp-checkbox-label {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
@@ -350,19 +350,19 @@
 	color: #0f172a;
 }
 
-.settlex-checkbox-label input[type="checkbox"] {
+.nammawp-checkbox-label input[type="checkbox"] {
 	margin: 0;
 }
 
 /* Dedicated Gateway Routing Grid */
-.settlex-dedicated-grid {
+.nammawp-dedicated-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
 	gap: 20px;
 	margin-top: 20px;
 }
 
-.settlex-routing-card {
+.nammawp-routing-card {
 	background: #ffffff;
 	border: 1px solid #e2e8f0;
 	border-radius: 8px;
@@ -371,12 +371,12 @@
 	transition: all 0.2s ease;
 }
 
-.settlex-routing-card.is-exclusive {
+.nammawp-routing-card.is-exclusive {
 	border-color: #6366f1;
 	box-shadow: 0 0 0 1px #6366f1, 0 4px 6px -1px rgba(99, 102, 241, 0.1);
 }
 
-.settlex-routing-card-header {
+.nammawp-routing-card-header {
 	background: #f8fafc;
 	padding: 14px 16px;
 	border-bottom: 1px solid #e2e8f0;
@@ -385,13 +385,13 @@
 	justify-content: space-between;
 }
 
-.settlex-currency-badge {
+.nammawp-currency-badge {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 }
 
-.settlex-badge-symbol {
+.nammawp-badge-symbol {
 	font-size: 13px;
 	font-weight: 700;
 	color: #4f46e5;
@@ -400,29 +400,29 @@
 	border-radius: 4px;
 }
 
-.settlex-badge-code {
+.nammawp-badge-code {
 	font-size: 15px;
 	font-weight: 700;
 	color: #0f172a;
 }
 
-.settlex-currency-title {
+.nammawp-currency-title {
 	font-size: 12px;
 	color: #64748b;
 }
 
-.settlex-routing-card-body {
+.nammawp-routing-card-body {
 	padding: 16px;
 }
 
-.settlex-routing-mode-selector {
+.nammawp-routing-mode-selector {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
 	margin-bottom: 14px;
 }
 
-.settlex-mode-radio {
+.nammawp-mode-radio {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -431,11 +431,11 @@
 	color: #334155;
 }
 
-.settlex-mode-radio input[type="radio"] {
+.nammawp-mode-radio input[type="radio"] {
 	margin: 0;
 }
 
-.settlex-exclusive-gateways {
+.nammawp-exclusive-gateways {
 	background: #f8fafc;
 	border: 1px solid #e2e8f0;
 	border-radius: 6px;
@@ -443,7 +443,7 @@
 	margin-top: 10px;
 }
 
-.settlex-gateways-header {
+.nammawp-gateways-header {
 	font-size: 12px;
 	font-weight: 600;
 	color: #475569;
@@ -452,7 +452,7 @@
 	border-bottom: 1px solid #cbd5e1;
 }
 
-.settlex-gateways-checkboxes {
+.nammawp-gateways-checkboxes {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -460,7 +460,7 @@
 	overflow-y: auto;
 }
 
-.settlex-gw-checkbox {
+.nammawp-gw-checkbox {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -473,24 +473,25 @@
 	transition: background-color 0.15s ease;
 }
 
-.settlex-gw-checkbox:hover {
+.nammawp-gw-checkbox:hover {
 	background: #f1f5f9;
 }
 
-.settlex-gw-checkbox input[type="checkbox"] {
+.nammawp-gw-checkbox input[type="checkbox"] {
 	margin: 0 8px 0 0;
 }
 
-.settlex-gw-name {
+.nammawp-gw-name {
 	flex-grow: 1;
 	font-weight: 500;
 	color: #1e293b;
 }
 
-.settlex-gw-id {
+.nammawp-gw-id {
 	font-size: 11px;
 	color: #64748b;
 	background: #f1f5f9;
 	padding: 2px 6px;
 	border-radius: 3px;
 }
+

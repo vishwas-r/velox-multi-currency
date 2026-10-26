@@ -2,10 +2,10 @@
 /**
  * DiscountShippingConverter handles coupon amounts and free shipping threshold conversions.
  *
- * @package SettleX\MultiCurrency\Currency
+ * @package NammaWP\MultiCurrency\Currency
  */
 
-namespace SettleX\MultiCurrency\Currency;
+namespace NammaWP\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 

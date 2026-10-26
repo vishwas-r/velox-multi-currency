@@ -2,10 +2,10 @@
 /**
  * European Central Bank (ECB) exchange rate provider.
  *
- * @package SettleX\MultiCurrency\Currency\RateProvider
+ * @package NammaWP\MultiCurrency\Currency\RateProvider
  */
 
-namespace SettleX\MultiCurrency\Currency\RateProvider;
+namespace NammaWP\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +35,7 @@ class EcbProvider implements RateProviderInterface {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'European Central Bank (Official Feed, Free)', 'settlex-multi-currency' );
+		return __( 'European Central Bank (Official Feed, Free)', 'nammawp-multi-currency' );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class EcbProvider implements RateProviderInterface {
 			array(
 				'timeout'    => 15,
 				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ),
-				'user-agent' => 'SettleX-WooCommerce/' . ( defined( 'SETTLEX_VERSION' ) ? SETTLEX_VERSION : '1.0.0' ),
+				'user-agent' => 'NammaWP-WooCommerce/' . ( defined( 'NAMMAWP_MC_VERSION' ) ? NAMMAWP_MC_VERSION : '1.0.0' ),
 			)
 		);
 
@@ -61,14 +61,14 @@ class EcbProvider implements RateProviderInterface {
 		$status = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status ) {
 			return new \WP_Error(
-				'settlex_ecb_http_error',
+				'nammawp_ecb_http_error',
 				sprintf( 'ECB returned HTTP status code %d', $status )
 			);
 		}
 
 		$body = wp_remote_retrieve_body( $response );
 		if ( empty( $body ) ) {
-			return new \WP_Error( 'settlex_ecb_empty_body', 'ECB response was empty' );
+			return new \WP_Error( 'nammawp_ecb_empty_body', 'ECB response was empty' );
 		}
 
 		// Disable external entity loading for XML safety.
@@ -79,7 +79,7 @@ class EcbProvider implements RateProviderInterface {
 		}
 
 		if ( ! $xml ) {
-			return new \WP_Error( 'settlex_ecb_xml_error', 'Failed to parse ECB XML' );
+			return new \WP_Error( 'nammawp_ecb_xml_error', 'Failed to parse ECB XML' );
 		}
 
 		// Rates from ECB are relative to EUR (1 EUR = rate).
@@ -110,10 +110,10 @@ class EcbProvider implements RateProviderInterface {
 		// 1 EUR = $base_rate BASE => 1 BASE = 1 / $base_rate EUR.
 		if ( empty( $eur_rates[ $base ] ) || $eur_rates[ $base ] <= 0 ) {
 			return new \WP_Error(
-				'settlex_base_not_in_ecb',
+				'nammawp_base_not_in_ecb',
 				sprintf(
 					/* translators: %s: Currency code */
-					__( 'Base currency %s is not in the ECB daily reference feed. Please select ExchangeRate-API or Frankfurter which support all world currencies.', 'settlex-multi-currency' ),
+					__( 'Base currency %s is not in the ECB daily reference feed. Please select ExchangeRate-API or Frankfurter which support all world currencies.', 'nammawp-multi-currency' ),
 					$base
 				)
 			);
@@ -133,3 +133,4 @@ class EcbProvider implements RateProviderInterface {
 		return $normalized;
 	}
 }
+

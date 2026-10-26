@@ -2,10 +2,10 @@
 /**
  * Money value object with ISO-4217 minor unit representation.
  *
- * @package SettleX\MultiCurrency\Currency
+ * @package NammaWP\MultiCurrency\Currency
  */
 
-namespace SettleX\MultiCurrency\Currency;
+namespace NammaWP\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 

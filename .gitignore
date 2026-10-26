@@ -18,3 +18,8 @@ Thumbs.db
 # Testing & Logs
 tests/_output/
 *.log
+
+# WooCommerce local bundle
+woocommerce/
+woocommerce*.zip
+

@@ -2,16 +2,16 @@
 /**
  * RateService manages exchange rate fetching, multi-provider scheduling, and caching.
  *
- * @package SettleX\MultiCurrency\Currency
+ * @package NammaWP\MultiCurrency\Currency
  */
 
-namespace SettleX\MultiCurrency\Currency;
+namespace NammaWP\MultiCurrency\Currency;
 
-use SettleX\MultiCurrency\Currency\RateProvider\EcbProvider;
-use SettleX\MultiCurrency\Currency\RateProvider\ExchangeRateApiProvider;
-use SettleX\MultiCurrency\Currency\RateProvider\FloatRatesProvider;
-use SettleX\MultiCurrency\Currency\RateProvider\FrankfurterProvider;
-use SettleX\MultiCurrency\Currency\RateProvider\RateProviderInterface;
+use NammaWP\MultiCurrency\Currency\RateProvider\EcbProvider;
+use NammaWP\MultiCurrency\Currency\RateProvider\ExchangeRateApiProvider;
+use NammaWP\MultiCurrency\Currency\RateProvider\FloatRatesProvider;
+use NammaWP\MultiCurrency\Currency\RateProvider\FrankfurterProvider;
+use NammaWP\MultiCurrency\Currency\RateProvider\RateProviderInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,17 +23,17 @@ class RateService {
 	/**
 	 * Action hook for scheduled sync.
 	 */
-	const CRON_HOOK = 'settlex_daily_rate_sync';
+	const CRON_HOOK = 'nammawp_mc_daily_rate_sync';
 
 	/**
 	 * Option key for last sync timestamp.
 	 */
-	const OPTION_LAST_SYNC = 'settlex_last_rate_sync';
+	const OPTION_LAST_SYNC = 'nammawp_mc_last_rate_sync';
 
 	/**
 	 * Option key for active rate provider.
 	 */
-	const OPTION_PROVIDER = 'settlex_rate_provider';
+	const OPTION_PROVIDER = 'nammawp_mc_rate_provider';
 
 	/**
 	 * CurrencyRegistry instance.

@@ -2,13 +2,13 @@
 /**
  * OrderRecorder stores settlement snapshots and HPOS metadata on orders.
  *
- * @package SettleX\MultiCurrency\Orders
+ * @package NammaWP\MultiCurrency\Orders
  */
 
-namespace SettleX\MultiCurrency\Orders;
+namespace NammaWP\MultiCurrency\Orders;
 
-use SettleX\MultiCurrency\Currency\CurrencyRegistry;
-use SettleX\MultiCurrency\GatewayRouter\SettlementResolver;
+use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
+use NammaWP\MultiCurrency\GatewayRouter\SettlementResolver;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -76,22 +76,22 @@ class OrderRecorder {
 		}
 
 		// Store HPOS metadata snapshot on order object.
-		$order->update_meta_data( '_settlex_display_currency', $settlement->display_currency );
-		$order->update_meta_data( '_settlex_display_total', $settlement->display_amount->to_major_string() );
-		$order->update_meta_data( '_settlex_charge_currency', $settlement->charge_currency );
-		$order->update_meta_data( '_settlex_charge_total', $settlement->charge_amount->to_major_string() );
-		$order->update_meta_data( '_settlex_base_currency', $base_currency );
-		$order->update_meta_data( '_settlex_exchange_rate', $settlement->exchange_rate );
-		$order->update_meta_data( '_settlex_rate_markup', $settlement->rate_markup );
-		$order->update_meta_data( '_settlex_settlement_mode', $settlement->mode );
+		$order->update_meta_data( '_nammawp_display_currency', $settlement->display_currency );
+		$order->update_meta_data( '_nammawp_display_total', $settlement->display_amount->to_major_string() );
+		$order->update_meta_data( '_nammawp_charge_currency', $settlement->charge_currency );
+		$order->update_meta_data( '_nammawp_charge_total', $settlement->charge_amount->to_major_string() );
+		$order->update_meta_data( '_nammawp_base_currency', $base_currency );
+		$order->update_meta_data( '_nammawp_exchange_rate', $settlement->exchange_rate );
+		$order->update_meta_data( '_nammawp_rate_markup', $settlement->rate_markup );
+		$order->update_meta_data( '_nammawp_settlement_mode', $settlement->mode );
 
 		if ( $settlement->disclosure_required ) {
-			$order->update_meta_data( '_settlex_disclosure_notice', $settlement->disclosure_message );
+			$order->update_meta_data( '_nammawp_disclosure_notice', $settlement->disclosure_message );
 		}
 	}
 
 	/**
-	 * Add SettleX diagnostics metabox on order details screen.
+	 * Add NammaWP diagnostics metabox on order details screen.
 	 *
 	 * @param string            $post_type_or_screen Screen ID or post type.
 	 * @param \WC_Order|\WP_Post $order_or_post       Order or Post object.
@@ -103,8 +103,8 @@ class OrderRecorder {
 			: 'shop_order';
 
 		add_meta_box(
-			'settlex_order_details',
-			__( 'SettleX Multi-Currency & Routing', 'settlex-multi-currency' ),
+			'nammawp_order_details',
+			__( 'NammaWP Multi-Currency & Routing', 'nammawp-multi-currency' ),
 			array( $this, 'render_order_metabox' ),
 			$screen,
 			'side',
@@ -123,36 +123,36 @@ class OrderRecorder {
 			return;
 		}
 
-		$display_curr  = $order->get_meta( '_settlex_display_currency' ) ?: $order->get_currency();
-		$display_total = $order->get_meta( '_settlex_display_total' ) ?: $order->get_total();
-		$charge_curr   = $order->get_meta( '_settlex_charge_currency' ) ?: $order->get_currency();
-		$charge_total  = $order->get_meta( '_settlex_charge_total' ) ?: $order->get_total();
-		$base_curr     = $order->get_meta( '_settlex_base_currency' ) ?: get_woocommerce_currency();
-		$rate          = $order->get_meta( '_settlex_exchange_rate' ) ?: '1.0';
-		$mode          = $order->get_meta( '_settlex_settlement_mode' ) ?: 'allow_native';
-		$disclosure    = $order->get_meta( '_settlex_disclosure_notice' );
+		$display_curr  = $order->get_meta( '_nammawp_display_currency' ) ?: $order->get_currency();
+		$display_total = $order->get_meta( '_nammawp_display_total' ) ?: $order->get_total();
+		$charge_curr   = $order->get_meta( '_nammawp_charge_currency' ) ?: $order->get_currency();
+		$charge_total  = $order->get_meta( '_nammawp_charge_total' ) ?: $order->get_total();
+		$base_curr     = $order->get_meta( '_nammawp_base_currency' ) ?: get_woocommerce_currency();
+		$rate          = $order->get_meta( '_nammawp_exchange_rate' ) ?: '1.0';
+		$mode          = $order->get_meta( '_nammawp_settlement_mode' ) ?: 'allow_native';
+		$disclosure    = $order->get_meta( '_nammawp_disclosure_notice' );
 
 		?>
-		<div class="settlex-order-details" style="font-size: 13px; line-height: 1.6;">
-			<p><strong><?php esc_html_e( 'Display (Shopper):', 'settlex-multi-currency' ); ?></strong><br>
+		<div class="nammawp-order-details" style="font-size: 13px; line-height: 1.6;">
+			<p><strong><?php esc_html_e( 'Display (Shopper):', 'nammawp-multi-currency' ); ?></strong><br>
 				<code><?php echo esc_html( $display_curr . ' ' . $display_total ); ?></code>
 			</p>
-			<p><strong><?php esc_html_e( 'Settlement (Charged):', 'settlex-multi-currency' ); ?></strong><br>
+			<p><strong><?php esc_html_e( 'Settlement (Charged):', 'nammawp-multi-currency' ); ?></strong><br>
 				<code style="color: #2e7d32;"><?php echo esc_html( $charge_curr . ' ' . $charge_total ); ?></code>
 			</p>
-			<p><strong><?php esc_html_e( 'Store Base Currency:', 'settlex-multi-currency' ); ?></strong><br>
+			<p><strong><?php esc_html_e( 'Store Base Currency:', 'nammawp-multi-currency' ); ?></strong><br>
 				<?php echo esc_html( $base_curr ); ?>
 			</p>
-			<p><strong><?php esc_html_e( 'Snapshot Rate:', 'settlex-multi-currency' ); ?></strong><br>
+			<p><strong><?php esc_html_e( 'Snapshot Rate:', 'nammawp-multi-currency' ); ?></strong><br>
 				1 <?php echo esc_html( $base_curr ); ?> = <?php echo esc_html( $rate . ' ' . $display_curr ); ?>
 			</p>
-			<p><strong><?php esc_html_e( 'Routing Mode:', 'settlex-multi-currency' ); ?></strong><br>
+			<p><strong><?php esc_html_e( 'Routing Mode:', 'nammawp-multi-currency' ); ?></strong><br>
 				<span class="badge" style="background:#e0e0e0; padding:2px 6px; border-radius:3px;">
 					<?php echo esc_html( strtoupper( str_replace( '_', ' ', $mode ) ) ); ?>
 				</span>
 			</p>
 			<?php if ( ! empty( $disclosure ) ) : ?>
-				<p><strong><?php esc_html_e( 'Disclosure Displayed:', 'settlex-multi-currency' ); ?></strong><br>
+				<p><strong><?php esc_html_e( 'Disclosure Displayed:', 'nammawp-multi-currency' ); ?></strong><br>
 					<em style="font-size: 11px;"><?php echo esc_html( $disclosure ); ?></em>
 				</p>
 			<?php endif; ?>

@@ -1,25 +1,25 @@
 <?php
 /**
- * Main Plugin Orchestrator and Service Container for SettleX.
+ * Main Plugin Orchestrator and Service Container for NammaWP.
  *
- * @package SettleX\MultiCurrency
+ * @package NammaWP\MultiCurrency
  */
 
-namespace SettleX\MultiCurrency;
+namespace NammaWP\MultiCurrency;
 
-use SettleX\MultiCurrency\Admin\ProductPricing;
-use SettleX\MultiCurrency\Admin\SettingsPage;
-use SettleX\MultiCurrency\Currency\CurrencyRegistry;
-use SettleX\MultiCurrency\Currency\DiscountShippingConverter;
-use SettleX\MultiCurrency\Currency\PriceConverter;
-use SettleX\MultiCurrency\Currency\RateService;
-use SettleX\MultiCurrency\Frontend\Switcher;
-use SettleX\MultiCurrency\GatewayRouter\GatewayCapabilityRegistry;
-use SettleX\MultiCurrency\GatewayRouter\GatewayRouter;
-use SettleX\MultiCurrency\GatewayRouter\SettlementResolver;
-use SettleX\MultiCurrency\Orders\AnalyticsNormalizer;
-use SettleX\MultiCurrency\Orders\OrderColumns;
-use SettleX\MultiCurrency\Orders\OrderRecorder;
+use NammaWP\MultiCurrency\Admin\ProductPricing;
+use NammaWP\MultiCurrency\Admin\SettingsPage;
+use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
+use NammaWP\MultiCurrency\Currency\DiscountShippingConverter;
+use NammaWP\MultiCurrency\Currency\PriceConverter;
+use NammaWP\MultiCurrency\Currency\RateService;
+use NammaWP\MultiCurrency\Frontend\Switcher;
+use NammaWP\MultiCurrency\GatewayRouter\GatewayCapabilityRegistry;
+use NammaWP\MultiCurrency\GatewayRouter\GatewayRouter;
+use NammaWP\MultiCurrency\GatewayRouter\SettlementResolver;
+use NammaWP\MultiCurrency\Orders\AnalyticsNormalizer;
+use NammaWP\MultiCurrency\Orders\OrderColumns;
+use NammaWP\MultiCurrency\Orders\OrderRecorder;
 
 defined( 'ABSPATH' ) || exit;
 

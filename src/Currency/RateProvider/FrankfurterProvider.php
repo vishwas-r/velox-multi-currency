@@ -2,10 +2,10 @@
 /**
  * Frankfurter open-source exchange rate provider.
  *
- * @package SettleX\MultiCurrency\Currency\RateProvider
+ * @package NammaWP\MultiCurrency\Currency\RateProvider
  */
 
-namespace SettleX\MultiCurrency\Currency\RateProvider;
+namespace NammaWP\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +35,7 @@ class FrankfurterProvider implements RateProviderInterface {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'Frankfurter (Free, Open-Source ECB Triangulated)', 'settlex-multi-currency' );
+		return __( 'Frankfurter (Free, Open-Source ECB Triangulated)', 'nammawp-multi-currency' );
 	}
 
 	/**
@@ -53,7 +53,7 @@ class FrankfurterProvider implements RateProviderInterface {
 			array(
 				'timeout'    => 15,
 				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ),
-				'user-agent' => 'SettleX-WooCommerce/' . ( defined( 'SETTLEX_VERSION' ) ? SETTLEX_VERSION : '1.0.0' ),
+				'user-agent' => 'NammaWP-WooCommerce/' . ( defined( 'NAMMAWP_MC_VERSION' ) ? NAMMAWP_MC_VERSION : '1.0.0' ),
 			)
 		);
 
@@ -64,7 +64,7 @@ class FrankfurterProvider implements RateProviderInterface {
 		$status = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status ) {
 			return new \WP_Error(
-				'settlex_frankfurter_http_error',
+				'nammawp_frankfurter_http_error',
 				sprintf( 'Frankfurter returned HTTP status %d', $status )
 			);
 		}
@@ -73,7 +73,7 @@ class FrankfurterProvider implements RateProviderInterface {
 		$data = json_decode( $body, true );
 
 		if ( ! is_array( $data ) || ! isset( $data['rates'] ) ) {
-			return new \WP_Error( 'settlex_frankfurter_invalid_body', 'Invalid response from Frankfurter API' );
+			return new \WP_Error( 'nammawp_frankfurter_invalid_body', 'Invalid response from Frankfurter API' );
 		}
 
 		$normalized          = array( $base => 1.0 );
@@ -90,3 +90,4 @@ class FrankfurterProvider implements RateProviderInterface {
 		return $normalized;
 	}
 }
+

@@ -1,12 +1,12 @@
 {
-  "name": "settlex/settlex-multi-currency",
-  "description": "Payment Gateway Router & Multi-Currency for WooCommerce",
+  "name": "nammawp/nammawp-multi-currency",
+  "description": "NammaWP - Multi-Currency & Payment Gateway Plugin for WooCommerce",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "authors": [
     {
-      "name": "SettleX Team",
-      "homepage": "https://settlexwp.com"
+      "name": "NammaWP Team",
+      "homepage": "https://nammawp.com"
     }
   ],
   "require": {
@@ -19,7 +19,7 @@
   },
   "autoload": {
     "psr-4": {
-      "SettleX\\MultiCurrency\\": "src/"
+      "NammaWP\\MultiCurrency\\": "src/"
     }
   },
   "config": {

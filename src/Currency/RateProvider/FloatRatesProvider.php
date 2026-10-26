@@ -2,10 +2,10 @@
 /**
  * FloatRates daily exchange rate provider.
  *
- * @package SettleX\MultiCurrency\Currency\RateProvider
+ * @package NammaWP\MultiCurrency\Currency\RateProvider
  */
 
-namespace SettleX\MultiCurrency\Currency\RateProvider;
+namespace NammaWP\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +35,7 @@ class FloatRatesProvider implements RateProviderInterface {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'FloatRates (Free Daily Feed, 140+ Currencies)', 'settlex-multi-currency' );
+		return __( 'FloatRates (Free Daily Feed, 140+ Currencies)', 'nammawp-multi-currency' );
 	}
 
 	/**
@@ -53,7 +53,7 @@ class FloatRatesProvider implements RateProviderInterface {
 			array(
 				'timeout'    => 15,
 				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ),
-				'user-agent' => 'SettleX-WooCommerce/' . ( defined( 'SETTLEX_VERSION' ) ? SETTLEX_VERSION : '1.0.0' ),
+				'user-agent' => 'NammaWP-WooCommerce/' . ( defined( 'NAMMAWP_MC_VERSION' ) ? NAMMAWP_MC_VERSION : '1.0.0' ),
 			)
 		);
 
@@ -64,7 +64,7 @@ class FloatRatesProvider implements RateProviderInterface {
 		$status = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status ) {
 			return new \WP_Error(
-				'settlex_floatrates_http_error',
+				'nammawp_floatrates_http_error',
 				sprintf( 'FloatRates returned HTTP status %d', $status )
 			);
 		}
@@ -73,7 +73,7 @@ class FloatRatesProvider implements RateProviderInterface {
 		$data = json_decode( $body, true );
 
 		if ( ! is_array( $data ) || empty( $data ) ) {
-			return new \WP_Error( 'settlex_floatrates_empty', 'FloatRates returned empty or invalid data' );
+			return new \WP_Error( 'nammawp_floatrates_empty', 'FloatRates returned empty or invalid data' );
 		}
 
 		$normalized = array( $base => 1.0 );
@@ -92,3 +92,4 @@ class FloatRatesProvider implements RateProviderInterface {
 		return $normalized;
 	}
 }
+
