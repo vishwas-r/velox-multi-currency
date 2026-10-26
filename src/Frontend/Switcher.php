@@ -257,6 +257,10 @@ class Switcher {
 		$currency    = sanitize_text_field( wp_unslash( $_POST['currency'] ?? '' ) );
 		$product_ids = isset( $_POST['product_ids'] ) ? array_map( 'absint', (array) $_POST['product_ids'] ) : array();
 
+		if ( ! empty( $_POST['current_product_id'] ) ) {
+			$product_ids[] = absint( $_POST['current_product_id'] );
+		}
+
 		$success = $this->registry->set_active_currency( $currency );
 
 		if ( ! $success ) {
@@ -284,10 +288,10 @@ class Switcher {
 				if ( $product ) {
 					$prices[ $pid ] = array(
 						'price_html'    => $product->get_price_html(),
-						'price'         => $product->get_price(),
+						'price'         => (float) $product->get_price(),
 						'formatted'     => wc_price( $product->get_price() ),
-						'regular_price' => $product->get_regular_price(),
-						'sale_price'    => $product->get_sale_price(),
+						'regular_price' => (float) $product->get_regular_price(),
+						'sale_price'    => (float) $product->get_sale_price(),
 					);
 				}
 			}
@@ -317,15 +321,18 @@ class Switcher {
 
 		wp_send_json_success(
 			array(
-				'currency'      => strtoupper( $currency ),
-				'symbol'        => $symbol,
-				'rate'          => (float) ( $config['rate'] ?? 1.0 ),
-				'decimals'      => (int) ( $config['decimals'] ?? 2 ),
-				'prices'        => $prices,
-				'cart_subtotal' => $cart_subtotal,
-				'cart_total'    => $cart_total,
-				'fragments'     => $fragments,
-				'message'       => __( 'Currency switched successfully.', 'nammawp-multi-currency' ),
+				'currency'           => strtoupper( $currency ),
+				'symbol'             => $symbol,
+				'rate'               => (float) ( $config['rate'] ?? 1.0 ),
+				'decimals'           => (int) ( $config['decimals'] ?? 2 ),
+				'price_format'       => function_exists( 'get_woocommerce_price_format' ) ? get_woocommerce_price_format() : '%1$s%2$s',
+				'decimal_separator'  => function_exists( 'wc_get_price_decimal_separator' ) ? wc_get_price_decimal_separator() : '.',
+				'thousand_separator' => function_exists( 'wc_get_price_thousand_separator' ) ? wc_get_price_thousand_separator() : ',',
+				'prices'             => $prices,
+				'cart_subtotal'      => $cart_subtotal,
+				'cart_total'         => $cart_total,
+				'fragments'          => $fragments,
+				'message'            => __( 'Currency switched successfully.', 'nammawp-multi-currency' ),
 			)
 		);
 	}
@@ -349,13 +356,29 @@ class Switcher {
 			true
 		);
 
+		$current_product_id = 0;
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			$current_product_id = absint( get_the_ID() );
+		}
+
+		$active_curr = $this->registry->get_active_currency();
+		$enabled     = $this->registry->get_enabled_currencies();
+		$curr_config = $enabled[ $active_curr ] ?? array();
+
 		wp_localize_script(
 			'nammawp-frontend',
 			'nammawp_params',
 			array(
-				'ajax_url'        => admin_url( 'admin-ajax.php' ),
-				'nonce'           => wp_create_nonce( 'nammawp_nonce' ),
-				'active_currency' => $this->registry->get_active_currency(),
+				'ajax_url'           => admin_url( 'admin-ajax.php' ),
+				'nonce'              => wp_create_nonce( 'nammawp_nonce' ),
+				'active_currency'    => $active_curr,
+				'current_product_id' => $current_product_id,
+				'currency_symbol'    => html_entity_decode( (string) ( $curr_config['symbol'] ?? get_woocommerce_currency_symbol( $active_curr ) ), ENT_QUOTES, 'UTF-8' ),
+				'rate'               => (float) ( $curr_config['rate'] ?? 1.0 ),
+				'decimals'           => (int) ( $curr_config['decimals'] ?? 2 ),
+				'price_format'       => function_exists( 'get_woocommerce_price_format' ) ? get_woocommerce_price_format() : '%1$s%2$s',
+				'decimal_separator'  => function_exists( 'wc_get_price_decimal_separator' ) ? wc_get_price_decimal_separator() : '.',
+				'thousand_separator' => function_exists( 'wc_get_price_thousand_separator' ) ? wc_get_price_thousand_separator() : ',',
 			)
 		);
 	}
