@@ -12,7 +12,13 @@
 			var originalHtml = $btn.html();
 			var selectedProvider = $('#settlex-rate-provider-select').val();
 
-			$btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin" style="font-size:16px; width:16px; height:16px; vertical-align:middle; margin-right:4px;"></span> Syncing rates...');
+			$btn.prop('disabled', true).addClass('is-loading').html(
+				'<svg class="settlex-spin" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+					'<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-opacity="0.3"/>' +
+					'<path d="M14 8A6 6 0 0 0 8 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>' +
+				'</svg>' +
+				'<span>Syncing rates...</span>'
+			);
 
 			$.ajax({
 				url: settlex_admin_params.ajax_url,
@@ -23,7 +29,7 @@
 					provider: selectedProvider
 				},
 				success: function(response) {
-					$btn.prop('disabled', false).html(originalHtml);
+					$btn.prop('disabled', false).removeClass('is-loading').html(originalHtml);
 					if (response.success) {
 						alert(response.data.message);
 						window.location.reload();
@@ -32,7 +38,7 @@
 					}
 				},
 				error: function() {
-					$btn.prop('disabled', false).html(originalHtml);
+					$btn.prop('disabled', false).removeClass('is-loading').html(originalHtml);
 					alert('Network error while syncing rates.');
 				}
 			});
