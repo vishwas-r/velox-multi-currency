@@ -18,7 +18,7 @@
  * @package SettleX\MultiCurrency
  */
 
-namespace SettleX\MultiCurrency;
+use SettleX\MultiCurrency\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -70,13 +70,15 @@ add_action(
 	}
 );
 
-/**
- * Main instance accessor.
- *
- * @return Plugin
- */
-function settlex() {
-	return Plugin::instance();
+if ( ! function_exists( 'settlex' ) ) {
+	/**
+	 * Main instance accessor.
+	 *
+	 * @return Plugin
+	 */
+	function settlex(): Plugin {
+		return Plugin::instance();
+	}
 }
 
 /**

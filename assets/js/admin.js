@@ -5,20 +5,23 @@
 	'use strict';
 
 	$(document).ready(function() {
-		// 1. Sync Rates Now AJAX handler.
+		// 1. Sync Rates AJAX handler with multi-provider support.
 		$('#settlex-sync-rates-btn').on('click', function(e) {
 			e.preventDefault();
 			var $btn = $(this);
 			var originalText = $btn.text();
+			var selectedProvider = $('#settlex-rate-provider-select').val();
+			var providerName = $('#settlex-rate-provider-select option:selected').text();
 
-			$btn.prop('disabled', true).text('⏳ Syncing with ECB...');
+			$btn.prop('disabled', true).text('⏳ Syncing rates...');
 
 			$.ajax({
 				url: settlex_admin_params.ajax_url,
 				type: 'POST',
 				data: {
 					action: 'settlex_admin_sync_rates',
-					nonce: settlex_admin_params.nonce
+					nonce: settlex_admin_params.nonce,
+					provider: selectedProvider
 				},
 				success: function(response) {
 					$btn.prop('disabled', false).text(originalText);

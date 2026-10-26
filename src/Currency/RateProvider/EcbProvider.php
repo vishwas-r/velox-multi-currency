@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * EcbProvider fetches daily reference exchange rates from the European Central Bank.
- * Free, zero-configuration, no API key needed.
+ * Free, zero-configuration, no API key needed. Supports cross-rate triangulation for all published currencies.
  */
 class EcbProvider implements RateProviderInterface {
 
@@ -21,12 +21,21 @@ class EcbProvider implements RateProviderInterface {
 	const FEED_URL = 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 	/**
+	 * Get provider identifier key.
+	 *
+	 * @return string
+	 */
+	public function get_key(): string {
+		return 'ecb';
+	}
+
+	/**
 	 * Get provider name.
 	 *
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'European Central Bank (Free, No Key Required)', 'settlex-multi-currency' );
+		return __( 'European Central Bank (Official Feed, Free)', 'settlex-multi-currency' );
 	}
 
 	/**
@@ -40,6 +49,7 @@ class EcbProvider implements RateProviderInterface {
 			self::FEED_URL,
 			array(
 				'timeout'    => 15,
+				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ),
 				'user-agent' => 'SettleX-WooCommerce/' . ( defined( 'SETTLEX_VERSION' ) ? SETTLEX_VERSION : '1.0.0' ),
 			)
 		);
@@ -73,16 +83,18 @@ class EcbProvider implements RateProviderInterface {
 		}
 
 		// Rates from ECB are relative to EUR (1 EUR = rate).
-		$eur_rates        = array( 'EUR' => 1.0 );
-		$namespaces       = $xml->getNamespaces( true );
-		$cube_parent      = $xml->children( $namespaces[''] ?? null )->Cube->Cube ?? null;
+		$eur_rates = array( 'EUR' => 1.0 );
 
-		if ( $cube_parent ) {
-			foreach ( $cube_parent->Cube as $entry ) {
-				$code = (string) $entry['currency'];
-				$rate = (float) $entry['rate'];
+		// Register namespace for reliable XPath extraction.
+		$xml->registerXPathNamespace( 'ecb', 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref' );
+		$cubes = $xml->xpath( '//ecb:Cube[@currency]' );
+
+		if ( is_array( $cubes ) ) {
+			foreach ( $cubes as $cube ) {
+				$code = strtoupper( (string) $cube['currency'] );
+				$rate = (float) $cube['rate'];
 				if ( ! empty( $code ) && $rate > 0 ) {
-					$eur_rates[ strtoupper( $code ) ] = $rate;
+					$eur_rates[ $code ] = $rate;
 				}
 			}
 		}
@@ -99,7 +111,11 @@ class EcbProvider implements RateProviderInterface {
 		if ( empty( $eur_rates[ $base ] ) || $eur_rates[ $base ] <= 0 ) {
 			return new \WP_Error(
 				'settlex_base_not_in_ecb',
-				sprintf( 'Base currency %s is not supported by ECB feed.', $base )
+				sprintf(
+					/* translators: %s: Currency code */
+					__( 'Base currency %s is not in the ECB daily reference feed. Please select ExchangeRate-API or Frankfurter which support all world currencies.', 'settlex-multi-currency' ),
+					$base
+				)
 			);
 		}
 

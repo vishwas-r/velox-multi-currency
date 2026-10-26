@@ -1,6 +1,6 @@
 <?php
 /**
- * RateService manages exchange rate fetching, scheduling, and caching.
+ * RateService manages exchange rate fetching, multi-provider scheduling, and caching.
  *
  * @package SettleX\MultiCurrency\Currency
  */
@@ -8,6 +8,9 @@
 namespace SettleX\MultiCurrency\Currency;
 
 use SettleX\MultiCurrency\Currency\RateProvider\EcbProvider;
+use SettleX\MultiCurrency\Currency\RateProvider\ExchangeRateApiProvider;
+use SettleX\MultiCurrency\Currency\RateProvider\FloatRatesProvider;
+use SettleX\MultiCurrency\Currency\RateProvider\FrankfurterProvider;
 use SettleX\MultiCurrency\Currency\RateProvider\RateProviderInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -28,6 +31,11 @@ class RateService {
 	const OPTION_LAST_SYNC = 'settlex_last_rate_sync';
 
 	/**
+	 * Option key for active rate provider.
+	 */
+	const OPTION_PROVIDER = 'settlex_rate_provider';
+
+	/**
 	 * CurrencyRegistry instance.
 	 *
 	 * @var CurrencyRegistry
@@ -35,21 +43,94 @@ class RateService {
 	protected CurrencyRegistry $registry;
 
 	/**
-	 * Active rate provider.
+	 * Registered rate providers.
 	 *
-	 * @var RateProviderInterface
+	 * @var array<string, RateProviderInterface>
 	 */
-	protected RateProviderInterface $provider;
+	protected array $providers = array();
 
 	/**
 	 * Constructor.
 	 *
-	 * @param CurrencyRegistry            $registry Registry.
-	 * @param RateProviderInterface|null $provider Provider.
+	 * @param CurrencyRegistry $registry Registry.
 	 */
-	public function __construct( CurrencyRegistry $registry, ?RateProviderInterface $provider = null ) {
+	public function __construct( CurrencyRegistry $registry ) {
 		$this->registry = $registry;
-		$this->provider = $provider ?? new EcbProvider();
+		$this->register_default_providers();
+	}
+
+	/**
+	 * Register built-in providers.
+	 */
+	protected function register_default_providers(): void {
+		$this->register_provider( new ExchangeRateApiProvider() );
+		$this->register_provider( new FrankfurterProvider() );
+		$this->register_provider( new FloatRatesProvider() );
+		$this->register_provider( new EcbProvider() );
+	}
+
+	/**
+	 * Register a provider.
+	 *
+	 * @param RateProviderInterface $provider Provider instance.
+	 */
+	public function register_provider( RateProviderInterface $provider ): void {
+		$this->providers[ $provider->get_key() ] = $provider;
+	}
+
+	/**
+	 * Get all registered providers.
+	 *
+	 * @return array<string, RateProviderInterface>
+	 */
+	public function get_available_providers(): array {
+		return $this->providers;
+	}
+
+	/**
+	 * Get the currently active provider key.
+	 *
+	 * @return string Default 'exchangerate_api'.
+	 */
+	public function get_active_provider_key(): string {
+		$saved = get_option( self::OPTION_PROVIDER, 'exchangerate_api' );
+		if ( isset( $this->providers[ $saved ] ) ) {
+			return $saved;
+		}
+		return 'exchangerate_api';
+	}
+
+	/**
+	 * Get a provider by key.
+	 *
+	 * @param string $key Provider key.
+	 * @return RateProviderInterface|null
+	 */
+	public function get_provider( string $key ): ?RateProviderInterface {
+		return $this->providers[ $key ] ?? null;
+	}
+
+	/**
+	 * Get the currently active provider instance.
+	 *
+	 * @return RateProviderInterface
+	 */
+	public function get_active_provider(): RateProviderInterface {
+		$key = $this->get_active_provider_key();
+		return $this->providers[ $key ] ?? new ExchangeRateApiProvider();
+	}
+
+	/**
+	 * Set active provider key.
+	 *
+	 * @param string $key Provider key.
+	 * @return bool True if saved.
+	 */
+	public function set_active_provider( string $key ): bool {
+		if ( ! isset( $this->providers[ $key ] ) ) {
+			return false;
+		}
+		return update_option( self::OPTION_PROVIDER, $key );
 	}
 
 	/**
@@ -67,18 +148,26 @@ class RateService {
 	/**
 	 * Sync rates from the provider and update enabled currencies.
 	 *
-	 * @return bool|\WP_Error True on success, WP_Error on failure.
+	 * @param string|null $provider_key Optional specific provider to sync from.
+	 * @return array{count: int, provider: string}|\WP_Error Returns summary or WP_Error.
 	 */
-	public function sync_rates() {
+	public function sync_rates( ?string $provider_key = null ) {
+		if ( ! empty( $provider_key ) && isset( $this->providers[ $provider_key ] ) ) {
+			$provider = $this->providers[ $provider_key ];
+			$this->set_active_provider( $provider_key );
+		} else {
+			$provider = $this->get_active_provider();
+		}
+
 		$base_currency = $this->registry->get_base_currency();
-		$rates         = $this->provider->fetch_rates( $base_currency );
+		$rates         = $provider->fetch_rates( $base_currency );
 
 		if ( is_wp_error( $rates ) ) {
 			return $rates;
 		}
 
-		$enabled = $this->registry->get_enabled_currencies();
-		$updated = false;
+		$enabled       = $this->registry->get_enabled_currencies();
+		$updated_count = 0;
 
 		foreach ( $enabled as $code => $data ) {
 			if ( $code === $base_currency ) {
@@ -87,18 +176,20 @@ class RateService {
 			}
 
 			if ( isset( $rates[ $code ] ) && $rates[ $code ] > 0 ) {
-				$enabled[ $code ]['rate']      = (float) $rates[ $code ];
-				$enabled[ $code ]['synced_at'] = time();
-				$updated                       = true;
+				$enabled[ $code ]['rate']          = (float) $rates[ $code ];
+				$enabled[ $code ]['synced_at']     = time();
+				$enabled[ $code ]['rate_provider'] = $provider->get_key();
+				$updated_count++;
 			}
 		}
 
-		if ( $updated ) {
-			$this->registry->save_enabled_currencies( $enabled );
-			update_option( self::OPTION_LAST_SYNC, time() );
-		}
+		$this->registry->save_enabled_currencies( $enabled );
+		update_option( self::OPTION_LAST_SYNC, time() );
 
-		return true;
+		return array(
+			'count'    => $updated_count,
+			'provider' => $provider->get_name(),
+		);
 	}
 
 	/**

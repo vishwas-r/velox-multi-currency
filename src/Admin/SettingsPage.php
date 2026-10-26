@@ -105,18 +105,26 @@ class SettingsPage {
 		check_ajax_referer( 'settlex_admin_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_send_json_error( 'Permission denied.' );
+			wp_send_json_error( __( 'Permission denied.', 'settlex-multi-currency' ) );
 		}
 
-		$result = $this->rate_service->sync_rates();
+		$provider_key = isset( $_POST['provider'] ) ? sanitize_key( wp_unslash( $_POST['provider'] ) ) : null;
+		$result       = $this->rate_service->sync_rates( $provider_key );
+
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( $result->get_error_message() );
 		}
 
 		wp_send_json_success(
 			array(
-				'message' => __( 'Exchange rates synced successfully from European Central Bank!', 'settlex-multi-currency' ),
-				'time'    => current_time( 'mysql' ),
+				'message'  => sprintf(
+					/* translators: 1: Count of updated currencies, 2: Provider name */
+					__( 'Success! Exchange rates for %1$d currencies updated from %2$s.', 'settlex-multi-currency' ),
+					$result['count'],
+					$result['provider']
+				),
+				'time'     => current_time( 'mysql' ),
+				'provider' => $result['provider'],
 			)
 		);
 	}
@@ -183,17 +191,19 @@ class SettingsPage {
 	 * Render Currencies Tab.
 	 */
 	protected function render_currencies_tab(): void {
-		$enabled   = $this->currency_registry->get_enabled_currencies();
-		$base      = $this->currency_registry->get_base_currency();
-		$last_sync = $this->rate_service->get_last_sync_timestamp();
-		$all       = $this->currency_registry->get_all_currencies();
+		$enabled         = $this->currency_registry->get_enabled_currencies();
+		$base            = $this->currency_registry->get_base_currency();
+		$last_sync       = $this->rate_service->get_last_sync_timestamp();
+		$all             = $this->currency_registry->get_all_currencies();
+		$providers       = $this->rate_service->get_available_providers();
+		$active_provider = $this->rate_service->get_active_provider_key();
 
 		?>
 		<div class="settlex-panel">
-			<div class="settlex-panel-header">
+			<div class="settlex-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
 				<h2><?php esc_html_e( 'Configured Currencies', 'settlex-multi-currency' ); ?></h2>
-				<div class="settlex-sync-actions">
-					<span class="settlex-last-sync">
+				<div class="settlex-sync-actions" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+					<span class="settlex-last-sync" style="font-size:12px; color:#666;">
 						<?php
 						if ( $last_sync > 0 ) {
 							printf(
@@ -206,8 +216,18 @@ class SettingsPage {
 						}
 						?>
 					</span>
-					<button type="button" class="button button-secondary" id="settlex-sync-rates-btn">
-						🔄 <?php esc_html_e( 'Sync Rates Now (ECB)', 'settlex-multi-currency' ); ?>
+					<label for="settlex-rate-provider-select" style="font-weight:600; font-size:12px; margin-left:8px;">
+						<?php esc_html_e( 'Exchange:', 'settlex-multi-currency' ); ?>
+					</label>
+					<select id="settlex-rate-provider-select" name="settlex_rate_provider" style="font-size:12px; max-width:280px; height:32px;">
+						<?php foreach ( $providers as $key => $prov ) : ?>
+							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $active_provider, $key ); ?>>
+								<?php echo esc_html( $prov->get_name() ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<button type="button" class="button button-primary" id="settlex-sync-rates-btn" style="height:32px; display:inline-flex; align-items:center;">
+						🔄 <?php esc_html_e( 'Sync Exchange Rates', 'settlex-multi-currency' ); ?>
 					</button>
 				</div>
 			</div>
@@ -326,6 +346,11 @@ class SettingsPage {
 		}
 
 		$this->currency_registry->save_enabled_currencies( $updated );
+
+		if ( isset( $_POST['settlex_rate_provider'] ) ) {
+			$this->rate_service->set_active_provider( sanitize_key( wp_unslash( $_POST['settlex_rate_provider'] ) ) );
+		}
+
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Currency settings saved.', 'settlex-multi-currency' ) . '</p></div>';
 	}
 

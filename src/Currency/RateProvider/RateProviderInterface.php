@@ -15,6 +15,13 @@ defined( 'ABSPATH' ) || exit;
 interface RateProviderInterface {
 
 	/**
+	 * Get the machine-readable provider key.
+	 *
+	 * @return string
+	 */
+	public function get_key(): string;
+
+	/**
 	 * Get the human-readable provider name.
 	 *
 	 * @return string
