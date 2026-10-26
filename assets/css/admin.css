@@ -495,3 +495,32 @@
 	border-radius: 3px;
 }
 
+/* Auto-Sync Card & Stats Grid */
+.nammawp-auto-sync-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	border-radius: 8px;
+}
+
+.nammawp-sync-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 14px;
+	margin-bottom: 20px;
+}
+
+.nammawp-stat-card {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 14px 18px;
+	transition: all 0.2s ease;
+}
+
+.nammawp-stat-card:hover {
+	border-color: #cbd5e1;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+

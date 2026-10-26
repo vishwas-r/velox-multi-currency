@@ -3,7 +3,7 @@
  * Plugin Name:          NammaWP - Multi-Currency & Payment Gateway Plugin for WooCommerce
  * Plugin URI:           https://nammawp.com/plugins/nammawp-multi-currency
  * Description:          Cache-safe multi-currency switcher, automatic live exchange rates, and dedicated payment gateway routing for WooCommerce.
- * Version:              1.0.2
+ * Version:              1.0.3
  * Requires at least:    6.5
  * Requires PHP:         7.4
  * Author:               NammaWP
@@ -24,7 +24,7 @@ use NammaWP\MultiCurrency\Plugin;
 defined( 'ABSPATH' ) || exit;
 
 // Define core plugin constants.
-define( 'NAMMAWP_MC_VERSION', '1.0.2' );
+define( 'NAMMAWP_MC_VERSION', '1.0.3' );
 define( 'NAMMAWP_MC_PLUGIN_FILE', __FILE__ );
 define( 'NAMMAWP_MC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NAMMAWP_MC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

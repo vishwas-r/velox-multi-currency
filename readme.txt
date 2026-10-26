@@ -4,7 +4,7 @@ Tags: currency switcher, multi currency, payment gateway, stripe, paypal, razorp
 Requires at least: 6.5
 Tested up to: 6.7
 Requires PHP: 7.4
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,10 @@ Yes. You can edit the exchange rate and buffer markup percentage for any currenc
 With NammaWP's Gateway Routing, you can lock USD to PayPal and INR to Razorpay, or use the Gateway Matrix to hide incompatible gateways.
 
 == Changelog ==
+
+= 1.0.3 =
+* Feature: Added configurable background Auto-Sync for exchange rates every X hours (1h, 2h, 4h, 6h, 12h, 24h, or custom duration) powered by WordPress Cron.
+* Feature: Added dedicated Auto-Sync management card in Currencies tab with live status, next run calculation, and on-demand sync.
 
 = 1.0.2 =
 * Fix: Pure AJAX real-time price updating on Block Theme shop and single product templates.

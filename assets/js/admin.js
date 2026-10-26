@@ -6,11 +6,13 @@
 
 	$(document).ready(function() {
 		// 1. Sync Rates AJAX handler with multi-provider support.
-		$('#nammawp-sync-rates-btn').on('click', function(e) {
+		$(document).on('click', '#nammawp-sync-rates-btn, #nammawp-sync-rates-btn-2', function(e) {
 			e.preventDefault();
 			var $btn = $(this);
 			var originalHtml = $btn.html();
-			var selectedProvider = $('#nammawp-rate-provider-select').val();
+			var selectedProvider = ($btn.attr('id') === 'nammawp-sync-rates-btn-2') ?
+				$('#nammawp_rate_provider_card').val() :
+				$('#nammawp-rate-provider-select').val();
 			var params = window.nammawp_admin_params || {};
 
 			$btn.prop('disabled', true).addClass('is-loading').html(
@@ -43,6 +45,15 @@
 					alert('Network error while syncing rates.');
 				}
 			});
+		});
+
+		// 1b. Auto-sync interval custom duration toggle.
+		$(document).on('change', '#auto_sync_interval_select', function() {
+			if ($(this).val() === 'custom') {
+				$('#nammawp-custom-hours-wrapper').css('display', 'inline-flex');
+			} else {
+				$('#nammawp-custom-hours-wrapper').hide();
+			}
 		});
 
 		// 2. Dynamic Add Currency to Table.

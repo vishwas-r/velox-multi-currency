@@ -36,6 +36,11 @@ class RateService {
 	const OPTION_PROVIDER = 'nammawp_mc_rate_provider';
 
 	/**
+	 * Option key for auto-sync settings (enabled, interval_hours).
+	 */
+	const OPTION_AUTO_SYNC = 'nammawp_mc_auto_sync_settings';
+
+	/**
 	 * CurrencyRegistry instance.
 	 *
 	 * @var CurrencyRegistry
@@ -134,15 +139,134 @@ class RateService {
 	}
 
 	/**
-	 * Initialize schedule hooks.
+	 * Get auto-sync settings with defaults.
+	 *
+	 * @return array{enabled: string, interval_hours: int}
+	 */
+	public function get_auto_sync_settings(): array {
+		$defaults = array(
+			'enabled'        => 'yes',
+			'interval_hours' => 12,
+		);
+
+		$saved = get_option( self::OPTION_AUTO_SYNC, array() );
+		if ( ! is_array( $saved ) ) {
+			$saved = array();
+		}
+
+		return wp_parse_args( $saved, $defaults );
+	}
+
+	/**
+	 * Save auto-sync settings and synchronize WP Cron events.
+	 *
+	 * @param array $settings Settings array.
+	 * @return bool True if updated or unchanged.
+	 */
+	public function save_auto_sync_settings( array $settings ): bool {
+		$clean = array(
+			'enabled'        => ( ! empty( $settings['enabled'] ) && in_array( $settings['enabled'], array( 'yes', '1', true, 1 ), true ) ) ? 'yes' : 'no',
+			'interval_hours' => max( 1, min( 720, (int) ( $settings['interval_hours'] ?? 12 ) ) ),
+		);
+
+		$updated = update_option( self::OPTION_AUTO_SYNC, $clean );
+
+		// Clear existing scheduled events for this hook
+		$timestamp = wp_next_scheduled( self::CRON_HOOK );
+		while ( $timestamp ) {
+			wp_unschedule_event( $timestamp, self::CRON_HOOK );
+			$timestamp = wp_next_scheduled( self::CRON_HOOK );
+		}
+
+		// Schedule fresh if enabled
+		if ( 'yes' === $clean['enabled'] ) {
+			$schedule_key = $this->get_schedule_key( $clean['interval_hours'] );
+			wp_schedule_event( time() + ( $clean['interval_hours'] * HOUR_IN_SECONDS ), $schedule_key, self::CRON_HOOK );
+		}
+
+		return (bool) $updated;
+	}
+
+	/**
+	 * Get schedule key for a given interval in hours.
+	 *
+	 * @param int $hours Hours interval.
+	 * @return string Schedule identifier.
+	 */
+	public function get_schedule_key( int $hours ): string {
+		return 'nammawp_every_' . max( 1, $hours ) . '_hours';
+	}
+
+	/**
+	 * Register custom WP Cron schedules for every X hours.
+	 *
+	 * @param array<string, array{interval: int, display: string}> $schedules Cron schedules.
+	 * @return array<string, array{interval: int, display: string}>
+	 */
+	public function filter_cron_schedules( array $schedules ): array {
+		$settings       = $this->get_auto_sync_settings();
+		$interval_hours = max( 1, (int) $settings['interval_hours'] );
+		$active_key     = $this->get_schedule_key( $interval_hours );
+
+		$schedules[ $active_key ] = array(
+			'interval' => $interval_hours * HOUR_IN_SECONDS,
+			'display'  => sprintf(
+				/* translators: %d: Number of hours */
+				__( 'Every %d Hours (NammaWP)', 'nammawp-multi-currency' ),
+				$interval_hours
+			),
+		);
+
+		// Common intervals for selector compatibility
+		$common = array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 );
+		foreach ( $common as $h ) {
+			$k = 'nammawp_every_' . $h . '_hours';
+			if ( ! isset( $schedules[ $k ] ) ) {
+				$schedules[ $k ] = array(
+					'interval' => $h * HOUR_IN_SECONDS,
+					'display'  => sprintf(
+						/* translators: %d: Number of hours */
+						__( 'Every %d Hours (NammaWP)', 'nammawp-multi-currency' ),
+						$h
+					),
+				);
+			}
+		}
+
+		return $schedules;
+	}
+
+	/**
+	 * Initialize schedule hooks and ensure active schedule is registered.
 	 */
 	public function init(): void {
+		add_filter( 'cron_schedules', array( $this, 'filter_cron_schedules' ) );
 		add_action( self::CRON_HOOK, array( $this, 'sync_rates' ) );
 
-		// Register schedule if not already registered.
-		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
-			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::CRON_HOOK );
+		$settings = $this->get_auto_sync_settings();
+
+		if ( 'yes' === $settings['enabled'] ) {
+			if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+				$interval_hours = max( 1, (int) $settings['interval_hours'] );
+				$schedule_key   = $this->get_schedule_key( $interval_hours );
+				wp_schedule_event( time() + ( $interval_hours * HOUR_IN_SECONDS ), $schedule_key, self::CRON_HOOK );
+			}
+		} else {
+			$timestamp = wp_next_scheduled( self::CRON_HOOK );
+			if ( $timestamp ) {
+				wp_unschedule_event( $timestamp, self::CRON_HOOK );
+			}
 		}
+	}
+
+	/**
+	 * Get timestamp of the next scheduled sync, or null if none.
+	 *
+	 * @return int|null
+	 */
+	public function get_next_sync_timestamp(): ?int {
+		$next = wp_next_scheduled( self::CRON_HOOK );
+		return $next ? (int) $next : null;
 	}
 
 	/**

@@ -338,9 +338,181 @@ class SettingsPage {
 					</button>
 				</div>
 
-				<p class="submit">
+				<p class="submit" style="margin-top:20px; margin-bottom:0;">
 					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Currency Settings', 'nammawp-multi-currency' ); ?>">
 				</p>
+			</form>
+		</div>
+
+		<!-- Auto-Sync Exchange Rate Card -->
+		<?php
+		$auto_sync = $this->rate_service->get_auto_sync_settings();
+		$next_sync = $this->rate_service->get_next_sync_timestamp();
+		?>
+		<div class="nammawp-panel nammawp-auto-sync-card" style="margin-top:20px;">
+			<div class="nammawp-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+				<div style="display:flex; align-items:center; gap:10px;">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#4f46e5" class="bi bi-clock-history" viewBox="0 0 16 16"><path d="m8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.586.113 1.196l-1 .009a7 7 0 0 0 .002-.01m-.182 2.553a7 7 0 0 0 .285-.985l.976.219a8 8 0 0 1-.342 1.126zM9 13l3-3-1.414-1.414L9 10.172V5H7v6.828l-1.586-1.586L4 11.657 7.657 15.314a2 2 0 0 0 2.828 0z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+					<h2 style="margin:0; font-size:1.25rem; font-weight:600;">
+						<?php esc_html_e( 'Automatic Exchange Rate Sync', 'nammawp-multi-currency' ); ?>
+					</h2>
+					<?php if ( 'yes' === $auto_sync['enabled'] ) : ?>
+						<span class="nammawp-badge" style="background:#10b981; font-weight:600; padding:3px 10px; border-radius:9999px;">
+							<?php printf( esc_html__( 'Active: Every %d Hours', 'nammawp-multi-currency' ), (int) $auto_sync['interval_hours'] ); ?>
+						</span>
+					<?php else : ?>
+						<span class="nammawp-badge" style="background:#64748b; font-weight:600; padding:3px 10px; border-radius:9999px;">
+							<?php esc_html_e( 'Auto-Sync Disabled', 'nammawp-multi-currency' ); ?>
+						</span>
+					<?php endif; ?>
+				</div>
+				<div style="font-size:12px; color:#64748b;">
+					<?php esc_html_e( 'Powered by WordPress Cron scheduler (no external server cron job required)', 'nammawp-multi-currency' ); ?>
+				</div>
+			</div>
+
+			<!-- Status Metric Tiles -->
+			<div class="nammawp-sync-stats-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:20px;">
+				<!-- Tile 1: Last Sync -->
+				<div class="nammawp-stat-card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px;">
+					<div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+						<?php esc_html_e( 'Last Successful Sync', 'nammawp-multi-currency' ); ?>
+					</div>
+					<div style="font-size:15px; font-weight:700; color:#0f172a;">
+						<?php
+						if ( $last_sync > 0 ) {
+							echo esc_html( human_time_diff( $last_sync, time() ) . ' ' . __( 'ago', 'nammawp-multi-currency' ) );
+						} else {
+							esc_html_e( 'Never', 'nammawp-multi-currency' );
+						}
+						?>
+					</div>
+					<div style="font-size:11px; color:#94a3b8; margin-top:3px;">
+						<?php echo $last_sync > 0 ? esc_html( wp_date( 'M j, Y H:i:s', $last_sync ) ) : esc_html__( 'Click Sync Rates to initialize', 'nammawp-multi-currency' ); ?>
+					</div>
+				</div>
+
+				<!-- Tile 2: Next Scheduled Sync -->
+				<div class="nammawp-stat-card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px;">
+					<div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+						<?php esc_html_e( 'Next Scheduled Sync', 'nammawp-multi-currency' ); ?>
+					</div>
+					<div style="font-size:15px; font-weight:700; color:<?php echo ( 'yes' === $auto_sync['enabled'] && $next_sync ) ? '#10b981' : '#64748b'; ?>;">
+						<?php
+						if ( 'yes' === $auto_sync['enabled'] && $next_sync ) {
+							echo esc_html( 'In ' . human_time_diff( time(), $next_sync ) );
+						} else {
+							esc_html_e( 'Paused / Disabled', 'nammawp-multi-currency' );
+						}
+						?>
+					</div>
+					<div style="font-size:11px; color:#94a3b8; margin-top:3px;">
+						<?php echo ( 'yes' === $auto_sync['enabled'] && $next_sync ) ? esc_html( wp_date( 'M j, Y H:i:s', $next_sync ) ) : esc_html__( 'Enable auto-sync below to activate schedule', 'nammawp-multi-currency' ); ?>
+					</div>
+				</div>
+
+				<!-- Tile 3: Active Provider -->
+				<div class="nammawp-stat-card" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px;">
+					<div style="font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+						<?php esc_html_e( 'Active Exchange Provider', 'nammawp-multi-currency' ); ?>
+					</div>
+					<div style="font-size:15px; font-weight:700; color:#4f46e5;">
+						<?php echo esc_html( isset( $providers[ $active_provider ] ) ? $providers[ $active_provider ]->get_name() : $active_provider ); ?>
+					</div>
+					<div style="font-size:11px; color:#94a3b8; margin-top:3px;">
+						<?php esc_html_e( 'Free zero-key provider', 'nammawp-multi-currency' ); ?>
+					</div>
+				</div>
+			</div>
+
+			<!-- Form Controls for Auto-Sync -->
+			<form method="post" action="">
+				<?php wp_nonce_field( 'nammawp_save_settings', 'nammawp_nonce' ); ?>
+				<input type="hidden" name="nammawp_action" value="save_auto_sync">
+
+				<table class="form-table nammawp-form-table" style="margin-top:0;">
+					<tbody>
+						<!-- Enable/Disable Auto-Sync -->
+						<tr>
+							<th scope="row" style="width:220px;">
+								<label for="auto_sync_enabled"><?php esc_html_e( 'Auto-Sync Exchange Rates', 'nammawp-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<label class="nammawp-checkbox-label" style="font-size:14px;">
+									<input type="checkbox" name="auto_sync_enabled" id="auto_sync_enabled" value="yes" <?php checked( 'yes', $auto_sync['enabled'] ); ?>>
+									<strong><?php esc_html_e( 'Enable automatic background exchange rate synchronization', 'nammawp-multi-currency' ); ?></strong>
+								</label>
+								<p class="description">
+									<?php esc_html_e( 'When enabled, NammaWP periodically fetches live exchange rates in the background for all enabled currencies without manual intervention.', 'nammawp-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+
+						<!-- Sync Frequency (Every X Hours) -->
+						<tr>
+							<th scope="row">
+								<label for="auto_sync_interval_select"><?php esc_html_e( 'Sync Duration (Every X Hours)', 'nammawp-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<?php
+								$current_hours    = (int) $auto_sync['interval_hours'];
+								$standard_presets = array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 );
+								$is_custom        = ! in_array( $current_hours, $standard_presets, true );
+								?>
+								<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+									<select name="auto_sync_interval_select" id="auto_sync_interval_select" style="min-width:240px; height:34px;">
+										<option value="1" <?php selected( 1, $current_hours ); ?>><?php esc_html_e( 'Every 1 Hour', 'nammawp-multi-currency' ); ?></option>
+										<option value="2" <?php selected( 2, $current_hours ); ?>><?php esc_html_e( 'Every 2 Hours', 'nammawp-multi-currency' ); ?></option>
+										<option value="4" <?php selected( 4, $current_hours ); ?>><?php esc_html_e( 'Every 4 Hours', 'nammawp-multi-currency' ); ?></option>
+										<option value="6" <?php selected( 6, $current_hours ); ?>><?php esc_html_e( 'Every 6 Hours', 'nammawp-multi-currency' ); ?></option>
+										<option value="8" <?php selected( 8, $current_hours ); ?>><?php esc_html_e( 'Every 8 Hours', 'nammawp-multi-currency' ); ?></option>
+										<option value="12" <?php selected( 12, $current_hours ); ?>><?php esc_html_e( 'Every 12 Hours (Twice daily)', 'nammawp-multi-currency' ); ?></option>
+										<option value="24" <?php selected( 24, $current_hours ); ?>><?php esc_html_e( 'Every 24 Hours (Once daily)', 'nammawp-multi-currency' ); ?></option>
+										<option value="48" <?php selected( 48, $current_hours ); ?>><?php esc_html_e( 'Every 48 Hours (Every 2 days)', 'nammawp-multi-currency' ); ?></option>
+										<option value="168" <?php selected( 168, $current_hours ); ?>><?php esc_html_e( 'Every 168 Hours (Weekly)', 'nammawp-multi-currency' ); ?></option>
+										<option value="custom" <?php selected( true, $is_custom ); ?>><?php esc_html_e( 'Custom Duration...', 'nammawp-multi-currency' ); ?></option>
+									</select>
+
+									<div id="nammawp-custom-hours-wrapper" style="display:<?php echo $is_custom ? 'inline-flex' : 'none'; ?>; align-items:center; gap:6px;">
+										<label for="auto_sync_interval_custom" style="font-weight:500; font-size:13px;"><?php esc_html_e( 'Every', 'nammawp-multi-currency' ); ?></label>
+										<input type="number" min="1" max="720" step="1" name="auto_sync_interval_custom" id="auto_sync_interval_custom" value="<?php echo esc_attr( $current_hours ); ?>" style="width:80px; height:34px;">
+										<span style="font-size:13px; color:#475569;"><?php esc_html_e( 'Hours', 'nammawp-multi-currency' ); ?></span>
+									</div>
+								</div>
+								<p class="description">
+									<?php esc_html_e( 'Choose how often exchange rates are updated. Common choices: 6, 12, or 24 hours.', 'nammawp-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+
+						<!-- Rate Provider Option -->
+						<tr>
+							<th scope="row">
+								<label for="nammawp_rate_provider_card"><?php esc_html_e( 'Exchange Rate Provider', 'nammawp-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<select id="nammawp_rate_provider_card" name="nammawp_rate_provider" style="min-width:240px; height:34px;">
+									<?php foreach ( $providers as $key => $prov ) : ?>
+										<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $active_provider, $key ); ?>>
+											<?php echo esc_html( $prov->get_name() ); ?>
+										</option>
+									<?php endforeach; ?>
+								</select>
+								<p class="description">
+									<?php esc_html_e( 'The financial exchange service used during automatic updates.', 'nammawp-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div style="display:flex; align-items:center; gap:12px; margin-top:20px;">
+					<input type="submit" name="submit_auto_sync" class="button button-primary" value="<?php esc_attr_e( 'Save Auto-Sync Settings', 'nammawp-multi-currency' ); ?>" style="height:34px; padding:0 20px;">
+					<button type="button" class="button button-secondary nammawp-sync-btn" id="nammawp-sync-rates-btn-2" style="height:34px;">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
+						<span><?php esc_html_e( 'Sync Rates Now', 'nammawp-multi-currency' ); ?></span>
+					</button>
+				</div>
 			</form>
 		</div>
 		<?php
@@ -350,6 +522,33 @@ class SettingsPage {
 	 * Save Currencies Tab.
 	 */
 	protected function save_currencies_tab(): void {
+		// 1. Handle Auto-Sync Settings Save
+		if ( ( isset( $_POST['nammawp_action'] ) && 'save_auto_sync' === $_POST['nammawp_action'] ) || isset( $_POST['submit_auto_sync'] ) ) {
+			$enabled    = ( ! empty( $_POST['auto_sync_enabled'] ) && 'yes' === $_POST['auto_sync_enabled'] ) ? 'yes' : 'no';
+			$select_val = sanitize_text_field( wp_unslash( $_POST['auto_sync_interval_select'] ?? '12' ) );
+
+			if ( 'custom' === $select_val ) {
+				$interval_hours = max( 1, (int) ( $_POST['auto_sync_interval_custom'] ?? 12 ) );
+			} else {
+				$interval_hours = max( 1, (int) $select_val );
+			}
+
+			$this->rate_service->save_auto_sync_settings(
+				array(
+					'enabled'        => $enabled,
+					'interval_hours' => $interval_hours,
+				)
+			);
+
+			if ( isset( $_POST['nammawp_rate_provider'] ) ) {
+				$this->rate_service->set_active_provider( sanitize_key( wp_unslash( $_POST['nammawp_rate_provider'] ) ) );
+			}
+
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Auto-sync settings updated successfully.', 'nammawp-multi-currency' ) . '</p></div>';
+			return;
+		}
+
+		// 2. Handle Currencies Table Save
 		$raw_currencies = isset( $_POST['currencies'] ) ? (array) $_POST['currencies'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$existing       = $this->currency_registry->get_enabled_currencies();
 		$base           = $this->currency_registry->get_base_currency();
