@@ -157,7 +157,7 @@ class SettingsPage {
 		$active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'currencies'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		// Handle form saves.
-		if ( 'POST' === $_SERVER['REQUEST_METHOD'] && check_admin_referer( 'nammawp_save_settings', 'nammawp_nonce' ) ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && 'POST' === $_SERVER['REQUEST_METHOD'] && check_admin_referer( 'nammawp_save_settings', 'nammawp_nonce' ) ) {
 			if ( 'currencies' === $active_tab ) {
 				$this->save_currencies_tab();
 			} elseif ( 'switcher' === $active_tab ) {
@@ -358,7 +358,10 @@ class SettingsPage {
 					</h2>
 					<?php if ( 'yes' === $auto_sync['enabled'] ) : ?>
 						<span class="nammawp-badge" style="background:#10b981; font-weight:600; padding:3px 10px; border-radius:9999px;">
-							<?php printf( esc_html__( 'Active: Every %d Hours', 'nammawp-multi-currency' ), (int) $auto_sync['interval_hours'] ); ?>
+							<?php
+							/* translators: %d: Number of hours */
+							printf( esc_html__( 'Active: Every %d Hours', 'nammawp-multi-currency' ), (int) $auto_sync['interval_hours'] );
+							?>
 						</span>
 					<?php else : ?>
 						<span class="nammawp-badge" style="background:#64748b; font-weight:600; padding:3px 10px; border-radius:9999px;">
@@ -522,15 +525,17 @@ class SettingsPage {
 	 * Save Currencies Tab.
 	 */
 	protected function save_currencies_tab(): void {
+		check_admin_referer( 'nammawp_save_settings', 'nammawp_nonce' );
+
 		// 1. Handle Auto-Sync Settings Save
 		if ( ( isset( $_POST['nammawp_action'] ) && 'save_auto_sync' === $_POST['nammawp_action'] ) || isset( $_POST['submit_auto_sync'] ) ) {
 			$enabled    = ( ! empty( $_POST['auto_sync_enabled'] ) && 'yes' === $_POST['auto_sync_enabled'] ) ? 'yes' : 'no';
 			$select_val = sanitize_text_field( wp_unslash( $_POST['auto_sync_interval_select'] ?? '12' ) );
 
 			if ( 'custom' === $select_val ) {
-				$interval_hours = max( 1, (int) ( $_POST['auto_sync_interval_custom'] ?? 12 ) );
+				$interval_hours = max( 1, absint( wp_unslash( $_POST['auto_sync_interval_custom'] ?? 12 ) ) );
 			} else {
-				$interval_hours = max( 1, (int) $select_val );
+				$interval_hours = max( 1, absint( $select_val ) );
 			}
 
 			$this->rate_service->save_auto_sync_settings(
@@ -549,7 +554,7 @@ class SettingsPage {
 		}
 
 		// 2. Handle Currencies Table Save
-		$raw_currencies = isset( $_POST['currencies'] ) ? (array) $_POST['currencies'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		$raw_currencies = isset( $_POST['currencies'] ) ? (array) wp_unslash( $_POST['currencies'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 		$existing       = $this->currency_registry->get_enabled_currencies();
 		$base           = $this->currency_registry->get_base_currency();
 		$all            = $this->currency_registry->get_all_currencies();
@@ -682,9 +687,11 @@ class SettingsPage {
 	 * Save Switcher Tab.
 	 */
 	protected function save_switcher_tab(): void {
+		check_admin_referer( 'nammawp_save_settings', 'nammawp_nonce' );
+
 		$settings = array(
 			'floating_enabled'  => isset( $_POST['floating_enabled'] ) ? 'yes' : 'no',
-			'floating_position' => sanitize_key( $_POST['floating_position'] ?? 'bottom-right' ),
+			'floating_position' => sanitize_key( wp_unslash( $_POST['floating_position'] ?? 'bottom-right' ) ),
 			'header_enabled'    => isset( $_POST['header_enabled'] ) ? 'yes' : 'no',
 		);
 
@@ -850,8 +857,10 @@ class SettingsPage {
 	 * Save Dedicated Gateway Routing & Matrix Tab.
 	 */
 	protected function save_gateway_routing_tab(): void {
+		check_admin_referer( 'nammawp_save_settings', 'nammawp_nonce' );
+
 		// 1. Process Dedicated Routing Rules.
-		$raw_dedicated   = isset( $_POST['dedicated_routing'] ) ? (array) $_POST['dedicated_routing'] : array();
+		$raw_dedicated   = isset( $_POST['dedicated_routing'] ) ? (array) wp_unslash( $_POST['dedicated_routing'] ) : array();
 		$clean_dedicated = array();
 
 		foreach ( $raw_dedicated as $curr => $data ) {
@@ -871,8 +880,8 @@ class SettingsPage {
 		$this->capability_registry->save_dedicated_routing_rules( $clean_dedicated );
 
 		// 2. Process Matrix Rules.
-		$matrix        = isset( $_POST['matrix'] ) ? (array) $_POST['matrix'] : array();
-		$clean_matrix  = array();
+		$matrix       = isset( $_POST['matrix'] ) ? (array) wp_unslash( $_POST['matrix'] ) : array();
+		$clean_matrix = array();
 
 		foreach ( $matrix as $gateway_id => $currencies ) {
 			$clean_gw = sanitize_text_field( $gateway_id );
@@ -1000,7 +1009,12 @@ class SettingsPage {
 					<div class="nammawp-stat-value"><?php echo esc_html( (string) $total_order_count ); ?></div>
 				</div>
 				<div class="nammawp-stat-card nammawp-card-primary">
-					<span class="nammawp-stat-label"><?php printf( esc_html__( 'Total Normalized Revenue (%s)', 'nammawp-multi-currency' ), esc_html( $base_curr ) ); ?></span>
+					<span class="nammawp-stat-label">
+						<?php
+						/* translators: %s: Base currency code */
+						printf( esc_html__( 'Total Normalized Revenue (%s)', 'nammawp-multi-currency' ), esc_html( $base_curr ) );
+						?>
+					</span>
 					<div class="nammawp-stat-value">
 						<?php echo wp_kses_post( wc_price( $total_store_revenue_base, array( 'currency' => $base_curr ) ) ); ?>
 					</div>
@@ -1013,7 +1027,12 @@ class SettingsPage {
 						<th><?php esc_html_e( 'Settlement Currency', 'nammawp-multi-currency' ); ?></th>
 						<th style="width: 120px; text-align: center;"><?php esc_html_e( 'Orders Count', 'nammawp-multi-currency' ); ?></th>
 						<th style="text-align: right;"><?php esc_html_e( 'Revenue in Currency', 'nammawp-multi-currency' ); ?></th>
-						<th style="text-align: right;"><?php printf( esc_html__( 'Normalized Total (%s)', 'nammawp-multi-currency' ), esc_html( $base_curr ) ); ?></th>
+						<th style="text-align: right;">
+							<?php
+							/* translators: %s: Base currency code */
+							printf( esc_html__( 'Normalized Total (%s)', 'nammawp-multi-currency' ), esc_html( $base_curr ) );
+							?>
+						</th>
 						<th style="width: 120px; text-align: right;"><?php esc_html_e( 'Share of Sales', 'nammawp-multi-currency' ); ?></th>
 					</tr>
 				</thead>

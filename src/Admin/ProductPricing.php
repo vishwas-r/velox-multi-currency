@@ -79,20 +79,24 @@ class ProductPricing {
 			$sale_meta = get_post_meta( $post->ID, '_nammawp_sale_price_' . $code, true );
 			$symbol    = $data['symbol'] ?? $code;
 
+			/* translators: 1: Currency code, 2: Currency symbol */
+			$reg_label = sprintf( __( '%1$s Regular Price (%2$s)', 'nammawp-multi-currency' ), esc_html( $code ), esc_html( $symbol ) );
 			woocommerce_wp_text_input(
 				array(
 					'id'          => '_nammawp_regular_price_' . $code,
-					'label'       => sprintf( __( '%s Regular Price (%s)', 'nammawp-multi-currency' ), $code, $symbol ),
+					'label'       => $reg_label,
 					'placeholder' => __( 'Auto-convert', 'nammawp-multi-currency' ),
 					'value'       => $reg_meta,
 					'data_type'   => 'price',
 				)
 			);
 
+			/* translators: 1: Currency code, 2: Currency symbol */
+			$sale_label = sprintf( __( '%1$s Sale Price (%2$s)', 'nammawp-multi-currency' ), esc_html( $code ), esc_html( $symbol ) );
 			woocommerce_wp_text_input(
 				array(
 					'id'          => '_nammawp_sale_price_' . $code,
-					'label'       => sprintf( __( '%s Sale Price (%s)', 'nammawp-multi-currency' ), $code, $symbol ),
+					'label'       => $sale_label,
 					'placeholder' => __( 'Optional sale price', 'nammawp-multi-currency' ),
 					'value'       => $sale_meta,
 					'data_type'   => 'price',
@@ -120,7 +124,7 @@ class ProductPricing {
 			// Regular price.
 			$reg_key = '_nammawp_regular_price_' . $code;
 			if ( isset( $_POST[ $reg_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$val = wc_clean( wp_unslash( $_POST[ $reg_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$val = sanitize_text_field( wp_unslash( $_POST[ $reg_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
 					update_post_meta( $post_id, $reg_key, wc_format_decimal( $val ) );
 				} else {
@@ -131,7 +135,7 @@ class ProductPricing {
 			// Sale price.
 			$sale_key = '_nammawp_sale_price_' . $code;
 			if ( isset( $_POST[ $sale_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$val = wc_clean( wp_unslash( $_POST[ $sale_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$val = sanitize_text_field( wp_unslash( $_POST[ $sale_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
 					update_post_meta( $post_id, $sale_key, wc_format_decimal( $val ) );
 				} else {
@@ -215,7 +219,7 @@ class ProductPricing {
 			// Regular price.
 			$reg_field = '_nammawp_var_reg_price_' . $code;
 			if ( isset( $_POST[ $reg_field ][ $i ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$val = wc_clean( wp_unslash( $_POST[ $reg_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$val = sanitize_text_field( wp_unslash( $_POST[ $reg_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
 					update_post_meta( $variation_id, '_nammawp_regular_price_' . $code, wc_format_decimal( $val ) );
 				} else {
@@ -226,7 +230,7 @@ class ProductPricing {
 			// Sale price.
 			$sale_field = '_nammawp_var_sale_price_' . $code;
 			if ( isset( $_POST[ $sale_field ][ $i ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				$val = wc_clean( wp_unslash( $_POST[ $sale_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$val = sanitize_text_field( wp_unslash( $_POST[ $sale_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
 					update_post_meta( $variation_id, '_nammawp_sale_price_' . $code, wc_format_decimal( $val ) );
 				} else {

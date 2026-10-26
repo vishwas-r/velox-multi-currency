@@ -299,8 +299,8 @@ class Money {
 			throw new \InvalidArgumentException(
 				sprintf(
 					'Cannot operate on mismatched currencies: %s and %s',
-					$this->currency,
-					$other->get_currency()
+					esc_html( $this->currency ),
+					esc_html( $other->get_currency() )
 				)
 			);
 		}

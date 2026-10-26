@@ -52,7 +52,7 @@ class FloatRatesProvider implements RateProviderInterface {
 			$url,
 			array(
 				'timeout'    => 15,
-				'sslverify'  => apply_filters( 'https_local_ssl_verify', false ),
+				'sslverify'  => (bool) apply_filters( 'nammawp_mc_ssl_verify', true ),
 				'user-agent' => 'NammaWP-WooCommerce/' . ( defined( 'NAMMAWP_MC_VERSION' ) ? NAMMAWP_MC_VERSION : '1.0.0' ),
 			)
 		);

@@ -1,14 +1,14 @@
-=== NammaWP - Multi-Currency & Payment Gateway Plugin for WooCommerce ===
+=== NammaWP - Multi-Currency & Payment Gateway for WooCommerce ===
 Contributors: nammawp
-Tags: currency switcher, multi currency, payment gateway, stripe, paypal, razorpay, woocommerce
+Tags: currency switcher, multi currency, payment gateway, razorpay, woocommerce
 Requires at least: 6.5
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Cache-safe multi-currency switcher and dedicated payment gateway routing for WooCommerce. Display local prices and route currencies per gateway at checkout.
+Multi-currency switcher and dedicated payment gateway router for WooCommerce. Display local prices and route checkout gateways by currency.
 
 == Description ==
 
