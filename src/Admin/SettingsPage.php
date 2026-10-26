@@ -157,15 +157,19 @@ class SettingsPage {
 
 			<nav class="nav-tab-wrapper">
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=currencies' ) ); ?>" class="nav-tab <?php echo 'currencies' === $active_tab ? 'nav-tab-active' : ''; ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-cash-stack settlex-tab-icon" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>
 					<?php esc_html_e( 'Currencies & Rates', 'settlex-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=gateway_matrix' ) ); ?>" class="nav-tab <?php echo 'gateway_matrix' === $active_tab ? 'nav-tab-active' : ''; ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-diagram-3 settlex-tab-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5A1.5 1.5 0 0 1 10 10v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6 11v-1a1.5 1.5 0 0 1 1.5-1.5V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5zM8.5 3h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5m1.5 7h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5m-7 0h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5"/></svg>
 					<?php esc_html_e( 'Payment Gateway Matrix', 'settlex-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=sales_by_currency' ) ); ?>" class="nav-tab <?php echo 'sales_by_currency' === $active_tab ? 'nav-tab-active' : ''; ?>">
-					📊 <?php esc_html_e( 'Sales by Currency', 'settlex-multi-currency' ); ?>
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-bar-chart-line settlex-tab-icon" viewBox="0 0 16 16"><path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z"/></svg>
+					<?php esc_html_e( 'Sales by Currency', 'settlex-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=diagnostics' ) ); ?>" class="nav-tab <?php echo 'diagnostics' === $active_tab ? 'nav-tab-active' : ''; ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-gear settlex-tab-icon" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/></svg>
 					<?php esc_html_e( 'System & Diagnostics', 'settlex-multi-currency' ); ?>
 				</a>
 			</nav>
@@ -226,8 +230,9 @@ class SettingsPage {
 							</option>
 						<?php endforeach; ?>
 					</select>
-					<button type="button" class="button button-primary" id="settlex-sync-rates-btn" style="height:32px; display:inline-flex; align-items:center;">
-						🔄 <?php esc_html_e( 'Sync Exchange Rates', 'settlex-multi-currency' ); ?>
+					<button type="button" class="button button-primary" id="settlex-sync-rates-btn" style="height:32px; display:inline-flex; align-items:center; gap:6px;">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
+						<?php esc_html_e( 'Sync Exchange Rates', 'settlex-multi-currency' ); ?>
 					</button>
 				</div>
 			</div>
@@ -243,7 +248,7 @@ class SettingsPage {
 							<th style="width: 110px;"><?php esc_html_e( 'Rate', 'settlex-multi-currency' ); ?></th>
 							<th style="width: 100px;"><?php esc_html_e( 'Markup %', 'settlex-multi-currency' ); ?></th>
 							<th style="width: 140px;"><?php esc_html_e( 'Rounding Rule', 'settlex-multi-currency' ); ?></th>
-							<th style="width: 60px;"><?php esc_html_e( 'Action', 'settlex-multi-currency' ); ?></th>
+							<th style="width: 70px; text-align: center;"><?php esc_html_e( 'Action', 'settlex-multi-currency' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -276,9 +281,13 @@ class SettingsPage {
 										<option value="round_10" <?php selected( $curr['rounding'] ?? '', 'round_10' ); ?>><?php esc_html_e( 'Nearest 10', 'settlex-multi-currency' ); ?></option>
 									</select>
 								</td>
-								<td>
+								<td style="text-align: center; vertical-align: middle;">
 									<?php if ( ! $is_base ) : ?>
-										<button type="button" class="button-link delete-currency-row text-danger" title="Remove">&times;</button>
+										<button type="button" class="settlex-btn-delete delete-currency-row" title="<?php esc_attr_e( 'Remove currency', 'settlex-multi-currency' ); ?>" aria-label="<?php esc_attr_e( 'Remove', 'settlex-multi-currency' ); ?>">
+											<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16"><path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5a.5.5 0 0 1 .47-.528M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5m2.472.5a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L10 5a.5.5 0 0 1 .47-.528"/></svg>
+										</button>
+									<?php else : ?>
+										<span class="settlex-badge-locked" title="<?php esc_attr_e( 'Store base currency cannot be removed', 'settlex-multi-currency' ); ?>">&mdash;</span>
 									<?php endif; ?>
 								</td>
 							</tr>
@@ -286,8 +295,8 @@ class SettingsPage {
 					</tbody>
 				</table>
 
-				<div class="settlex-add-row" style="margin-top: 15px;">
-					<label for="new_currency_select"><strong><?php esc_html_e( 'Add Currency:', 'settlex-multi-currency' ); ?></strong></label>
+				<div class="settlex-add-row">
+					<label for="new_currency_select"><?php esc_html_e( 'Add Currency:', 'settlex-multi-currency' ); ?></label>
 					<select id="new_currency_select">
 						<option value=""><?php esc_html_e( '-- Choose Currency --', 'settlex-multi-currency' ); ?></option>
 						<?php foreach ( $all as $c_code => $c_data ) : ?>
@@ -298,8 +307,9 @@ class SettingsPage {
 							<?php endif; ?>
 						<?php endforeach; ?>
 					</select>
-					<button type="button" class="button button-secondary" id="settlex-add-currency-btn">
-						<?php esc_html_e( '+ Add to List', 'settlex-multi-currency' ); ?>
+					<button type="button" class="button button-secondary settlex-btn-add" id="settlex-add-currency-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/></svg>
+						<?php esc_html_e( 'Add to List', 'settlex-multi-currency' ); ?>
 					</button>
 				</div>
 
@@ -497,7 +507,10 @@ class SettingsPage {
 						<td><strong><?php esc_html_e( 'High-Performance Order Storage (HPOS)', 'settlex-multi-currency' ); ?></strong></td>
 						<td>
 							<?php if ( $hpos ) : ?>
-								<span style="color: #2e7d32; font-weight:bold;">✔ <?php esc_html_e( 'Enabled & SettleX Declared Compatible', 'settlex-multi-currency' ); ?></span>
+								<span style="color: #16a34a; font-weight:600; display:inline-flex; align-items:center;">
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#16a34a" viewBox="0 0 16 16" style="vertical-align:-1px; margin-right:5px;"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+									<?php esc_html_e( 'Enabled & SettleX Declared Compatible', 'settlex-multi-currency' ); ?>
+								</span>
 							<?php else : ?>
 								<span><?php esc_html_e( 'Using classic post meta storage', 'settlex-multi-currency' ); ?></span>
 							<?php endif; ?>
@@ -505,7 +518,7 @@ class SettingsPage {
 					</tr>
 					<tr>
 						<td><strong><?php esc_html_e( 'Exchange Rate Provider', 'settlex-multi-currency' ); ?></strong></td>
-						<td>European Central Bank (Free, Daily XML)</td>
+						<td><?php echo esc_html( $this->rate_service->get_active_provider()->get_name() ); ?></td>
 					</tr>
 					<tr>
 						<td><strong><?php esc_html_e( 'Rates Sync Status', 'settlex-multi-currency' ); ?></strong></td>
@@ -568,15 +581,15 @@ class SettingsPage {
 				<?php esc_html_e( 'Analyzes your last 250 completed/processing orders and calculates true normalized revenue in your store base currency.', 'settlex-multi-currency' ); ?>
 			</p>
 
-			<div class="settlex-stat-cards" style="display: flex; gap: 20px; margin: 20px 0;">
-				<div class="settlex-stat-card" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px 20px; border-radius: 6px; flex: 1;">
-					<span style="font-size: 12px; color: #64748b;"><?php esc_html_e( 'Total Orders Sampled', 'settlex-multi-currency' ); ?></span>
-					<div style="font-size: 24px; font-weight: bold; color: #1e293b;"><?php echo esc_html( (string) $total_order_count ); ?></div>
+			<div class="settlex-stat-cards">
+				<div class="settlex-stat-card">
+					<span class="settlex-stat-label"><?php esc_html_e( 'Total Orders Sampled', 'settlex-multi-currency' ); ?></span>
+					<div class="settlex-stat-value"><?php echo esc_html( (string) $total_order_count ); ?></div>
 				</div>
-				<div class="settlex-stat-card" style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px 20px; border-radius: 6px; flex: 1;">
-					<span style="font-size: 12px; color: #1d4ed8;"><?php printf( esc_html__( 'Total Normalized Revenue (%s)', 'settlex-multi-currency' ), esc_html( $base_curr ) ); ?></span>
-					<div style="font-size: 24px; font-weight: bold; color: #1e40af;">
-						<?php echo esc_html( wc_price( $total_store_revenue_base, array( 'currency' => $base_curr ) ) ); ?>
+				<div class="settlex-stat-card settlex-card-primary">
+					<span class="settlex-stat-label"><?php printf( esc_html__( 'Total Normalized Revenue (%s)', 'settlex-multi-currency' ), esc_html( $base_curr ) ); ?></span>
+					<div class="settlex-stat-value">
+						<?php echo wp_kses_post( wc_price( $total_store_revenue_base, array( 'currency' => $base_curr ) ) ); ?>
 					</div>
 				</div>
 			</div>
@@ -594,7 +607,7 @@ class SettingsPage {
 				<tbody>
 					<?php if ( empty( $stats ) ) : ?>
 						<tr>
-							<td colspan="5" style="text-align:center; padding: 20px;">
+							<td colspan="5" style="text-align:center; padding: 24px; color: #64748b;">
 								<?php esc_html_e( 'No completed or processing orders found yet.', 'settlex-multi-currency' ); ?>
 							</td>
 						</tr>
@@ -612,14 +625,14 @@ class SettingsPage {
 								</td>
 								<td style="text-align: center;"><?php echo esc_html( (string) $data['orders_count'] ); ?></td>
 								<td style="text-align: right; font-weight: 600;">
-									<?php echo esc_html( wc_price( $data['native_total'], array( 'currency' => $curr ) ) ); ?>
+									<?php echo wp_kses_post( wc_price( $data['native_total'], array( 'currency' => $curr ) ) ); ?>
 								</td>
 								<td style="text-align: right; color: #16a34a; font-weight: 600;">
-									<?php echo esc_html( wc_price( $data['base_eq_total'], array( 'currency' => $base_curr ) ) ); ?>
+									<?php echo wp_kses_post( wc_price( $data['base_eq_total'], array( 'currency' => $base_curr ) ) ); ?>
 								</td>
 								<td style="text-align: right;">
 									<div style="font-weight: 600;"><?php echo esc_html( number_format( $pct, 1 ) ); ?>%</div>
-									<div style="background: #e2e8f0; height: 4px; border-radius: 2px; width: 100%; margin-top: 3px;">
+									<div style="background: #e2e8f0; height: 4px; border-radius: 2px; width: 100%; margin-top: 4px;">
 										<div style="background: #4f46e5; height: 4px; border-radius: 2px; width: <?php echo esc_attr( min( 100, $pct ) ); ?>%;"></div>
 									</div>
 								</td>
