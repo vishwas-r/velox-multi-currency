@@ -80,7 +80,7 @@ class Plugin {
 		$this->analytics_normalizer        = new AnalyticsNormalizer( $this->currency_registry );
 		$this->order_columns               = new OrderColumns();
 		$this->switcher                    = new Switcher( $this->currency_registry );
-		$this->settings_page               = new SettingsPage( $this->currency_registry, $this->rate_service, $this->capability_registry );
+		$this->settings_page               = new SettingsPage( $this->currency_registry, $this->rate_service, $this->capability_registry, $this->switcher );
 		$this->product_pricing             = new ProductPricing( $this->currency_registry );
 	}
 
@@ -101,5 +101,25 @@ class Plugin {
 			$this->settings_page->init();
 			$this->product_pricing->init();
 		}
+	}
+
+	public function get_currency_registry(): CurrencyRegistry {
+		return $this->currency_registry;
+	}
+
+	public function get_rate_service(): RateService {
+		return $this->rate_service;
+	}
+
+	public function get_capability_registry(): GatewayCapabilityRegistry {
+		return $this->capability_registry;
+	}
+
+	public function get_switcher(): Switcher {
+		return $this->switcher;
+	}
+
+	public function get_gateway_router(): GatewayRouter {
+		return $this->gateway_router;
 	}
 }

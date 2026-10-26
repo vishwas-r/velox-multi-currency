@@ -33,6 +33,223 @@
 	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
+/* Floating Switcher Widget */
+.settlex-floating-widget {
+	position: fixed;
+	z-index: 999999;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.settlex-floating-widget.settlex-pos-bottom-right {
+	bottom: 24px;
+	right: 24px;
+}
+
+.settlex-floating-widget.settlex-pos-bottom-left {
+	bottom: 24px;
+	left: 24px;
+}
+
+.settlex-floating-widget.settlex-pos-top-right {
+	top: 24px;
+	right: 24px;
+}
+
+.settlex-floating-widget.settlex-pos-top-left {
+	top: 24px;
+	left: 24px;
+}
+
+.settlex-floating-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: #1e293b;
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	padding: 8px 14px;
+	border-radius: 9999px;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	transition: all 0.2s ease;
+	outline: none;
+}
+
+.settlex-floating-trigger:hover {
+	background: #0f172a;
+	transform: translateY(-1px);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.settlex-trigger-symbol {
+	color: #38bdf8;
+	font-weight: bold;
+}
+
+.settlex-trigger-code {
+	letter-spacing: 0.5px;
+}
+
+.settlex-chevron {
+	transition: transform 0.2s ease;
+	opacity: 0.7;
+}
+
+.settlex-floating-widget.is-open .settlex-chevron {
+	transform: rotate(180deg);
+}
+
+/* Floating Dropdown */
+.settlex-floating-dropdown {
+	display: none;
+	position: absolute;
+	bottom: calc(100% + 10px);
+	right: 0;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 10px;
+	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+	min-width: 200px;
+	overflow: hidden;
+	animation: settlex-slide-up 0.18s ease-out forwards;
+}
+
+.settlex-pos-top-right .settlex-floating-dropdown,
+.settlex-pos-top-left .settlex-floating-dropdown {
+	bottom: auto;
+	top: calc(100% + 10px);
+}
+
+.settlex-pos-bottom-left .settlex-floating-dropdown,
+.settlex-pos-top-left .settlex-floating-dropdown {
+	right: auto;
+	left: 0;
+}
+
+.settlex-floating-widget.is-open .settlex-floating-dropdown {
+	display: block;
+}
+
+@keyframes settlex-slide-up {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.settlex-floating-header {
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #94a3b8;
+	padding: 10px 14px 6px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.settlex-floating-list {
+	list-style: none;
+	margin: 0;
+	padding: 4px 0;
+	max-height: 240px;
+	overflow-y: auto;
+}
+
+.settlex-floating-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	font-size: 13px;
+	color: #334155;
+	cursor: pointer;
+	transition: background 0.12s ease;
+}
+
+.settlex-floating-item:hover {
+	background: #f8fafc;
+	color: #0f172a;
+}
+
+.settlex-floating-item.is-active {
+	background: #eff6ff;
+	color: #1d4ed8;
+	font-weight: 600;
+}
+
+.settlex-item-symbol {
+	width: 16px;
+	color: #64748b;
+}
+
+.settlex-floating-item.is-active .settlex-item-symbol {
+	color: #2563eb;
+}
+
+.settlex-item-name {
+	font-size: 11px;
+	color: #94a3b8;
+	margin-left: auto;
+}
+
+.settlex-item-check {
+	color: #2563eb;
+	margin-left: 6px;
+}
+
+/* Header Top Bar */
+.settlex-top-header-bar {
+	background: #0f172a;
+	color: #e2e8f0;
+	font-size: 12px;
+	padding: 6px 16px;
+	border-bottom: 1px solid #1e293b;
+}
+
+.settlex-top-header-bar .settlex-container {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 12px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.settlex-header-currencies {
+	display: flex;
+	gap: 6px;
+}
+
+.settlex-header-curr-btn {
+	background: transparent;
+	color: #94a3b8;
+	border: 1px solid #334155;
+	border-radius: 4px;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.settlex-header-curr-btn:hover {
+	color: #ffffff;
+	border-color: #64748b;
+}
+
+.settlex-header-curr-btn.is-active {
+	background: #3b82f6;
+	color: #ffffff;
+	border-color: #3b82f6;
+}
+
+/* Checkout Disclosure Notice */
 .settlex-disclosure-notice {
 	border-left: 4px solid #4f46e5 !important;
 	background-color: #f5f3ff !important;

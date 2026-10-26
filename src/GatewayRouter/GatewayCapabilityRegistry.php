@@ -20,6 +20,11 @@ class GatewayCapabilityRegistry {
 	const OPTION_MATRIX = 'settlex_gateway_matrix';
 
 	/**
+	 * Option name for dedicated currency to gateway mapping.
+	 */
+	const OPTION_DEDICATED_ROUTING = 'settlex_dedicated_gateway_routing';
+
+	/**
 	 * PayPal official 25 supported currencies list.
 	 *
 	 * @var array<string>
@@ -172,5 +177,37 @@ class GatewayCapabilityRegistry {
 	 */
 	public function save_matrix( array $matrix ): bool {
 		return update_option( self::OPTION_MATRIX, $matrix );
+	}
+
+	/**
+	 * Get saved dedicated gateway routing rules.
+	 *
+	 * @return array<string, array{mode: string, allowed_gateways: array<string>}>
+	 */
+	public function get_dedicated_routing_rules(): array {
+		$rules = get_option( self::OPTION_DEDICATED_ROUTING, array() );
+		return is_array( $rules ) ? $rules : array();
+	}
+
+	/**
+	 * Get dedicated routing rule for a specific currency.
+	 *
+	 * @param string $currency Currency code.
+	 * @return array{mode: string, allowed_gateways: array<string>}|null
+	 */
+	public function get_dedicated_routing( string $currency ): ?array {
+		$rules = $this->get_dedicated_routing_rules();
+		$code  = strtoupper( trim( $currency ) );
+		return $rules[ $code ] ?? null;
+	}
+
+	/**
+	 * Save dedicated gateway routing rules.
+	 *
+	 * @param array $rules Dedicated rules.
+	 * @return bool
+	 */
+	public function save_dedicated_routing_rules( array $rules ): bool {
+		return update_option( self::OPTION_DEDICATED_ROUTING, $rules );
 	}
 }

@@ -45,7 +45,7 @@ class CurrencyRegistry {
 	 */
 	public function get_base_currency(): string {
 		if ( null === $this->base_currency ) {
-			$this->base_currency = strtoupper( get_woocommerce_currency() );
+			$this->base_currency = strtoupper( (string) get_option( 'woocommerce_currency', 'USD' ) );
 		}
 		return $this->base_currency;
 	}
@@ -62,7 +62,16 @@ class CurrencyRegistry {
 
 		$base = $this->get_base_currency();
 
-		// 1. Check for cookie (user's explicit selection).
+		// 1. Check WooCommerce session first if available.
+		if ( function_exists( 'WC' ) && WC()->session ) {
+			$session_curr = WC()->session->get( 'settlex_currency' );
+			if ( ! empty( $session_curr ) && $this->is_currency_enabled( (string) $session_curr ) ) {
+				$this->active_currency = strtoupper( (string) $session_curr );
+				return $this->active_currency;
+			}
+		}
+
+		// 2. Check for cookie (user's explicit selection).
 		if ( ! empty( $_COOKIE[ self::COOKIE_NAME ] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$cookie_val = sanitize_text_field( wp_unslash( $_COOKIE[ self::COOKIE_NAME ] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			if ( $this->is_currency_enabled( $cookie_val ) ) {
@@ -71,7 +80,7 @@ class CurrencyRegistry {
 			}
 		}
 
-		// 2. Allow filters (e.g. GeoIP auto-detect module).
+		// 3. Allow filters (e.g. GeoIP auto-detect module).
 		$detected = apply_filters( 'settlex_detected_currency', $base );
 		if ( $this->is_currency_enabled( $detected ) ) {
 			$this->active_currency = strtoupper( $detected );
@@ -95,6 +104,12 @@ class CurrencyRegistry {
 		}
 
 		$this->active_currency = $code;
+		$_COOKIE[ self::COOKIE_NAME ] = $code;
+
+		// Persist in WooCommerce customer session.
+		if ( function_exists( 'WC' ) && WC()->session ) {
+			WC()->session->set( 'settlex_currency', $code );
+		}
 
 		// Set cookie if headers not sent.
 		if ( ! headers_sent() ) {
@@ -111,6 +126,13 @@ class CurrencyRegistry {
 
 		return true;
 	}
+
+	/**
+	 * Cached enabled currencies.
+	 *
+	 * @var array<string, array<string, mixed>>|null
+	 */
+	protected ?array $enabled_currencies = null;
 
 	/**
 	 * Check if a currency code is enabled in SettleX settings.
@@ -134,13 +156,18 @@ class CurrencyRegistry {
 	 * @return array<string, array<string, mixed>>
 	 */
 	public function get_enabled_currencies(): array {
+		if ( null !== $this->enabled_currencies ) {
+			return $this->enabled_currencies;
+		}
+
 		$base = $this->get_base_currency();
+		$all  = $this->get_all_currencies();
 
 		$defaults = array(
 			$base => array(
 				'code'          => $base,
-				'name'          => $this->get_all_currencies()[ $base ]['name'] ?? $base,
-				'symbol'        => get_woocommerce_currency_symbol( $base ),
+				'name'          => $all[ $base ]['name'] ?? $base,
+				'symbol'        => $all[ $base ]['symbol'] ?? '$',
 				'rate'          => 1.0,
 				'markup'        => 0.0,
 				'rounding'      => 'none',
@@ -154,15 +181,25 @@ class CurrencyRegistry {
 
 		$saved = get_option( self::OPTION_ENABLED, array() );
 		if ( ! is_array( $saved ) || empty( $saved ) ) {
-			return $defaults;
+			$this->enabled_currencies = $defaults;
+			return $this->enabled_currencies;
 		}
+
+		// Ensure clean decoded symbols across all enabled currencies.
+		foreach ( $saved as $code => &$data ) {
+			if ( ! empty( $data['symbol'] ) ) {
+				$data['symbol'] = html_entity_decode( (string) $data['symbol'], ENT_QUOTES, 'UTF-8' );
+			}
+		}
+		unset( $data );
 
 		// Ensure base currency is always present and marked as base.
 		$saved[ $base ]            = array_merge( $defaults[ $base ], $saved[ $base ] ?? array() );
 		$saved[ $base ]['rate']    = 1.0;
 		$saved[ $base ]['is_base'] = true;
 
-		return $saved;
+		$this->enabled_currencies = $saved;
+		return $this->enabled_currencies;
 	}
 
 	/**
@@ -172,6 +209,7 @@ class CurrencyRegistry {
 	 * @return bool
 	 */
 	public function save_enabled_currencies( array $currencies ): bool {
+		$this->enabled_currencies = null;
 		return update_option( self::OPTION_ENABLED, $currencies );
 	}
 

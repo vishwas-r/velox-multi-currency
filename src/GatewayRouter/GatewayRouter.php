@@ -87,9 +87,23 @@ class GatewayRouter {
 			return $available_gateways;
 		}
 
-		$display_currency = $this->currency_registry->get_active_currency();
-		$base_currency    = $this->currency_registry->get_base_currency();
+		$display_currency  = $this->currency_registry->get_active_currency();
+		$base_currency     = $this->currency_registry->get_base_currency();
+		$dedicated_routing = $this->capability_registry->get_dedicated_routing( $display_currency );
 
+		// 1. Dedicated Exclusive Gateway Routing (takes precedence if configured).
+		if ( ! empty( $dedicated_routing ) && 'exclusive' === ( $dedicated_routing['mode'] ?? '' ) ) {
+			$allowed = (array) ( $dedicated_routing['allowed_gateways'] ?? array() );
+			foreach ( $available_gateways as $gateway_id => $gateway ) {
+				$norm_id = $this->capability_registry->normalize_gateway_id( $gateway_id );
+				if ( ! in_array( $gateway_id, $allowed, true ) && ! in_array( $norm_id, $allowed, true ) ) {
+					unset( $available_gateways[ $gateway_id ] );
+				}
+			}
+			return $available_gateways;
+		}
+
+		// 2. Matrix Routing Rules.
 		foreach ( $available_gateways as $gateway_id => $gateway ) {
 			$rule = $this->capability_registry->get_rule( $gateway_id, $display_currency, $base_currency );
 			if ( SettlementMode::HIDE === $rule['mode'] ) {
@@ -116,9 +130,22 @@ class GatewayRouter {
 			return $disable;
 		}
 
-		$display_currency = $this->currency_registry->get_active_currency();
-		$base_currency    = $this->currency_registry->get_base_currency();
-		$rule             = $this->capability_registry->get_rule( $payment_method->id, $display_currency, $base_currency );
+		$display_currency  = $this->currency_registry->get_active_currency();
+		$base_currency     = $this->currency_registry->get_base_currency();
+		$dedicated_routing = $this->capability_registry->get_dedicated_routing( $display_currency );
+
+		// 1. Dedicated Exclusive Gateway Routing.
+		if ( ! empty( $dedicated_routing ) && 'exclusive' === ( $dedicated_routing['mode'] ?? '' ) ) {
+			$allowed = (array) ( $dedicated_routing['allowed_gateways'] ?? array() );
+			$norm_id = $this->capability_registry->normalize_gateway_id( $payment_method->id );
+			if ( ! in_array( $payment_method->id, $allowed, true ) && ! in_array( $norm_id, $allowed, true ) ) {
+				return true; // Disable this gateway in the Checkout Block.
+			}
+			return $disable;
+		}
+
+		// 2. Matrix Routing Rules.
+		$rule = $this->capability_registry->get_rule( $payment_method->id, $display_currency, $base_currency );
 
 		if ( SettlementMode::HIDE === $rule['mode'] ) {
 			return true; // Disable this gateway in the Checkout Block.

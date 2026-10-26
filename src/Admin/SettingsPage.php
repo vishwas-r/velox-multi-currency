@@ -9,6 +9,7 @@ namespace SettleX\MultiCurrency\Admin;
 
 use SettleX\MultiCurrency\Currency\CurrencyRegistry;
 use SettleX\MultiCurrency\Currency\RateService;
+use SettleX\MultiCurrency\Frontend\Switcher;
 use SettleX\MultiCurrency\GatewayRouter\GatewayCapabilityRegistry;
 use SettleX\MultiCurrency\GatewayRouter\SettlementMode;
 
@@ -22,6 +23,7 @@ class SettingsPage {
 	protected CurrencyRegistry $currency_registry;
 	protected RateService $rate_service;
 	protected GatewayCapabilityRegistry $capability_registry;
+	protected ?Switcher $switcher;
 
 	/**
 	 * Constructor.
@@ -29,15 +31,30 @@ class SettingsPage {
 	 * @param CurrencyRegistry          $currency_registry   Currency registry.
 	 * @param RateService               $rate_service        Rate service.
 	 * @param GatewayCapabilityRegistry $capability_registry Capability registry.
+	 * @param Switcher|null             $switcher            Switcher instance.
 	 */
 	public function __construct(
 		CurrencyRegistry $currency_registry,
 		RateService $rate_service,
-		GatewayCapabilityRegistry $capability_registry
+		GatewayCapabilityRegistry $capability_registry,
+		?Switcher $switcher = null
 	) {
 		$this->currency_registry   = $currency_registry;
 		$this->rate_service        = $rate_service;
 		$this->capability_registry = $capability_registry;
+		$this->switcher            = $switcher;
+	}
+
+	/**
+	 * Get switcher instance safely.
+	 *
+	 * @return Switcher
+	 */
+	protected function get_switcher(): Switcher {
+		if ( null === $this->switcher ) {
+			$this->switcher = new Switcher( $this->currency_registry );
+		}
+		return $this->switcher;
 	}
 
 	/**
@@ -143,8 +160,10 @@ class SettingsPage {
 		if ( 'POST' === $_SERVER['REQUEST_METHOD'] && check_admin_referer( 'settlex_save_settings', 'settlex_nonce' ) ) {
 			if ( 'currencies' === $active_tab ) {
 				$this->save_currencies_tab();
-			} elseif ( 'gateway_matrix' === $active_tab ) {
-				$this->save_matrix_tab();
+			} elseif ( 'switcher' === $active_tab ) {
+				$this->save_switcher_tab();
+			} elseif ( in_array( $active_tab, array( 'gateway_routing', 'gateway_matrix' ), true ) ) {
+				$this->save_gateway_routing_tab();
 			}
 		}
 
@@ -160,9 +179,13 @@ class SettingsPage {
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-cash-stack settlex-tab-icon" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>
 					<?php esc_html_e( 'Currencies & Rates', 'settlex-multi-currency' ); ?>
 				</a>
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=gateway_matrix' ) ); ?>" class="nav-tab <?php echo 'gateway_matrix' === $active_tab ? 'nav-tab-active' : ''; ?>">
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=switcher' ) ); ?>" class="nav-tab <?php echo 'switcher' === $active_tab ? 'nav-tab-active' : ''; ?>">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-toggles settlex-tab-icon" viewBox="0 0 16 16"><path d="M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7zM8 11.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m3 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M4.5 7a3.5 3.5 0 0 0 0-7h7a3.5 3.5 0 0 0 0 7zM8 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m3 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/></svg>
+					<?php esc_html_e( 'Switcher & Display', 'settlex-multi-currency' ); ?>
+				</a>
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=gateway_routing' ) ); ?>" class="nav-tab <?php echo in_array( $active_tab, array( 'gateway_routing', 'gateway_matrix' ), true ) ? 'nav-tab-active' : ''; ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-diagram-3 settlex-tab-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5A1.5 1.5 0 0 1 10 10v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6 11v-1a1.5 1.5 0 0 1 1.5-1.5V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5zM8.5 3h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5m1.5 7h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5m-7 0h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5"/></svg>
-					<?php esc_html_e( 'Payment Gateway Matrix', 'settlex-multi-currency' ); ?>
+					<?php esc_html_e( 'Gateway Routing', 'settlex-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=settlex-settings&tab=sales_by_currency' ) ); ?>" class="nav-tab <?php echo 'sales_by_currency' === $active_tab ? 'nav-tab-active' : ''; ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-bar-chart-line settlex-tab-icon" viewBox="0 0 16 16"><path d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z"/></svg>
@@ -178,8 +201,10 @@ class SettingsPage {
 				<?php
 				if ( 'currencies' === $active_tab ) {
 					$this->render_currencies_tab();
-				} elseif ( 'gateway_matrix' === $active_tab ) {
-					$this->render_gateway_matrix_tab();
+				} elseif ( 'switcher' === $active_tab ) {
+					$this->render_switcher_tab();
+				} elseif ( in_array( $active_tab, array( 'gateway_routing', 'gateway_matrix' ), true ) ) {
+					$this->render_gateway_routing_tab();
 				} elseif ( 'sales_by_currency' === $active_tab ) {
 					$this->render_sales_by_currency_tab();
 				} else {
@@ -365,27 +390,195 @@ class SettingsPage {
 	}
 
 	/**
-	 * Render Payment Gateway Matrix Tab (The Hero Feature!).
+	 * Render Switcher & Display Settings Tab.
 	 */
-	protected function render_gateway_matrix_tab(): void {
-		$enabled  = $this->currency_registry->get_enabled_currencies();
-		$base     = $this->currency_registry->get_base_currency();
-		$gateways = WC()->payment_gateways->payment_gateways();
-
-		// Filter for active gateways or highlight our trio (Stripe, PayPal, Razorpay).
+	protected function render_switcher_tab(): void {
+		$switcher = $this->get_switcher();
+		$settings = $switcher->get_settings();
 		?>
 		<div class="settlex-panel">
-			<h2><?php esc_html_e( 'Payment Gateway & Currency Routing Matrix', 'settlex-multi-currency' ); ?></h2>
+			<h2><?php esc_html_e( 'Currency Switcher & Display Options', 'settlex-multi-currency' ); ?></h2>
 			<p class="description">
-				<?php esc_html_e( 'Configure how each payment gateway settles transactions for each customer currency.', 'settlex-multi-currency' ); ?>
-				<br>
-				<strong><?php esc_html_e( 'Allow Native:', 'settlex-multi-currency' ); ?></strong> <?php esc_html_e( 'Charge gateway directly in the customer\'s currency.', 'settlex-multi-currency' ); ?> |
-				<strong><?php esc_html_e( 'Convert & Disclose:', 'settlex-multi-currency' ); ?></strong> <?php esc_html_e( 'Customer browses in their currency, but gets charged in your chosen gateway currency with a clear checkout disclosure.', 'settlex-multi-currency' ); ?> |
-				<strong><?php esc_html_e( 'Hide:', 'settlex-multi-currency' ); ?></strong> <?php esc_html_e( 'Disable gateway for this currency.', 'settlex-multi-currency' ); ?>
+				<?php esc_html_e( 'Configure how currency switchers appear to shoppers across your store. All currency switches happen instantly via AJAX with zero page reload, seamlessly updating product prices across Shop, Archive, Single Product, Cart, and Checkout pages.', 'settlex-multi-currency' ); ?>
 			</p>
 
 			<form method="post" action="">
 				<?php wp_nonce_field( 'settlex_save_settings', 'settlex_nonce' ); ?>
+
+				<table class="form-table settlex-form-table">
+					<tbody>
+						<!-- Floating Widget Section -->
+						<tr>
+							<th scope="row">
+								<label for="floating_enabled"><?php esc_html_e( 'Floating Widget', 'settlex-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<label class="settlex-checkbox-label">
+									<input type="checkbox" name="floating_enabled" id="floating_enabled" value="yes" <?php checked( 'yes', $settings['floating_enabled'] ); ?>>
+									<strong><?php esc_html_e( 'Enable floating currency switcher widget on all pages', 'settlex-multi-currency' ); ?></strong>
+								</label>
+								<p class="description">
+									<?php esc_html_e( 'Renders a modern, floating pill widget fixed to the viewport with instant dropdown selection.', 'settlex-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row">
+								<label for="floating_position"><?php esc_html_e( 'Floating Widget Position', 'settlex-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<select name="floating_position" id="floating_position" style="min-width: 260px;">
+									<option value="bottom-right" <?php selected( 'bottom-right', $settings['floating_position'] ); ?>><?php esc_html_e( 'Bottom Right (Recommended)', 'settlex-multi-currency' ); ?></option>
+									<option value="bottom-left" <?php selected( 'bottom-left', $settings['floating_position'] ); ?>><?php esc_html_e( 'Bottom Left', 'settlex-multi-currency' ); ?></option>
+									<option value="top-right" <?php selected( 'top-right', $settings['floating_position'] ); ?>><?php esc_html_e( 'Top Right', 'settlex-multi-currency' ); ?></option>
+									<option value="top-left" <?php selected( 'top-left', $settings['floating_position'] ); ?>><?php esc_html_e( 'Top Left', 'settlex-multi-currency' ); ?></option>
+								</select>
+								<p class="description">
+									<?php esc_html_e( 'Pin position of the floating widget on the user screen.', 'settlex-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+
+						<!-- Header Switcher Section -->
+						<tr>
+							<th scope="row">
+								<label for="header_enabled"><?php esc_html_e( 'Header Switcher', 'settlex-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<label class="settlex-checkbox-label">
+									<input type="checkbox" name="header_enabled" id="header_enabled" value="yes" <?php checked( 'yes', $settings['header_enabled'] ); ?>>
+									<strong><?php esc_html_e( 'Append currency switcher to Header Navigation Menu & Top Bar', 'settlex-multi-currency' ); ?></strong>
+								</label>
+								<p class="description">
+									<?php esc_html_e( 'Adds an integrated currency dropdown item to the main header navigation menu and top header strip.', 'settlex-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+
+						<!-- Shortcode Section -->
+						<tr>
+							<th scope="row">
+								<?php esc_html_e( 'Shortcode & Blocks', 'settlex-multi-currency' ); ?>
+							</th>
+							<td>
+								<code>[settlex_switcher]</code>
+								<p class="description">
+									<?php esc_html_e( 'Insert anywhere in pages, widgets, sidebars, or header templates to display a standalone currency switcher.', 'settlex-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<p class="submit">
+					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Switcher Settings', 'settlex-multi-currency' ); ?>">
+				</p>
+			</form>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Save Switcher Tab.
+	 */
+	protected function save_switcher_tab(): void {
+		$settings = array(
+			'floating_enabled'  => isset( $_POST['floating_enabled'] ) ? 'yes' : 'no',
+			'floating_position' => sanitize_key( $_POST['floating_position'] ?? 'bottom-right' ),
+			'header_enabled'    => isset( $_POST['header_enabled'] ) ? 'yes' : 'no',
+		);
+
+		$this->get_switcher()->save_settings( $settings );
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Switcher and display settings saved successfully.', 'settlex-multi-currency' ) . '</p></div>';
+	}
+
+	/**
+	 * Render Dedicated Gateway Routing & Matrix Tab.
+	 */
+	protected function render_gateway_routing_tab(): void {
+		$enabled         = $this->currency_registry->get_enabled_currencies();
+		$base            = $this->currency_registry->get_base_currency();
+		$gateways        = WC()->payment_gateways->payment_gateways();
+		$dedicated_rules = $this->capability_registry->get_dedicated_routing_rules();
+		?>
+		<form method="post" action="">
+			<?php wp_nonce_field( 'settlex_save_settings', 'settlex_nonce' ); ?>
+
+			<div class="settlex-panel">
+				<h2><?php esc_html_e( 'Dedicated Gateway Routing (Currency-to-Gateway Locking)', 'settlex-multi-currency' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Configure dedicated payment gateways per currency. When exclusive mode is enabled for a currency, ONLY your selected gateway(s) will be presented at checkout and cart when that currency is active. All other payment methods will be completely hidden.', 'settlex-multi-currency' ); ?>
+					<br>
+					<strong><?php esc_html_e( 'Example:', 'settlex-multi-currency' ); ?></strong> <?php esc_html_e( 'Lock INR to Razorpay only so Indian buyers cannot choose PayPal/Stripe. Lock USD to PayPal only so global buyers only see PayPal.', 'settlex-multi-currency' ); ?>
+				</p>
+
+				<div class="settlex-dedicated-grid">
+					<?php foreach ( $enabled as $code => $data ) : ?>
+						<?php
+						$rule             = $dedicated_rules[ $code ] ?? array();
+						$mode             = $rule['mode'] ?? 'all';
+						$allowed_gateways = (array) ( $rule['allowed_gateways'] ?? array() );
+						$is_exclusive     = ( 'exclusive' === $mode );
+						?>
+						<div class="settlex-routing-card <?php echo $is_exclusive ? 'is-exclusive' : ''; ?>">
+							<div class="settlex-routing-card-header">
+								<div class="settlex-currency-badge">
+									<span class="settlex-badge-symbol"><?php echo esc_html( $data['symbol'] ); ?></span>
+									<span class="settlex-badge-code"><?php echo esc_html( $code ); ?></span>
+									<?php if ( $code === $base ) : ?>
+										<span class="settlex-tag-base"><?php esc_html_e( 'Base', 'settlex-multi-currency' ); ?></span>
+									<?php endif; ?>
+								</div>
+								<span class="settlex-currency-title"><?php echo esc_html( $data['name'] ?? $code ); ?></span>
+							</div>
+
+							<div class="settlex-routing-card-body">
+								<div class="settlex-routing-mode-selector">
+									<label class="settlex-mode-radio">
+										<input type="radio" name="dedicated_routing[<?php echo esc_attr( $code ); ?>][mode]" value="all" <?php checked( ! $is_exclusive ); ?> class="settlex-routing-mode-toggle" data-currency="<?php echo esc_attr( $code ); ?>">
+										<span><?php esc_html_e( 'Standard Routing (Matrix rules below)', 'settlex-multi-currency' ); ?></span>
+									</label>
+									<label class="settlex-mode-radio">
+										<input type="radio" name="dedicated_routing[<?php echo esc_attr( $code ); ?>][mode]" value="exclusive" <?php checked( $is_exclusive ); ?> class="settlex-routing-mode-toggle" data-currency="<?php echo esc_attr( $code ); ?>">
+										<span><strong><?php esc_html_e( 'Dedicated Gateway Only (Exclusive)', 'settlex-multi-currency' ); ?></strong></span>
+									</label>
+								</div>
+
+								<div class="settlex-exclusive-gateways" id="exclusive-gateways-<?php echo esc_attr( $code ); ?>" style="<?php echo $is_exclusive ? '' : 'display:none;'; ?>">
+									<div class="settlex-gateways-header">
+										<?php esc_html_e( 'Select Allowed Gateway(s) for', 'settlex-multi-currency' ); ?> <strong><?php echo esc_html( $code ); ?></strong>:
+									</div>
+									<div class="settlex-gateways-checkboxes">
+										<?php if ( empty( $gateways ) ) : ?>
+											<p class="description"><?php esc_html_e( 'No payment gateways configured in WooCommerce.', 'settlex-multi-currency' ); ?></p>
+										<?php else : ?>
+											<?php foreach ( $gateways as $gw_id => $gw ) : ?>
+												<?php
+												$is_checked = in_array( $gw_id, $allowed_gateways, true ) || in_array( $this->capability_registry->normalize_gateway_id( $gw_id ), $allowed_gateways, true );
+												?>
+												<label class="settlex-gw-checkbox">
+													<input type="checkbox" name="dedicated_routing[<?php echo esc_attr( $code ); ?>][allowed_gateways][]" value="<?php echo esc_attr( $gw_id ); ?>" <?php checked( $is_checked ); ?>>
+													<span class="settlex-gw-name"><?php echo esc_html( $gw->get_title() ?: $gw_id ); ?></span>
+													<code class="settlex-gw-id"><?php echo esc_html( $gw_id ); ?></code>
+												</label>
+											<?php endforeach; ?>
+										<?php endif; ?>
+									</div>
+								</div>
+							</div>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+
+			<!-- Settlement & Conversion Matrix Panel -->
+			<div class="settlex-panel" style="margin-top: 24px;">
+				<h2><?php esc_html_e( 'Payment Gateway & Settlement Matrix', 'settlex-multi-currency' ); ?></h2>
+				<p class="description">
+					<?php esc_html_e( 'Fine-tune how each payment gateway processes transactions when dedicated exclusive mode is not locked. Controls whether a gateway charges natively in customer currency, converts to a preferred currency with checkout disclosure, or is completely hidden.', 'settlex-multi-currency' ); ?>
+				</p>
+
 				<div class="settlex-matrix-scroll">
 					<table class="widefat fixed striped settlex-matrix-table">
 						<thead>
@@ -405,7 +598,7 @@ class SettingsPage {
 							<?php if ( empty( $gateways ) ) : ?>
 								<tr>
 									<td colspan="<?php echo esc_attr( count( $enabled ) + 1 ); ?>">
-										<?php esc_html_e( 'No active payment gateways found in WooCommerce. Please configure Stripe, PayPal, or Razorpay in WooCommerce Settings -> Payments.', 'settlex-multi-currency' ); ?>
+										<?php esc_html_e( 'No active payment gateways found in WooCommerce.', 'settlex-multi-currency' ); ?>
 									</td>
 								</tr>
 							<?php else : ?>
@@ -447,38 +640,59 @@ class SettingsPage {
 				</div>
 
 				<p class="submit">
-					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Gateway Matrix Rules', 'settlex-multi-currency' ); ?>">
+					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Gateway Routing & Matrix Rules', 'settlex-multi-currency' ); ?>">
 				</p>
-			</form>
-		</div>
+			</div>
+		</form>
 		<?php
 	}
 
 	/**
-	 * Save Gateway Matrix Tab.
+	 * Save Dedicated Gateway Routing & Matrix Tab.
 	 */
-	protected function save_matrix_tab(): void {
-		$matrix = isset( $_POST['matrix'] ) ? (array) $_POST['matrix'] : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		$clean  = array();
+	protected function save_gateway_routing_tab(): void {
+		// 1. Process Dedicated Routing Rules.
+		$raw_dedicated   = isset( $_POST['dedicated_routing'] ) ? (array) $_POST['dedicated_routing'] : array();
+		$clean_dedicated = array();
+
+		foreach ( $raw_dedicated as $curr => $data ) {
+			$clean_curr = strtoupper( sanitize_text_field( $curr ) );
+			$mode       = ( isset( $data['mode'] ) && 'exclusive' === $data['mode'] ) ? 'exclusive' : 'all';
+			$allowed    = array();
+
+			if ( ! empty( $data['allowed_gateways'] ) && is_array( $data['allowed_gateways'] ) ) {
+				$allowed = array_map( 'sanitize_text_field', $data['allowed_gateways'] );
+			}
+
+			$clean_dedicated[ $clean_curr ] = array(
+				'mode'             => $mode,
+				'allowed_gateways' => $allowed,
+			);
+		}
+		$this->capability_registry->save_dedicated_routing_rules( $clean_dedicated );
+
+		// 2. Process Matrix Rules.
+		$matrix        = isset( $_POST['matrix'] ) ? (array) $_POST['matrix'] : array();
+		$clean_matrix  = array();
 
 		foreach ( $matrix as $gateway_id => $currencies ) {
 			$clean_gw = sanitize_text_field( $gateway_id );
-			foreach ( $currencies as $curr => $rule ) {
+			foreach ( (array) $currencies as $curr => $rule ) {
 				$clean_curr = strtoupper( sanitize_text_field( $curr ) );
 				$mode       = sanitize_key( $rule['mode'] ?? 'allow_native' );
 				$convert_to = strtoupper( sanitize_text_field( $rule['convert_to'] ?? 'USD' ) );
 
 				if ( SettlementMode::is_valid( $mode ) ) {
-					$clean[ $clean_gw ][ $clean_curr ] = array(
+					$clean_matrix[ $clean_gw ][ $clean_curr ] = array(
 						'mode'       => $mode,
 						'convert_to' => $convert_to,
 					);
 				}
 			}
 		}
+		$this->capability_registry->save_matrix( $clean_matrix );
 
-		$this->capability_registry->save_matrix( $clean );
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Payment Gateway Matrix rules saved successfully.', 'settlex-multi-currency' ) . '</p></div>';
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Gateway routing and matrix rules saved successfully.', 'settlex-multi-currency' ) . '</p></div>';
 	}
 
 	/**

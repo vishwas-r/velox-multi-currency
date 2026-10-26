@@ -59,6 +59,106 @@ class PriceConverter {
 
 		// Format currency args (symbol, decimals, position).
 		add_filter( 'wc_price_args', array( $this, 'filter_wc_price_args' ), 10, 1 );
+
+		// Core WooCommerce active currency and symbol filters.
+		add_filter( 'woocommerce_currency', array( $this, 'filter_woocommerce_currency' ), 9999, 1 );
+		add_filter( 'woocommerce_currency_symbol', array( $this, 'filter_woocommerce_currency_symbol' ), 9999, 2 );
+
+		// Recalculate cart totals when currency is active/switched.
+		add_action( 'woocommerce_before_calculate_totals', array( $this, 'before_calculate_totals' ), 10, 1 );
+	}
+
+	/**
+	 * Recursion guards.
+	 */
+	protected static bool $filtering_currency = false;
+	protected static bool $filtering_symbol   = false;
+
+	/**
+	 * Override the active WooCommerce currency for customer requests.
+	 *
+	 * @param string $currency Base store currency.
+	 * @return string Active customer currency.
+	 */
+	public function filter_woocommerce_currency( $currency ) {
+		if ( self::$filtering_currency || ( is_admin() && ! wp_doing_ajax() ) ) {
+			return $currency;
+		}
+
+		self::$filtering_currency = true;
+		$active = $this->registry->get_active_currency();
+		self::$filtering_currency = false;
+
+		return $active;
+	}
+
+	/**
+	 * Return clean decoded symbol for active currency.
+	 *
+	 * @param string $currency_symbol Default symbol.
+	 * @param string $currency Currency code.
+	 * @return string Decoded symbol.
+	 */
+	public function filter_woocommerce_currency_symbol( $currency_symbol, $currency = '' ) {
+		if ( self::$filtering_symbol ) {
+			return $currency_symbol;
+		}
+
+		self::$filtering_symbol = true;
+		$code    = ! empty( $currency ) ? strtoupper( (string) $currency ) : $this->registry->get_active_currency();
+		$enabled = $this->registry->get_enabled_currencies();
+
+		$result = $currency_symbol;
+		if ( isset( $enabled[ $code ]['symbol'] ) && ! empty( $enabled[ $code ]['symbol'] ) ) {
+			$result = (string) $enabled[ $code ]['symbol'];
+		}
+
+		self::$filtering_symbol = false;
+		return html_entity_decode( (string) $result, ENT_QUOTES, 'UTF-8' );
+	}
+
+	/**
+	 * Recalculate cart item prices when currency is switched.
+	 *
+	 * @param \WC_Cart $cart Cart object.
+	 */
+	public function before_calculate_totals( $cart ): void {
+		if ( is_admin() && ! wp_doing_ajax() ) {
+			return;
+		}
+
+		$this->converted_cache = array();
+
+		$base_currency   = $this->registry->get_base_currency();
+		$active_currency = $this->registry->get_active_currency();
+
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+			if ( ! isset( $cart_item['data'] ) || ! ( $cart_item['data'] instanceof \WC_Product ) ) {
+				continue;
+			}
+
+			$product = $cart_item['data'];
+
+			if ( $active_currency === $base_currency ) {
+				$base_price = get_post_meta( $product->get_id(), '_price', true );
+				if ( '' !== $base_price && false !== $base_price ) {
+					$product->set_price( (float) $base_price );
+				}
+				continue;
+			}
+
+			$fixed_price = $this->get_fixed_price( $product, $active_currency );
+			if ( null !== $fixed_price && '' !== $fixed_price ) {
+				$product->set_price( (float) $fixed_price );
+				continue;
+			}
+
+			$base_price = get_post_meta( $product->get_id(), '_price', true );
+			if ( '' !== $base_price && false !== $base_price ) {
+				$converted = $this->convert_raw_price( (float) $base_price, $base_currency, $active_currency );
+				$product->set_price( (float) $converted );
+			}
+		}
 	}
 
 	/**

@@ -100,5 +100,22 @@
 				$wrap.slideUp(150);
 			}
 		});
+
+		// 5. Dedicated Routing Mode toggle.
+		$(document).on('change', '.settlex-routing-mode-toggle', function() {
+			var $radio = $(this);
+			var curr = $radio.data('currency');
+			var mode = $radio.val();
+			var $card = $radio.closest('.settlex-routing-card');
+			var $exclusiveContainer = $('#exclusive-gateways-' + curr);
+
+			if (mode === 'exclusive') {
+				$card.addClass('is-exclusive');
+				$exclusiveContainer.slideDown(180);
+			} else {
+				$card.removeClass('is-exclusive');
+				$exclusiveContainer.slideUp(180);
+			}
+		});
 	});
 })(jQuery);

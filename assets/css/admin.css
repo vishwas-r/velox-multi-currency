@@ -328,3 +328,169 @@
 .settlex-stat-card.settlex-card-primary .settlex-stat-value {
 	color: #1e40af;
 }
+
+/* Switcher Form Table */
+.settlex-form-table th {
+	width: 240px;
+	padding: 20px 10px 20px 0;
+	font-weight: 600;
+	color: #1e293b;
+}
+
+.settlex-form-table td {
+	padding: 16px 10px;
+}
+
+.settlex-checkbox-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	color: #0f172a;
+}
+
+.settlex-checkbox-label input[type="checkbox"] {
+	margin: 0;
+}
+
+/* Dedicated Gateway Routing Grid */
+.settlex-dedicated-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.settlex-routing-card {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	transition: all 0.2s ease;
+}
+
+.settlex-routing-card.is-exclusive {
+	border-color: #6366f1;
+	box-shadow: 0 0 0 1px #6366f1, 0 4px 6px -1px rgba(99, 102, 241, 0.1);
+}
+
+.settlex-routing-card-header {
+	background: #f8fafc;
+	padding: 14px 16px;
+	border-bottom: 1px solid #e2e8f0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.settlex-currency-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.settlex-badge-symbol {
+	font-size: 13px;
+	font-weight: 700;
+	color: #4f46e5;
+	background: #eef2ff;
+	padding: 2px 7px;
+	border-radius: 4px;
+}
+
+.settlex-badge-code {
+	font-size: 15px;
+	font-weight: 700;
+	color: #0f172a;
+}
+
+.settlex-currency-title {
+	font-size: 12px;
+	color: #64748b;
+}
+
+.settlex-routing-card-body {
+	padding: 16px;
+}
+
+.settlex-routing-mode-selector {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin-bottom: 14px;
+}
+
+.settlex-mode-radio {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+	font-size: 13px;
+	color: #334155;
+}
+
+.settlex-mode-radio input[type="radio"] {
+	margin: 0;
+}
+
+.settlex-exclusive-gateways {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	padding: 12px;
+	margin-top: 10px;
+}
+
+.settlex-gateways-header {
+	font-size: 12px;
+	font-weight: 600;
+	color: #475569;
+	margin-bottom: 10px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid #cbd5e1;
+}
+
+.settlex-gateways-checkboxes {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 220px;
+	overflow-y: auto;
+}
+
+.settlex-gw-checkbox {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 10px;
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 13px;
+	transition: background-color 0.15s ease;
+}
+
+.settlex-gw-checkbox:hover {
+	background: #f1f5f9;
+}
+
+.settlex-gw-checkbox input[type="checkbox"] {
+	margin: 0 8px 0 0;
+}
+
+.settlex-gw-name {
+	flex-grow: 1;
+	font-weight: 500;
+	color: #1e293b;
+}
+
+.settlex-gw-id {
+	font-size: 11px;
+	color: #64748b;
+	background: #f1f5f9;
+	padding: 2px 6px;
+	border-radius: 3px;
+}
