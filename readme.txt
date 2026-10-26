@@ -1,5 +1,5 @@
-=== NammaWP - Multi-Currency & Payment Gateway for WooCommerce ===
-Contributors: nammawp
+=== VeloX - Multi-Currency & Payment Gateway for WooCommerce ===
+Contributors: velox
 Tags: currency switcher, multi currency, payment gateway, razorpay, woocommerce
 Requires at least: 6.5
 Tested up to: 7.1
@@ -12,11 +12,11 @@ Multi-currency switcher and dedicated payment gateway router for WooCommerce. Di
 
 == Description ==
 
-**NammaWP Multi-Currency** is the modern multi-currency switcher and payment gateway router for WooCommerce.
+**VeloX Multi-Currency** is the modern multi-currency switcher and payment gateway router for WooCommerce.
 
 Show prices in any currency, and ensure every order is routed through the right gateway in the right currency.
 
-### Why NammaWP?
+### Why VeloX?
 
 Most multi-currency plugins only convert visual prices on product pages, creating serious failures at checkout:
 * **Gateway Currency Incompatibilities:** Gateways like PayPal reject unsupported currencies (e.g. domestic INR or 3-decimal currencies like KWD). Razorpay primarily settles in INR. Passing unsupported currencies causes transaction errors and abandoned carts.
@@ -40,15 +40,15 @@ Most multi-currency plugins only convert visual prices on product pages, creatin
 
 == Installation ==
 
-1. Upload the `nammawp-multi-currency` folder to your `/wp-content/plugins/` directory.
+1. Upload the `velox-multi-currency` folder to your `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Navigate to **WooCommerce -> NammaWP** to configure your currencies and set your payment gateway matrix rules.
-4. Place the switcher on your storefront using the `[nammawp_switcher]` shortcode, floating widget, or header menu.
+3. Navigate to **WooCommerce -> VeloX** to configure your currencies and set your payment gateway matrix rules.
+4. Place the switcher on your storefront using the `[velox_switcher]` shortcode, floating widget, or header menu.
 
 == Frequently Asked Questions ==
 
-= Does NammaWP work with WooCommerce Checkout Blocks? =
-Yes! NammaWP integrates with the modern WooCommerce Store API to disable unsupported gateways and update settlement amounts reactively in the Checkout Block.
+= Does VeloX work with WooCommerce Checkout Blocks? =
+Yes! VeloX integrates with the modern WooCommerce Store API to disable unsupported gateways and update settlement amounts reactively in the Checkout Block.
 
 = How are exchange rates updated? =
 Rates can be fetched automatically via background scheduler or on-demand from trusted providers with zero API keys required.
@@ -57,7 +57,7 @@ Rates can be fetched automatically via background scheduler or on-demand from tr
 Yes. You can edit the exchange rate and buffer markup percentage for any currency directly in the settings table.
 
 = What happens if a customer chooses a currency not supported by PayPal? =
-With NammaWP's Gateway Routing, you can lock USD to PayPal and INR to Razorpay, or use the Gateway Matrix to hide incompatible gateways.
+With VeloX's Gateway Routing, you can lock USD to PayPal and INR to Razorpay, or use the Gateway Matrix to hide incompatible gateways.
 
 == Changelog ==
 
@@ -71,7 +71,7 @@ With NammaWP's Gateway Routing, you can lock USD to PayPal and INR to Razorpay, 
 * Fix: Synchronized currency symbol and numeric amounts across all template variants.
 
 = 1.0.1 =
-* Rebranded to NammaWP Multi-Currency.
+* Rebranded to VeloX Multi-Currency.
 * Added floating currency switcher and header bar switcher.
 * Added real-time AJAX currency switching without page reload.
 

@@ -2,12 +2,12 @@
 /**
  * AnalyticsNormalizer ensures WooCommerce Analytics reports are normalized to the store base currency.
  *
- * @package NammaWP\MultiCurrency\Orders
+ * @package VeloX\MultiCurrency\Orders
  */
 
-namespace NammaWP\MultiCurrency\Orders;
+namespace VeloX\MultiCurrency\Orders;
 
-use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
+use VeloX\MultiCurrency\Currency\CurrencyRegistry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -60,7 +60,7 @@ class AnalyticsNormalizer {
 		}
 
 		// Retrieve rate snapshot stored at checkout.
-		$rate = (float) $order->get_meta( '_nammawp_exchange_rate' );
+		$rate = (float) $order->get_meta( '_velox_exchange_rate' );
 		if ( $rate <= 0 ) {
 			// Fallback to active registry rate if order has no snapshot.
 			$enabled = $this->currency_registry->get_enabled_currencies();

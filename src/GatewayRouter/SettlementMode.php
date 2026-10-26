@@ -2,10 +2,10 @@
 /**
  * SettlementMode constants.
  *
- * @package NammaWP\MultiCurrency\GatewayRouter
+ * @package VeloX\MultiCurrency\GatewayRouter
  */
 
-namespace NammaWP\MultiCurrency\GatewayRouter;
+namespace VeloX\MultiCurrency\GatewayRouter;
 
 defined( 'ABSPATH' ) || exit;
 

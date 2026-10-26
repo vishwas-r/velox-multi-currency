@@ -2,10 +2,10 @@
 /**
  * PriceConverter hooks into WooCommerce price calculation and formatting.
  *
- * @package NammaWP\MultiCurrency\Currency
+ * @package VeloX\MultiCurrency\Currency
  */
 
-namespace NammaWP\MultiCurrency\Currency;
+namespace VeloX\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -304,7 +304,7 @@ class PriceConverter {
 		}
 
 		if ( $product instanceof \WC_Product ) {
-			$reg_fixed = $product->get_meta( '_nammawp_regular_price_' . strtoupper( $active_currency ), true );
+			$reg_fixed = $product->get_meta( '_velox_regular_price_' . strtoupper( $active_currency ), true );
 			if ( '' !== $reg_fixed && false !== $reg_fixed ) {
 				return (float) $reg_fixed;
 			}
@@ -333,7 +333,7 @@ class PriceConverter {
 		}
 
 		if ( $product instanceof \WC_Product ) {
-			$sale_fixed = $product->get_meta( '_nammawp_sale_price_' . strtoupper( $active_currency ), true );
+			$sale_fixed = $product->get_meta( '_velox_sale_price_' . strtoupper( $active_currency ), true );
 			if ( '' !== $sale_fixed && false !== $sale_fixed ) {
 				return (float) $sale_fixed;
 			}
@@ -388,19 +388,19 @@ class PriceConverter {
 		$curr = strtoupper( $currency );
 
 		// 1. Check if sale price is explicitly set for this currency.
-		$sale_fixed = $product->get_meta( '_nammawp_sale_price_' . $curr, true );
+		$sale_fixed = $product->get_meta( '_velox_sale_price_' . $curr, true );
 		if ( '' !== $sale_fixed && false !== $sale_fixed && (float) $sale_fixed > 0 ) {
 			return (string) $sale_fixed;
 		}
 
 		// 2. Check regular price override.
-		$reg_fixed = $product->get_meta( '_nammawp_regular_price_' . $curr, true );
+		$reg_fixed = $product->get_meta( '_velox_regular_price_' . $curr, true );
 		if ( '' !== $reg_fixed && false !== $reg_fixed ) {
 			return (string) $reg_fixed;
 		}
 
 		// 3. Fallback fixed price.
-		$val = $product->get_meta( '_nammawp_fixed_price_' . $curr, true );
+		$val = $product->get_meta( '_velox_fixed_price_' . $curr, true );
 		return ( '' !== $val && false !== $val ) ? (string) $val : null;
 	}
 

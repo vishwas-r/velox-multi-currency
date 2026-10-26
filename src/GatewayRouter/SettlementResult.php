@@ -2,12 +2,12 @@
 /**
  * SettlementResult value object holding resolved charge currency, amount and disclosure.
  *
- * @package NammaWP\MultiCurrency\GatewayRouter
+ * @package VeloX\MultiCurrency\GatewayRouter
  */
 
-namespace NammaWP\MultiCurrency\GatewayRouter;
+namespace VeloX\MultiCurrency\GatewayRouter;
 
-use NammaWP\MultiCurrency\Currency\Money;
+use VeloX\MultiCurrency\Currency\Money;
 
 defined( 'ABSPATH' ) || exit;
 

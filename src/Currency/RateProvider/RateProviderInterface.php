@@ -2,10 +2,10 @@
 /**
  * Interface for exchange rate providers.
  *
- * @package NammaWP\MultiCurrency\Currency\RateProvider
+ * @package VeloX\MultiCurrency\Currency\RateProvider
  */
 
-namespace NammaWP\MultiCurrency\Currency\RateProvider;
+namespace VeloX\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 

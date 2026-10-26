@@ -2,13 +2,13 @@
 /**
  * SettlementResolver executes deterministic settlement calculations for cart/order checkout.
  *
- * @package NammaWP\MultiCurrency\GatewayRouter
+ * @package VeloX\MultiCurrency\GatewayRouter
  */
 
-namespace NammaWP\MultiCurrency\GatewayRouter;
+namespace VeloX\MultiCurrency\GatewayRouter;
 
-use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
-use NammaWP\MultiCurrency\Currency\Money;
+use VeloX\MultiCurrency\Currency\CurrencyRegistry;
+use VeloX\MultiCurrency\Currency\Money;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -106,7 +106,7 @@ class SettlementResolver {
 		// Generate human-friendly disclosure notice.
 		$notice = sprintf(
 			/* translators: 1: Charge amount & currency, 2: Display amount & currency, 3: Gateway name */
-			__( 'Note: You will be charged %1$s via %3$s (converted from %2$s).', 'nammawp-multi-currency' ),
+			__( 'Note: You will be charged %1$s via %3$s (converted from %2$s).', 'velox-multi-currency' ),
 			$this->format_amount( $charge_money ),
 			$this->format_amount( $display_money ),
 			$this->get_gateway_title( $gateway_id )

@@ -2,10 +2,10 @@
 /**
  * ExchangeRate-API free open endpoint provider.
  *
- * @package NammaWP\MultiCurrency\Currency\RateProvider
+ * @package VeloX\MultiCurrency\Currency\RateProvider
  */
 
-namespace NammaWP\MultiCurrency\Currency\RateProvider;
+namespace VeloX\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +35,7 @@ class ExchangeRateApiProvider implements RateProviderInterface {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'ExchangeRate-API (Free, 160+ Currencies, No Key)', 'nammawp-multi-currency' );
+		return __( 'ExchangeRate-API (Free, 160+ Currencies, No Key)', 'velox-multi-currency' );
 	}
 
 	/**
@@ -52,8 +52,8 @@ class ExchangeRateApiProvider implements RateProviderInterface {
 			$url,
 			array(
 				'timeout'    => 15,
-				'sslverify'  => (bool) apply_filters( 'nammawp_mc_ssl_verify', true ),
-				'user-agent' => 'NammaWP-WooCommerce/' . ( defined( 'NAMMAWP_MC_VERSION' ) ? NAMMAWP_MC_VERSION : '1.0.0' ),
+				'sslverify'  => (bool) apply_filters( 'velox_mc_ssl_verify', true ),
+				'user-agent' => 'VeloX-WooCommerce/' . ( defined( 'VELOX_MC_VERSION' ) ? VELOX_MC_VERSION : '1.0.0' ),
 			)
 		);
 
@@ -64,7 +64,7 @@ class ExchangeRateApiProvider implements RateProviderInterface {
 		$status = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status ) {
 			return new \WP_Error(
-				'nammawp_erapi_http_error',
+				'velox_erapi_http_error',
 				sprintf( 'ExchangeRate-API returned HTTP status %d', $status )
 			);
 		}
@@ -75,14 +75,14 @@ class ExchangeRateApiProvider implements RateProviderInterface {
 		if ( ! is_array( $data ) || ( isset( $data['result'] ) && 'success' !== $data['result'] ) ) {
 			$error_type = $data['error-type'] ?? 'unknown_error';
 			return new \WP_Error(
-				'nammawp_erapi_api_error',
+				'velox_erapi_api_error',
 				sprintf( 'ExchangeRate-API error: %s', sanitize_text_field( $error_type ) )
 			);
 		}
 
 		$rates_raw = $data['rates'] ?? array();
 		if ( empty( $rates_raw ) || ! is_array( $rates_raw ) ) {
-			return new \WP_Error( 'nammawp_erapi_empty_rates', 'No exchange rates found in API response' );
+			return new \WP_Error( 'velox_erapi_empty_rates', 'No exchange rates found in API response' );
 		}
 
 		$normalized = array( $base => 1.0 );

@@ -2,10 +2,10 @@
 /**
  * Money value object with ISO-4217 minor unit representation.
  *
- * @package NammaWP\MultiCurrency\Currency
+ * @package VeloX\MultiCurrency\Currency
  */
 
-namespace NammaWP\MultiCurrency\Currency;
+namespace VeloX\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 

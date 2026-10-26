@@ -1,43 +1,43 @@
 <?php
 /**
- * Plugin Name:          NammaWP - Multi-Currency & Payment Gateway for WooCommerce
- * Plugin URI:           https://nammawp.com/plugins/nammawp-multi-currency
+ * Plugin Name:          VeloX - Multi-Currency & Payment Gateway for WooCommerce
+ * Plugin URI:           https://velox.dev/plugins/velox-multi-currency
  * Description:          Cache-safe multi-currency switcher, automatic live exchange rates, and dedicated payment gateway routing for WooCommerce.
  * Version:              1.0.3
  * Requires at least:    6.5
  * Requires PHP:         7.4
- * Author:               NammaWP
- * Author URI:           https://nammawp.com
+ * Author:               VeloX
+ * Author URI:           https://velox.dev
  * License:              GPL v2 or later
  * License URI:          https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:          nammawp-multi-currency
+ * Text Domain:          velox-multi-currency
  * Domain Path:          /languages
  * Requires Plugins:     woocommerce
  * WC requires at least: 8.5.0
  * WC tested up to:      9.5.0
  *
- * @package NammaWP\MultiCurrency
+ * @package VeloX\MultiCurrency
  */
 
-use NammaWP\MultiCurrency\Plugin;
+use VeloX\MultiCurrency\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
 // Define core plugin constants.
-define( 'NAMMAWP_MC_VERSION', '1.0.3' );
-define( 'NAMMAWP_MC_PLUGIN_FILE', __FILE__ );
-define( 'NAMMAWP_MC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'NAMMAWP_MC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'NAMMAWP_MC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+define( 'VELOX_MC_VERSION', '1.0.3' );
+define( 'VELOX_MC_PLUGIN_FILE', __FILE__ );
+define( 'VELOX_MC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'VELOX_MC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'VELOX_MC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
 /**
- * Built-in PSR-4 Autoloader for NammaWP\MultiCurrency\ namespace.
+ * Built-in PSR-4 Autoloader for VeloX\MultiCurrency\ namespace.
  * Allows zero-dependency execution without requiring composer install in production.
  */
 spl_autoload_register(
 	function ( $class ) {
-		$prefix   = 'NammaWP\\MultiCurrency\\';
-		$base_dir = NAMMAWP_MC_PLUGIN_DIR . 'src/';
+		$prefix   = 'VeloX\\MultiCurrency\\';
+		$base_dir = VELOX_MC_PLUGIN_DIR . 'src/';
 
 		$len = strlen( $prefix );
 		if ( strncmp( $prefix, $class, $len ) !== 0 ) {
@@ -54,8 +54,8 @@ spl_autoload_register(
 );
 
 // If vendor/autoload.php exists (developer environment), load it.
-if ( file_exists( NAMMAWP_MC_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
-	require_once NAMMAWP_MC_PLUGIN_DIR . 'vendor/autoload.php';
+if ( file_exists( VELOX_MC_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+	require_once VELOX_MC_PLUGIN_DIR . 'vendor/autoload.php';
 }
 
 /**
@@ -65,25 +65,25 @@ add_action(
 	'before_woocommerce_init',
 	function () {
 		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', NAMMAWP_MC_PLUGIN_FILE, true );
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', NAMMAWP_MC_PLUGIN_FILE, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', VELOX_MC_PLUGIN_FILE, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', VELOX_MC_PLUGIN_FILE, true );
 		}
 	}
 );
 
-if ( ! function_exists( 'nammawp_mc' ) ) {
+if ( ! function_exists( 'velox_mc' ) ) {
 	/**
 	 * Main instance accessor.
 	 *
 	 * @return Plugin
 	 */
-	function nammawp_mc(): Plugin {
+	function velox_mc(): Plugin {
 		return Plugin::instance();
 	}
 }
 
 /**
- * Initialize NammaWP on plugins_loaded.
+ * Initialize VeloX on plugins_loaded.
  */
 add_action(
 	'plugins_loaded',
@@ -98,8 +98,8 @@ add_action(
 						<p>
 							<?php
 							echo esc_html__(
-								'NammaWP Multi-Currency requires WooCommerce to be installed and active.',
-								'nammawp-multi-currency'
+								'VeloX Multi-Currency requires WooCommerce to be installed and active.',
+								'velox-multi-currency'
 							);
 							?>
 						</p>
@@ -111,6 +111,6 @@ add_action(
 		}
 
 		// Boot plugin.
-		nammawp_mc()->boot();
+		velox_mc()->boot();
 	}
 );

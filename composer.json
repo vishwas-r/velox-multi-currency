@@ -1,12 +1,12 @@
 {
-  "name": "nammawp/nammawp-multi-currency",
-  "description": "NammaWP - Multi-Currency & Payment Gateway Plugin for WooCommerce",
+  "name": "velox/velox-multi-currency",
+  "description": "VeloX - Multi-Currency & Payment Gateway for WooCommerce",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "authors": [
     {
-      "name": "NammaWP Team",
-      "homepage": "https://nammawp.com"
+      "name": "VeloX Team",
+      "homepage": "https://velox.dev"
     }
   ],
   "require": {
@@ -19,7 +19,7 @@
   },
   "autoload": {
     "psr-4": {
-      "NammaWP\\MultiCurrency\\": "src/"
+      "VeloX\\MultiCurrency\\": "src/"
     }
   },
   "config": {

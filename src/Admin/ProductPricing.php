@@ -2,12 +2,12 @@
 /**
  * ProductPricing provides UI inputs for per-product and per-variation fixed pricing per currency.
  *
- * @package NammaWP\MultiCurrency\Admin
+ * @package VeloX\MultiCurrency\Admin
  */
 
-namespace NammaWP\MultiCurrency\Admin;
+namespace VeloX\MultiCurrency\Admin;
 
-use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
+use VeloX\MultiCurrency\Currency\CurrencyRegistry;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -70,34 +70,34 @@ class ProductPricing {
 			return;
 		}
 
-		echo '<div class="options_group nammawp-product-pricing-group" style="background:#f8fafc; padding: 10px 15px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 10px;">';
-		echo '<p><strong>' . esc_html__( 'NammaWP Multi-Currency Fixed Pricing (Optional)', 'nammawp-multi-currency' ) . '</strong><br>';
-		echo '<span class="description" style="font-size: 11px;">' . esc_html__( 'Set fixed prices for specific currencies. Leave blank to automatically convert using live exchange rates.', 'nammawp-multi-currency' ) . '</span></p>';
+		echo '<div class="options_group velox-product-pricing-group" style="background:#f8fafc; padding: 10px 15px; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 10px;">';
+		echo '<p><strong>' . esc_html__( 'VeloX Multi-Currency Fixed Pricing (Optional)', 'velox-multi-currency' ) . '</strong><br>';
+		echo '<span class="description" style="font-size: 11px;">' . esc_html__( 'Set fixed prices for specific currencies. Leave blank to automatically convert using live exchange rates.', 'velox-multi-currency' ) . '</span></p>';
 
 		foreach ( $secondary as $code => $data ) {
-			$reg_meta  = get_post_meta( $post->ID, '_nammawp_regular_price_' . $code, true );
-			$sale_meta = get_post_meta( $post->ID, '_nammawp_sale_price_' . $code, true );
+			$reg_meta  = get_post_meta( $post->ID, '_velox_regular_price_' . $code, true );
+			$sale_meta = get_post_meta( $post->ID, '_velox_sale_price_' . $code, true );
 			$symbol    = $data['symbol'] ?? $code;
 
 			/* translators: 1: Currency code, 2: Currency symbol */
-			$reg_label = sprintf( __( '%1$s Regular Price (%2$s)', 'nammawp-multi-currency' ), esc_html( $code ), esc_html( $symbol ) );
+			$reg_label = sprintf( __( '%1$s Regular Price (%2$s)', 'velox-multi-currency' ), esc_html( $code ), esc_html( $symbol ) );
 			woocommerce_wp_text_input(
 				array(
-					'id'          => '_nammawp_regular_price_' . $code,
+					'id'          => '_velox_regular_price_' . $code,
 					'label'       => $reg_label,
-					'placeholder' => __( 'Auto-convert', 'nammawp-multi-currency' ),
+					'placeholder' => __( 'Auto-convert', 'velox-multi-currency' ),
 					'value'       => $reg_meta,
 					'data_type'   => 'price',
 				)
 			);
 
 			/* translators: 1: Currency code, 2: Currency symbol */
-			$sale_label = sprintf( __( '%1$s Sale Price (%2$s)', 'nammawp-multi-currency' ), esc_html( $code ), esc_html( $symbol ) );
+			$sale_label = sprintf( __( '%1$s Sale Price (%2$s)', 'velox-multi-currency' ), esc_html( $code ), esc_html( $symbol ) );
 			woocommerce_wp_text_input(
 				array(
-					'id'          => '_nammawp_sale_price_' . $code,
+					'id'          => '_velox_sale_price_' . $code,
 					'label'       => $sale_label,
-					'placeholder' => __( 'Optional sale price', 'nammawp-multi-currency' ),
+					'placeholder' => __( 'Optional sale price', 'velox-multi-currency' ),
 					'value'       => $sale_meta,
 					'data_type'   => 'price',
 				)
@@ -122,7 +122,7 @@ class ProductPricing {
 			}
 
 			// Regular price.
-			$reg_key = '_nammawp_regular_price_' . $code;
+			$reg_key = '_velox_regular_price_' . $code;
 			if ( isset( $_POST[ $reg_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = sanitize_text_field( wp_unslash( $_POST[ $reg_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
@@ -133,7 +133,7 @@ class ProductPricing {
 			}
 
 			// Sale price.
-			$sale_key = '_nammawp_sale_price_' . $code;
+			$sale_key = '_velox_sale_price_' . $code;
 			if ( isset( $_POST[ $sale_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = sanitize_text_field( wp_unslash( $_POST[ $sale_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
@@ -168,30 +168,30 @@ class ProductPricing {
 			return;
 		}
 
-		echo '<div class="nammawp-variation-pricing-wrap" style="width: 100%; clear: both; padding: 10px 0; border-top: 1px dashed #cbd5e1; margin-top: 10px;">';
-		echo '<p style="margin: 0 0 5px 0;"><strong>' . esc_html__( 'NammaWP Multi-Currency Fixed Prices', 'nammawp-multi-currency' ) . '</strong></p>';
+		echo '<div class="velox-variation-pricing-wrap" style="width: 100%; clear: both; padding: 10px 0; border-top: 1px dashed #cbd5e1; margin-top: 10px;">';
+		echo '<p style="margin: 0 0 5px 0;"><strong>' . esc_html__( 'VeloX Multi-Currency Fixed Prices', 'velox-multi-currency' ) . '</strong></p>';
 
 		foreach ( $secondary as $code => $data ) {
-			$reg_meta  = get_post_meta( $variation->ID, '_nammawp_regular_price_' . $code, true );
-			$sale_meta = get_post_meta( $variation->ID, '_nammawp_sale_price_' . $code, true );
+			$reg_meta  = get_post_meta( $variation->ID, '_velox_regular_price_' . $code, true );
+			$sale_meta = get_post_meta( $variation->ID, '_velox_sale_price_' . $code, true );
 			$symbol    = $data['symbol'] ?? $code;
 
 			?>
-			<div class="nammawp-var-row" style="display: flex; gap: 10px; margin-bottom: 6px;">
+			<div class="velox-var-row" style="display: flex; gap: 10px; margin-bottom: 6px;">
 				<div style="flex: 1;">
 					<label style="font-size: 11px;"><?php echo esc_html( sprintf( '%s Regular (%s)', $code, $symbol ) ); ?></label>
 					<input type="text"
-						name="_nammawp_var_reg_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
+						name="_velox_var_reg_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
 						value="<?php echo esc_attr( $reg_meta ); ?>"
-						placeholder="<?php esc_attr_e( 'Auto-convert', 'nammawp-multi-currency' ); ?>"
+						placeholder="<?php esc_attr_e( 'Auto-convert', 'velox-multi-currency' ); ?>"
 						style="width: 100%; font-size: 12px;">
 				</div>
 				<div style="flex: 1;">
 					<label style="font-size: 11px;"><?php echo esc_html( sprintf( '%s Sale (%s)', $code, $symbol ) ); ?></label>
 					<input type="text"
-						name="_nammawp_var_sale_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
+						name="_velox_var_sale_price_<?php echo esc_attr( $code ); ?>[<?php echo esc_attr( $loop ); ?>]"
 						value="<?php echo esc_attr( $sale_meta ); ?>"
-						placeholder="<?php esc_attr_e( 'Optional sale', 'nammawp-multi-currency' ); ?>"
+						placeholder="<?php esc_attr_e( 'Optional sale', 'velox-multi-currency' ); ?>"
 						style="width: 100%; font-size: 12px;">
 				</div>
 			</div>
@@ -217,24 +217,24 @@ class ProductPricing {
 			}
 
 			// Regular price.
-			$reg_field = '_nammawp_var_reg_price_' . $code;
+			$reg_field = '_velox_var_reg_price_' . $code;
 			if ( isset( $_POST[ $reg_field ][ $i ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = sanitize_text_field( wp_unslash( $_POST[ $reg_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
-					update_post_meta( $variation_id, '_nammawp_regular_price_' . $code, wc_format_decimal( $val ) );
+					update_post_meta( $variation_id, '_velox_regular_price_' . $code, wc_format_decimal( $val ) );
 				} else {
-					delete_post_meta( $variation_id, '_nammawp_regular_price_' . $code );
+					delete_post_meta( $variation_id, '_velox_regular_price_' . $code );
 				}
 			}
 
 			// Sale price.
-			$sale_field = '_nammawp_var_sale_price_' . $code;
+			$sale_field = '_velox_var_sale_price_' . $code;
 			if ( isset( $_POST[ $sale_field ][ $i ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$val = sanitize_text_field( wp_unslash( $_POST[ $sale_field ][ $i ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				if ( '' !== $val ) {
-					update_post_meta( $variation_id, '_nammawp_sale_price_' . $code, wc_format_decimal( $val ) );
+					update_post_meta( $variation_id, '_velox_sale_price_' . $code, wc_format_decimal( $val ) );
 				} else {
-					delete_post_meta( $variation_id, '_nammawp_sale_price_' . $code );
+					delete_post_meta( $variation_id, '_velox_sale_price_' . $code );
 				}
 			}
 		}

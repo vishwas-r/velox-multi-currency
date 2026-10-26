@@ -1,25 +1,25 @@
 <?php
 /**
- * Main Plugin Orchestrator and Service Container for NammaWP.
+ * Main Plugin Orchestrator and Service Container for VeloX.
  *
- * @package NammaWP\MultiCurrency
+ * @package VeloX\MultiCurrency
  */
 
-namespace NammaWP\MultiCurrency;
+namespace VeloX\MultiCurrency;
 
-use NammaWP\MultiCurrency\Admin\ProductPricing;
-use NammaWP\MultiCurrency\Admin\SettingsPage;
-use NammaWP\MultiCurrency\Currency\CurrencyRegistry;
-use NammaWP\MultiCurrency\Currency\DiscountShippingConverter;
-use NammaWP\MultiCurrency\Currency\PriceConverter;
-use NammaWP\MultiCurrency\Currency\RateService;
-use NammaWP\MultiCurrency\Frontend\Switcher;
-use NammaWP\MultiCurrency\GatewayRouter\GatewayCapabilityRegistry;
-use NammaWP\MultiCurrency\GatewayRouter\GatewayRouter;
-use NammaWP\MultiCurrency\GatewayRouter\SettlementResolver;
-use NammaWP\MultiCurrency\Orders\AnalyticsNormalizer;
-use NammaWP\MultiCurrency\Orders\OrderColumns;
-use NammaWP\MultiCurrency\Orders\OrderRecorder;
+use VeloX\MultiCurrency\Admin\ProductPricing;
+use VeloX\MultiCurrency\Admin\SettingsPage;
+use VeloX\MultiCurrency\Currency\CurrencyRegistry;
+use VeloX\MultiCurrency\Currency\DiscountShippingConverter;
+use VeloX\MultiCurrency\Currency\PriceConverter;
+use VeloX\MultiCurrency\Currency\RateService;
+use VeloX\MultiCurrency\Frontend\Switcher;
+use VeloX\MultiCurrency\GatewayRouter\GatewayCapabilityRegistry;
+use VeloX\MultiCurrency\GatewayRouter\GatewayRouter;
+use VeloX\MultiCurrency\GatewayRouter\SettlementResolver;
+use VeloX\MultiCurrency\Orders\AnalyticsNormalizer;
+use VeloX\MultiCurrency\Orders\OrderColumns;
+use VeloX\MultiCurrency\Orders\OrderRecorder;
 
 defined( 'ABSPATH' ) || exit;
 

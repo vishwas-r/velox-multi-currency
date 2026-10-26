@@ -2,10 +2,10 @@
 /**
  * DiscountShippingConverter handles coupon amounts and free shipping threshold conversions.
  *
- * @package NammaWP\MultiCurrency\Currency
+ * @package VeloX\MultiCurrency\Currency
  */
 
-namespace NammaWP\MultiCurrency\Currency;
+namespace VeloX\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,16 +2,16 @@
 /**
  * RateService manages exchange rate fetching, multi-provider scheduling, and caching.
  *
- * @package NammaWP\MultiCurrency\Currency
+ * @package VeloX\MultiCurrency\Currency
  */
 
-namespace NammaWP\MultiCurrency\Currency;
+namespace VeloX\MultiCurrency\Currency;
 
-use NammaWP\MultiCurrency\Currency\RateProvider\EcbProvider;
-use NammaWP\MultiCurrency\Currency\RateProvider\ExchangeRateApiProvider;
-use NammaWP\MultiCurrency\Currency\RateProvider\FloatRatesProvider;
-use NammaWP\MultiCurrency\Currency\RateProvider\FrankfurterProvider;
-use NammaWP\MultiCurrency\Currency\RateProvider\RateProviderInterface;
+use VeloX\MultiCurrency\Currency\RateProvider\EcbProvider;
+use VeloX\MultiCurrency\Currency\RateProvider\ExchangeRateApiProvider;
+use VeloX\MultiCurrency\Currency\RateProvider\FloatRatesProvider;
+use VeloX\MultiCurrency\Currency\RateProvider\FrankfurterProvider;
+use VeloX\MultiCurrency\Currency\RateProvider\RateProviderInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,22 +23,22 @@ class RateService {
 	/**
 	 * Action hook for scheduled sync.
 	 */
-	const CRON_HOOK = 'nammawp_mc_daily_rate_sync';
+	const CRON_HOOK = 'velox_mc_daily_rate_sync';
 
 	/**
 	 * Option key for last sync timestamp.
 	 */
-	const OPTION_LAST_SYNC = 'nammawp_mc_last_rate_sync';
+	const OPTION_LAST_SYNC = 'velox_mc_last_rate_sync';
 
 	/**
 	 * Option key for active rate provider.
 	 */
-	const OPTION_PROVIDER = 'nammawp_mc_rate_provider';
+	const OPTION_PROVIDER = 'velox_mc_rate_provider';
 
 	/**
 	 * Option key for auto-sync settings (enabled, interval_hours).
 	 */
-	const OPTION_AUTO_SYNC = 'nammawp_mc_auto_sync_settings';
+	const OPTION_AUTO_SYNC = 'velox_mc_auto_sync_settings';
 
 	/**
 	 * CurrencyRegistry instance.
@@ -194,7 +194,7 @@ class RateService {
 	 * @return string Schedule identifier.
 	 */
 	public function get_schedule_key( int $hours ): string {
-		return 'nammawp_every_' . max( 1, $hours ) . '_hours';
+		return 'velox_every_' . max( 1, $hours ) . '_hours';
 	}
 
 	/**
@@ -210,25 +210,29 @@ class RateService {
 
 		$schedules[ $active_key ] = array(
 			'interval' => $interval_hours * HOUR_IN_SECONDS,
-			'display'  => sprintf(
-				/* translators: %d: Number of hours */
-				__( 'Every %d Hours (NammaWP)', 'nammawp-multi-currency' ),
-				$interval_hours
-			),
+			'display'  => did_action( 'init' )
+				? sprintf(
+					/* translators: %d: Number of hours */
+					__( 'Every %d Hours (VeloX)', 'velox-multi-currency' ),
+					$interval_hours
+				)
+				: "Every {$interval_hours} Hours (VeloX)",
 		);
 
 		// Common intervals for selector compatibility
 		$common = array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 );
 		foreach ( $common as $h ) {
-			$k = 'nammawp_every_' . $h . '_hours';
+			$k = 'velox_every_' . $h . '_hours';
 			if ( ! isset( $schedules[ $k ] ) ) {
 				$schedules[ $k ] = array(
 					'interval' => $h * HOUR_IN_SECONDS,
-					'display'  => sprintf(
-						/* translators: %d: Number of hours */
-						__( 'Every %d Hours (NammaWP)', 'nammawp-multi-currency' ),
-						$h
-					),
+					'display'  => did_action( 'init' )
+						? sprintf(
+							/* translators: %d: Number of hours */
+							__( 'Every %d Hours (VeloX)', 'velox-multi-currency' ),
+							$h
+						)
+						: "Every {$h} Hours (VeloX)",
 				);
 			}
 		}

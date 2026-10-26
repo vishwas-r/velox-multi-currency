@@ -1,14 +1,14 @@
 /**
- * NammaWP Multi-Currency Frontend Styles
+ * VeloX Multi-Currency Frontend Styles
  */
-.nammawp-currency-switcher-wrap {
+.velox-currency-switcher-wrap {
 	display: inline-block;
 	position: relative;
 	margin: 5px 0;
 	font-family: inherit;
 }
 
-.nammawp-currency-select {
+.velox-currency-select {
 	appearance: none;
 	-webkit-appearance: none;
 	background-color: #ffffff;
@@ -27,40 +27,40 @@
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.nammawp-currency-select:focus {
+.velox-currency-select:focus {
 	outline: none;
 	border-color: #4f46e5;
 	box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
 
 /* Floating Switcher Widget */
-.nammawp-floating-widget {
+.velox-floating-widget {
 	position: fixed;
 	z-index: 999999;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
-.nammawp-floating-widget.nammawp-pos-bottom-right {
+.velox-floating-widget.velox-pos-bottom-right {
 	bottom: 24px;
 	right: 24px;
 }
 
-.nammawp-floating-widget.nammawp-pos-bottom-left {
+.velox-floating-widget.velox-pos-bottom-left {
 	bottom: 24px;
 	left: 24px;
 }
 
-.nammawp-floating-widget.nammawp-pos-top-right {
+.velox-floating-widget.velox-pos-top-right {
 	top: 24px;
 	right: 24px;
 }
 
-.nammawp-floating-widget.nammawp-pos-top-left {
+.velox-floating-widget.velox-pos-top-left {
 	top: 24px;
 	left: 24px;
 }
 
-.nammawp-floating-trigger {
+.velox-floating-trigger {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
@@ -77,32 +77,32 @@
 	outline: none;
 }
 
-.nammawp-floating-trigger:hover {
+.velox-floating-trigger:hover {
 	background: #0f172a;
 	transform: translateY(-1px);
 	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
-.nammawp-trigger-symbol {
+.velox-trigger-symbol {
 	color: #38bdf8;
 	font-weight: bold;
 }
 
-.nammawp-trigger-code {
+.velox-trigger-code {
 	letter-spacing: 0.5px;
 }
 
-.nammawp-chevron {
+.velox-chevron {
 	transition: transform 0.2s ease;
 	opacity: 0.7;
 }
 
-.nammawp-floating-widget.is-open .nammawp-chevron {
+.velox-floating-widget.is-open .velox-chevron {
 	transform: rotate(180deg);
 }
 
 /* Floating Dropdown */
-.nammawp-floating-dropdown {
+.velox-floating-dropdown {
 	display: none;
 	position: absolute;
 	bottom: calc(100% + 10px);
@@ -113,26 +113,26 @@
 	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 	min-width: 200px;
 	overflow: hidden;
-	animation: nammawp-slide-up 0.18s ease-out forwards;
+	animation: velox-slide-up 0.18s ease-out forwards;
 }
 
-.nammawp-pos-top-right .nammawp-floating-dropdown,
-.nammawp-pos-top-left .nammawp-floating-dropdown {
+.velox-pos-top-right .velox-floating-dropdown,
+.velox-pos-top-left .velox-floating-dropdown {
 	bottom: auto;
 	top: calc(100% + 10px);
 }
 
-.nammawp-pos-bottom-left .nammawp-floating-dropdown,
-.nammawp-pos-top-left .nammawp-floating-dropdown {
+.velox-pos-bottom-left .velox-floating-dropdown,
+.velox-pos-top-left .velox-floating-dropdown {
 	right: auto;
 	left: 0;
 }
 
-.nammawp-floating-widget.is-open .nammawp-floating-dropdown {
+.velox-floating-widget.is-open .velox-floating-dropdown {
 	display: block;
 }
 
-@keyframes nammawp-slide-up {
+@keyframes velox-slide-up {
 	from {
 		opacity: 0;
 		transform: translateY(6px);
@@ -143,7 +143,7 @@
 	}
 }
 
-.nammawp-floating-header {
+.velox-floating-header {
 	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -153,7 +153,7 @@
 	border-bottom: 1px solid #f1f5f9;
 }
 
-.nammawp-floating-list {
+.velox-floating-list {
 	list-style: none;
 	margin: 0;
 	padding: 4px 0;
@@ -161,7 +161,7 @@
 	overflow-y: auto;
 }
 
-.nammawp-floating-item {
+.velox-floating-item {
 	display: flex;
 	align-items: center;
 	gap: 8px;
@@ -172,48 +172,48 @@
 	transition: background 0.12s ease;
 }
 
-.nammawp-floating-item:hover {
+.velox-floating-item:hover {
 	background: #f8fafc;
 	color: #0f172a;
 }
 
-.nammawp-floating-item.is-active {
+.velox-floating-item.is-active {
 	background: #eff6ff;
 	color: #1d4ed8;
 	font-weight: 600;
 }
 
-.nammawp-item-symbol {
+.velox-item-symbol {
 	width: 16px;
 	color: #64748b;
 }
 
-.nammawp-floating-item.is-active .nammawp-item-symbol {
+.velox-floating-item.is-active .velox-item-symbol {
 	color: #2563eb;
 }
 
-.nammawp-item-name {
+.velox-item-name {
 	font-size: 11px;
 	color: #94a3b8;
 	margin-left: auto;
 }
 
-.nammawp-item-check {
+.velox-item-check {
 	color: #2563eb;
 	margin-left: 6px;
 	display: none;
 	flex-shrink: 0;
 }
 
-.nammawp-floating-item.is-active .nammawp-item-check {
+.velox-floating-item.is-active .velox-item-check {
 	display: inline-block;
 }
 
-.nammawp-floating-item.is-switching .nammawp-item-check {
+.velox-floating-item.is-switching .velox-item-check {
 	display: none !important;
 }
 
-.nammawp-floating-item.is-switching::after {
+.velox-floating-item.is-switching::after {
 	content: '';
 	display: inline-block;
 	width: 12px;
@@ -221,44 +221,44 @@
 	border: 2px solid #cbd5e1;
 	border-top-color: #2563eb;
 	border-radius: 50%;
-	animation: nammawp-spin 0.6s linear infinite;
+	animation: velox-spin 0.6s linear infinite;
 	margin-left: 6px;
 	flex-shrink: 0;
 }
 
-.nammawp-trigger-spinner {
+.velox-trigger-spinner {
 	display: none;
 	flex-shrink: 0;
 }
 
-.nammawp-floating-widget.is-loading .nammawp-chevron {
+.velox-floating-widget.is-loading .velox-chevron {
 	display: none !important;
 }
 
-.nammawp-floating-widget.is-loading .nammawp-trigger-spinner {
+.velox-floating-widget.is-loading .velox-trigger-spinner {
 	display: inline-block !important;
 }
 
-.nammawp-spin {
-	animation: nammawp-spin 0.8s linear infinite !important;
+.velox-spin {
+	animation: velox-spin 0.8s linear infinite !important;
 	transform-origin: center center;
 }
 
-@keyframes nammawp-spin {
+@keyframes velox-spin {
 	from { transform: rotate(0deg); }
 	to { transform: rotate(360deg); }
 }
 
 /* Subtle dimming of prices during update */
-body.nammawp-currency-updating .price,
-body.nammawp-currency-updating .amount,
-body.nammawp-currency-updating .wc-block-formatted-money-amount {
+body.velox-currency-updating .price,
+body.velox-currency-updating .amount,
+body.velox-currency-updating .wc-block-formatted-money-amount {
 	opacity: 0.45;
 	transition: opacity 0.15s ease;
 }
 
 /* Sleek top progress indicator bar */
-.nammawp-top-progress {
+.velox-top-progress {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -266,22 +266,22 @@ body.nammawp-currency-updating .wc-block-formatted-money-amount {
 	width: 100%;
 	background: linear-gradient(90deg, #3b82f6, #6366f1, #06b6d4, #3b82f6);
 	background-size: 200% 100%;
-	animation: nammawp-loader-slide 0.8s linear infinite;
+	animation: velox-loader-slide 0.8s linear infinite;
 	z-index: 99999999;
 }
 
-@keyframes nammawp-loader-slide {
+@keyframes velox-loader-slide {
 	0% { background-position: 200% 0; }
 	100% { background-position: -200% 0; }
 }
 
-.nammawp-header-curr-btn.is-loading {
+.velox-header-curr-btn.is-loading {
 	opacity: 0.7;
 	pointer-events: none;
 }
 
 /* Header Top Bar */
-.nammawp-top-header-bar {
+.velox-top-header-bar {
 	background: #0f172a;
 	color: #e2e8f0;
 	font-size: 12px;
@@ -289,7 +289,7 @@ body.nammawp-currency-updating .wc-block-formatted-money-amount {
 	border-bottom: 1px solid #1e293b;
 }
 
-.nammawp-top-header-bar .nammawp-container {
+.velox-top-header-bar .velox-container {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
@@ -298,12 +298,12 @@ body.nammawp-currency-updating .wc-block-formatted-money-amount {
 	margin: 0 auto;
 }
 
-.nammawp-header-currencies {
+.velox-header-currencies {
 	display: flex;
 	gap: 6px;
 }
 
-.nammawp-header-curr-btn {
+.velox-header-curr-btn {
 	background: transparent;
 	color: #94a3b8;
 	border: 1px solid #334155;
@@ -315,19 +315,19 @@ body.nammawp-currency-updating .wc-block-formatted-money-amount {
 	transition: all 0.15s ease;
 }
 
-.nammawp-header-curr-btn:hover {
+.velox-header-curr-btn:hover {
 	color: #ffffff;
 	border-color: #64748b;
 }
 
-.nammawp-header-curr-btn.is-active {
+.velox-header-curr-btn.is-active {
 	background: #3b82f6;
 	color: #ffffff;
 	border-color: #3b82f6;
 }
 
 /* Checkout Disclosure Notice */
-.nammawp-disclosure-notice {
+.velox-disclosure-notice {
 	border-left: 4px solid #4f46e5 !important;
 	background-color: #f5f3ff !important;
 	color: #4338ca !important;

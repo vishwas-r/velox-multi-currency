@@ -2,10 +2,10 @@
 /**
  * OrderColumns adds currency and settlement info to WooCommerce Orders list tables (HPOS & Classic).
  *
- * @package NammaWP\MultiCurrency\Orders
+ * @package VeloX\MultiCurrency\Orders
  */
 
-namespace NammaWP\MultiCurrency\Orders;
+namespace VeloX\MultiCurrency\Orders;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,12 +39,12 @@ class OrderColumns {
 			$new_columns[ $key ] = $column;
 			// Place after order_total.
 			if ( 'order_total' === $key ) {
-				$new_columns['nammawp_currency'] = __( 'NammaWP Currency', 'nammawp-multi-currency' );
+				$new_columns['velox_currency'] = __( 'VeloX Currency', 'velox-multi-currency' );
 			}
 		}
 
-		if ( ! isset( $new_columns['nammawp_currency'] ) ) {
-			$new_columns['nammawp_currency'] = __( 'NammaWP Currency', 'nammawp-multi-currency' );
+		if ( ! isset( $new_columns['velox_currency'] ) ) {
+			$new_columns['velox_currency'] = __( 'VeloX Currency', 'velox-multi-currency' );
 		}
 
 		return $new_columns;
@@ -57,7 +57,7 @@ class OrderColumns {
 	 * @param \WC_Order $order  Order object.
 	 */
 	public function render_order_column( string $column, $order ): void {
-		if ( 'nammawp_currency' !== $column || ! $order instanceof \WC_Order ) {
+		if ( 'velox_currency' !== $column || ! $order instanceof \WC_Order ) {
 			return;
 		}
 
@@ -71,7 +71,7 @@ class OrderColumns {
 	 * @param int    $post_id Order post ID.
 	 */
 	public function render_cpt_order_column( string $column, int $post_id ): void {
-		if ( 'nammawp_currency' !== $column ) {
+		if ( 'velox_currency' !== $column ) {
 			return;
 		}
 
@@ -87,18 +87,18 @@ class OrderColumns {
 	 * @param \WC_Order $order Order object.
 	 */
 	protected function output_column_content( \WC_Order $order ): void {
-		$display_curr  = $order->get_meta( '_nammawp_display_currency' ) ?: $order->get_currency();
-		$display_total = $order->get_meta( '_nammawp_display_total' );
-		$charge_curr   = $order->get_meta( '_nammawp_charge_currency' ) ?: $order->get_currency();
-		$mode          = $order->get_meta( '_nammawp_settlement_mode' ) ?: 'allow_native';
+		$display_curr  = $order->get_meta( '_velox_display_currency' ) ?: $order->get_currency();
+		$display_total = $order->get_meta( '_velox_display_total' );
+		$charge_curr   = $order->get_meta( '_velox_charge_currency' ) ?: $order->get_currency();
+		$mode          = $order->get_meta( '_velox_settlement_mode' ) ?: 'allow_native';
 
 		if ( ! empty( $display_total ) && $display_curr !== $charge_curr ) {
 			echo '<div><span style="font-weight:600;">' . esc_html( $display_curr . ' ' . $display_total ) . '</span></div>';
 			echo '<div style="font-size:11px; color:#16a34a;">' . esc_html( 'Charged: ' . $charge_curr . ' ' . $order->get_total() ) . '</div>';
-			echo '<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:1px 5px; border-radius:3px;">' . esc_html__( 'Converted', 'nammawp-multi-currency' ) . '</span>';
+			echo '<span class="badge" style="background:#fef3c7; color:#92400e; font-size:10px; padding:1px 5px; border-radius:3px;">' . esc_html__( 'Converted', 'velox-multi-currency' ) . '</span>';
 		} else {
 			echo '<div><span style="font-weight:600;">' . esc_html( $order->get_currency() ) . '</span></div>';
-			echo '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:10px; padding:1px 5px; border-radius:3px;">' . esc_html__( 'Native', 'nammawp-multi-currency' ) . '</span>';
+			echo '<span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:10px; padding:1px 5px; border-radius:3px;">' . esc_html__( 'Native', 'velox-multi-currency' ) . '</span>';
 		}
 	}
 }

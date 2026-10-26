@@ -2,10 +2,10 @@
 /**
  * Currency Registry for managing supported, enabled, and active currencies.
  *
- * @package NammaWP\MultiCurrency\Currency
+ * @package VeloX\MultiCurrency\Currency
  */
 
-namespace NammaWP\MultiCurrency\Currency;
+namespace VeloX\MultiCurrency\Currency;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,12 +17,12 @@ class CurrencyRegistry {
 	/**
 	 * Cookie name for storing active visitor currency.
 	 */
-	const COOKIE_NAME = 'nammawp_currency';
+	const COOKIE_NAME = 'velox_currency';
 
 	/**
 	 * Option name for enabled currencies configuration.
 	 */
-	const OPTION_ENABLED = 'nammawp_enabled_currencies';
+	const OPTION_ENABLED = 'velox_enabled_currencies';
 
 	/**
 	 * Currently active currency code in request.
@@ -64,7 +64,7 @@ class CurrencyRegistry {
 
 		// 1. Check WooCommerce session first if available.
 		if ( function_exists( 'WC' ) && WC()->session ) {
-			$session_curr = WC()->session->get( 'nammawp_currency' );
+			$session_curr = WC()->session->get( 'velox_currency' );
 			if ( ! empty( $session_curr ) && $this->is_currency_enabled( (string) $session_curr ) ) {
 				$this->active_currency = strtoupper( (string) $session_curr );
 				return $this->active_currency;
@@ -81,7 +81,7 @@ class CurrencyRegistry {
 		}
 
 		// 3. Allow filters (e.g. GeoIP auto-detect module).
-		$detected = apply_filters( 'nammawp_detected_currency', $base );
+		$detected = apply_filters( 'velox_detected_currency', $base );
 		if ( $this->is_currency_enabled( $detected ) ) {
 			$this->active_currency = strtoupper( $detected );
 			return $this->active_currency;
@@ -108,7 +108,7 @@ class CurrencyRegistry {
 
 		// Persist in WooCommerce customer session.
 		if ( function_exists( 'WC' ) && WC()->session ) {
-			WC()->session->set( 'nammawp_currency', $code );
+			WC()->session->set( 'velox_currency', $code );
 		}
 
 		// Set cookie if headers not sent.
@@ -135,7 +135,7 @@ class CurrencyRegistry {
 	protected ?array $enabled_currencies = null;
 
 	/**
-	 * Check if a currency code is enabled in NammaWP settings.
+	 * Check if a currency code is enabled in VeloX settings.
 	 *
 	 * @param string $currency ISO code.
 	 * @return bool

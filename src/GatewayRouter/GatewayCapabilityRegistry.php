@@ -2,10 +2,10 @@
 /**
  * Gateway capability registry with built-in profiles for Stripe, PayPal, and Razorpay.
  *
- * @package NammaWP\MultiCurrency\GatewayRouter
+ * @package VeloX\MultiCurrency\GatewayRouter
  */
 
-namespace NammaWP\MultiCurrency\GatewayRouter;
+namespace VeloX\MultiCurrency\GatewayRouter;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,12 +17,12 @@ class GatewayCapabilityRegistry {
 	/**
 	 * Option name for storing admin matrix rules.
 	 */
-	const OPTION_MATRIX = 'nammawp_mc_gateway_matrix';
+	const OPTION_MATRIX = 'velox_mc_gateway_matrix';
 
 	/**
 	 * Option name for dedicated currency to gateway mapping.
 	 */
-	const OPTION_DEDICATED_ROUTING = 'nammawp_mc_dedicated_gateway_routing';
+	const OPTION_DEDICATED_ROUTING = 'velox_mc_dedicated_gateway_routing';
 
 	/**
 	 * PayPal official 25 supported currencies list.

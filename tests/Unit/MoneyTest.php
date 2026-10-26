@@ -2,13 +2,13 @@
 /**
  * Money unit tests.
  *
- * @package NammaWP\MultiCurrency\Tests\Unit
+ * @package VeloX\MultiCurrency\Tests\Unit
  */
 
-namespace NammaWP\MultiCurrency\Tests\Unit;
+namespace VeloX\MultiCurrency\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use NammaWP\MultiCurrency\Currency\Money;
+use VeloX\MultiCurrency\Currency\Money;
 
 /**
  * MoneyTest class.

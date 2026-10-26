@@ -2,10 +2,10 @@
 /**
  * Frankfurter open-source exchange rate provider.
  *
- * @package NammaWP\MultiCurrency\Currency\RateProvider
+ * @package VeloX\MultiCurrency\Currency\RateProvider
  */
 
-namespace NammaWP\MultiCurrency\Currency\RateProvider;
+namespace VeloX\MultiCurrency\Currency\RateProvider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -35,7 +35,7 @@ class FrankfurterProvider implements RateProviderInterface {
 	 * @return string
 	 */
 	public function get_name(): string {
-		return __( 'Frankfurter (Free, Open-Source ECB Triangulated)', 'nammawp-multi-currency' );
+		return __( 'Frankfurter (Free, Open-Source ECB Triangulated)', 'velox-multi-currency' );
 	}
 
 	/**
@@ -52,8 +52,8 @@ class FrankfurterProvider implements RateProviderInterface {
 			$url,
 			array(
 				'timeout'    => 15,
-				'sslverify'  => (bool) apply_filters( 'nammawp_mc_ssl_verify', true ),
-				'user-agent' => 'NammaWP-WooCommerce/' . ( defined( 'NAMMAWP_MC_VERSION' ) ? NAMMAWP_MC_VERSION : '1.0.0' ),
+				'sslverify'  => (bool) apply_filters( 'velox_mc_ssl_verify', true ),
+				'user-agent' => 'VeloX-WooCommerce/' . ( defined( 'VELOX_MC_VERSION' ) ? VELOX_MC_VERSION : '1.0.0' ),
 			)
 		);
 
@@ -64,7 +64,7 @@ class FrankfurterProvider implements RateProviderInterface {
 		$status = wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $status ) {
 			return new \WP_Error(
-				'nammawp_frankfurter_http_error',
+				'velox_frankfurter_http_error',
 				sprintf( 'Frankfurter returned HTTP status %d', $status )
 			);
 		}
@@ -73,7 +73,7 @@ class FrankfurterProvider implements RateProviderInterface {
 		$data = json_decode( $body, true );
 
 		if ( ! is_array( $data ) || ! isset( $data['rates'] ) ) {
-			return new \WP_Error( 'nammawp_frankfurter_invalid_body', 'Invalid response from Frankfurter API' );
+			return new \WP_Error( 'velox_frankfurter_invalid_body', 'Invalid response from Frankfurter API' );
 		}
 
 		$normalized          = array( $base => 1.0 );
