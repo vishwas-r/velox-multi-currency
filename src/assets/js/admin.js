@@ -49,7 +49,9 @@
 
 		// 1b. Auto-sync interval custom duration toggle.
 		$(document).on('change', '#auto_sync_interval_select', function() {
-			if ($(this).val() === 'custom') {
+			var params = window.velox_admin_params || {};
+			var isPro = !!params.is_pro;
+			if (isPro && $(this).val() === 'custom') {
 				$('#velox-custom-hours-wrapper').css('display', 'inline-flex');
 			} else {
 				$('#velox-custom-hours-wrapper').hide();

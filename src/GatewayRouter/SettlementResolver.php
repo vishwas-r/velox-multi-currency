@@ -90,8 +90,9 @@ class SettlementResolver {
 		}
 
 		// 3. Mode: CONVERT_DISCLOSE (Convert display currency to gateway settlement currency).
-		$supported_modes = apply_filters( 'velox_mc_supported_gateway_modes', array( SettlementMode::ALLOW_NATIVE, SettlementMode::HIDE ) );
-		if ( ! in_array( SettlementMode::CONVERT_DISCLOSE, $supported_modes, true ) ) {
+		$default_modes   = velox_mc_is_pro() ? array( SettlementMode::ALLOW_NATIVE, SettlementMode::HIDE, SettlementMode::CONVERT_DISCLOSE ) : array( SettlementMode::ALLOW_NATIVE, SettlementMode::HIDE );
+		$supported_modes = apply_filters( 'velox_mc_supported_gateway_modes', $default_modes );
+		if ( ! in_array( SettlementMode::CONVERT_DISCLOSE, $supported_modes, true ) && ! in_array( 'disclose', $supported_modes, true ) ) {
 			return new SettlementResult(
 				$display_currency,
 				$display_money,

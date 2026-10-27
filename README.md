@@ -16,7 +16,7 @@
 
 ---
 
-## ⚡ The Problem VeloX Solves
+## The Problem VeloX Solves
 
 Most multi-currency plugins only convert visual numbers on product pages, creating critical failures at checkout:
 
@@ -29,7 +29,7 @@ Most multi-currency plugins only convert visual numbers on product pages, creati
 
 ---
 
-## ✨ Free Version Features
+## Free Version Features
 
 - **Up to 3 Configured Currencies:** Configure your store base currency plus two foreign currencies (e.g., USD + EUR + GBP) with zero subscription fees.
 - **Dedicated Payment Gateway Routing:** Lock any currency to designated gateways (e.g., INR &rarr; Razorpay only, USD &rarr; PayPal only).
@@ -44,17 +44,17 @@ Most multi-currency plugins only convert visual numbers on product pages, creati
 
 ---
 
-## 🚀 Free vs. Pro Feature Comparison
+## Free vs. Pro Feature Comparison
 
 Looking for cross-border enterprise automation? Check out [**VeloX Pro**](https://github.com/vishwas-r/velox-multi-currency-pro).
 
 | Capability | VeloX Free | VeloX Pro |
 | :--- | :---: | :---: |
 | **Configured Currencies** | Up to 3 | **Unlimited** |
-| **Payment Gateway Filtering** | Allow Native & Hide | **Allow Native, Hide & Convert & Disclose** |
+| **Payment Gateway Filtering** | Dedicated Routing | **Dedicated Routing & 3-Mode Matrix (Convert & Disclose)** |
 | **Convert & Disclose Line-Item Scaling** | — | **Proportional Line-Item, Fee, Shipping & Tax Scaling** |
 | **Customer GeoIP Auto-Detection** | — | **Zero-Dependency Core MaxMind with 50+ Country Map** |
-| **Exchange Rate Failover Chain** | Single Active Provider | **Autonomous 4-Tier Zero-Downtime Cascade** |
+| **Exchange Rate Failover Chain** | European Central Bank (Official Feed) | **Autonomous 4-Tier Zero-Downtime Cascade** |
 | **Rate Auto-Sync Schedules** | 12h, 24h | **1h, 2h, 4h, 6h, 12h, 24h, custom** |
 | **Analytics Normalization** | Raw WooCommerce Reporting | **Normalized Multi-Currency Sales Dashboard** |
 | **Edge Cache Immunity** | `data-velox-base` + `Vary: Cookie` | **Full WP Rocket & LiteSpeed Dynamic Cookie Rules** |
@@ -62,7 +62,7 @@ Looking for cross-border enterprise automation? Check out [**VeloX Pro**](https:
 
 ---
 
-## 🛠️ Developer Extension Hooks
+## Developer Extension Hooks
 
 VeloX Free is architected around clean WordPress action and filter hooks, allowing extensions (like VeloX Pro) to extend functionality without modifying core code:
 
@@ -92,7 +92,7 @@ add_action( 'velox_mc_order_settlement_applied', function( $order, $settlement, 
 
 ---
 
-## 📦 Installation
+## Installation
 
 1. Download the latest release from the [Releases page](https://github.com/vishwas-r/velox-multi-currency/releases) or install via the WordPress Plugin Directory.
 2. Upload the `velox-multi-currency` directory to `/wp-content/plugins/`.
@@ -102,7 +102,7 @@ add_action( 'velox_mc_order_settlement_applied', function( $order, $settlement, 
 
 ---
 
-## 👨‍💻 Author & Support
+## Author & Support
 
 - **Author:** Vishwas R
 - **Website:** [https://vishwas.me/](https://vishwas.me/)
@@ -111,6 +111,6 @@ add_action( 'velox_mc_order_settlement_applied', function( $order, $settlement, 
 
 ---
 
-## 📄 License
+## License
 
 VeloX is licensed under the [GNU General Public License v2.0 or later](https://www.gnu.org/licenses/gpl-2.0.html).

@@ -148,6 +148,22 @@ class RateService {
 	/**
 	 * Get auto-sync settings with defaults.
 	 *
+	/**
+	 * Get allowed auto-sync intervals in hours.
+	 *
+	 * Free tier: 12, 24 hours.
+	 * Pro tier: 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 hours, and custom hours.
+	 *
+	 * @return array<int>
+	 */
+	public function get_allowed_sync_intervals(): array {
+		$default = velox_mc_is_pro() ? array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 ) : array( 12, 24 );
+		return (array) apply_filters( 'velox_mc_sync_intervals', $default );
+	}
+
+	/**
+	 * Get auto-sync settings with defaults.
+	 *
 	 * @return array{enabled: string, interval_hours: int}
 	 */
 	public function get_auto_sync_settings(): array {
@@ -161,7 +177,17 @@ class RateService {
 			$saved = array();
 		}
 
-		return wp_parse_args( $saved, $defaults );
+		$settings = wp_parse_args( $saved, $defaults );
+
+		// Enforce Free tier limit if Pro is not active
+		if ( ! velox_mc_is_pro() ) {
+			$allowed = $this->get_allowed_sync_intervals();
+			if ( ! in_array( (int) $settings['interval_hours'], $allowed, true ) ) {
+				$settings['interval_hours'] = 12;
+			}
+		}
+
+		return $settings;
 	}
 
 	/**
@@ -171,9 +197,16 @@ class RateService {
 	 * @return bool True if updated or unchanged.
 	 */
 	public function save_auto_sync_settings( array $settings ): bool {
+		$raw_hours = (int) ( $settings['interval_hours'] ?? 12 );
+		$allowed   = $this->get_allowed_sync_intervals();
+
+		if ( ! velox_mc_is_pro() && ! in_array( $raw_hours, $allowed, true ) ) {
+			$raw_hours = 12;
+		}
+
 		$clean = array(
 			'enabled'        => ( ! empty( $settings['enabled'] ) && in_array( $settings['enabled'], array( 'yes', '1', true, 1 ), true ) ) ? 'yes' : 'no',
-			'interval_hours' => max( 1, min( 720, (int) ( $settings['interval_hours'] ?? 12 ) ) ),
+			'interval_hours' => max( 1, min( 720, $raw_hours ) ),
 		);
 
 		$updated = update_option( self::OPTION_AUTO_SYNC, $clean );
@@ -302,7 +335,7 @@ class RateService {
 		$base_currency = $this->registry->get_base_currency();
 
 		// Check if multi-provider failover chain is enabled (unlocked by VeloX Pro)
-		$enable_failover = (bool) apply_filters( 'velox_mc_enable_failover', false );
+		$enable_failover = (bool) apply_filters( 'velox_mc_enable_failover', velox_mc_is_pro() );
 
 		// Build execution chain: primary provider first, then fallbacks if Pro is active
 		$chain = array( $primary_provider->get_key() => $primary_provider );

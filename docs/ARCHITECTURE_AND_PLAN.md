@@ -6,7 +6,7 @@ Product brief: name, features and implementation plan · Drafted 24 Oct 2026 · 
 
 Goal: a WooCommerce plugin that matches the established multi-currency plugins (Aelia, CURCY, YayCurrency, TIV, FOX/WOOCS) on the basics and clearly beats them where they are weakest: **checkout correctness, gateway handling, caching, money-math safety and diagnostics**.
 
-A realistic framing: the incumbents have years of compatibility work, so “better at everything on day one” is not achievable. The plan is to reach **parity** on the table-stakes list in v1.0 (marked P below), **lead** in gateway routing and checkout (marked ★), and widen the feature gap in later releases.
+A realistic framing: the incumbents have years of compatibility work, so “better at everything on day one” is not achievable. The plan is to reach **parity** on the table-stakes list in v1.0 (marked P below), **lead** in gateway routing and checkout (marked *), and widen the feature gap in later releases.
 
 Positioning line: *Show prices in any currency, and always charge through the right gateway, in the right currency.*
 
@@ -67,7 +67,7 @@ My pick pending checks: **Cambio** (brand) or **PayRoute** (if you want the name
 
 ## 5. Feature list
 
-Legend: **P** = parity with incumbents, **★** = differentiator. Tier is a proposal (see section 9). Phase refers to section 8.
+Legend: **P** = parity with incumbents, ***** = differentiator. Tier is a proposal (see section 9). Phase refers to section 8.
 
 ### A. Currencies and exchange rates
 
@@ -76,10 +76,10 @@ Legend: **P** = parity with incumbents, **★** = differentiator. Tier is a prop
 | Any ISO 4217 currency (160+), custom symbol, position, separators, per-currency decimals (P) | Free | 1 |
 | Manual rates (P) | Free | 1 |
 | Automatic rates via a provider abstraction, scheduled with Action Scheduler (P) | Free | 1 |
-| Provider fallback chain and stale-rate admin notice ★ | Free | 1 |
+| Provider fallback chain and stale-rate admin notice * | Free | 1 |
 | Staleness email alerts, rate history log | Pro | 4 |
 | Per-currency markup, percentage or fixed, to cover FX fees (P) | Free | 1 |
-| Rate lock for a shopper’s session or checkout window ★ | Pro | 4 |
+| Rate lock for a shopper’s session or checkout window * | Pro | 4 |
 
 ### B. Pricing
 
@@ -88,7 +88,7 @@ Legend: **P** = parity with incumbents, **★** = differentiator. Tier is a prop
 | Convert simple, variable and sale prices (P) | Free | 1 |
 | Fixed price per product and per variation in each currency (P) | Free | 2 |
 | Bulk fixed prices via CSV import and export (P) | Pro | 4 |
-| Rounding rules per currency with live preview (nearest 0.05, charm endings) and a never-to-zero guard ★ | Free basic, Pro advanced | 2 |
+| Rounding rules per currency with live preview (nearest 0.05, charm endings) and a never-to-zero guard * | Free basic, Pro advanced | 2 |
 | Shipping rates and free-shipping thresholds per currency (P) | Free | 2 |
 | Fixed-amount coupons, min/max spend and fees per currency (P) | Free | 2 |
 | Tax display handling in converted prices (P) | Free | 3 |
@@ -108,30 +108,30 @@ Legend: **P** = parity with incumbents, **★** = differentiator. Tier is a prop
 
 | Feature | Tier | Phase |
 | --- | --- | --- |
-| Three cache modes: Vary-cookie aware, client-side price renderer for fully cached pages, and automatic exclusion of cart, checkout and account pages ★ | Free | 3 |
-| Auto-detect the active cache plugin and recommend a mode; one-click setup check ★ | Free | 3 |
-| No indexable currency URL parameters; canonical and hreflang aware ★ | Free | 3 |
+| Three cache modes: Vary-cookie aware, client-side price renderer for fully cached pages, and automatic exclusion of cart, checkout and account pages * | Free | 3 |
+| Auto-detect the active cache plugin and recommend a mode; one-click setup check * | Free | 3 |
+| No indexable currency URL parameters; canonical and hreflang aware * | Free | 3 |
 
 ### E. Gateway routing (hero feature)
 
 | Feature | Tier | Phase |
 | --- | --- | --- |
-| Per gateway and currency: **Allow native**, **Convert and disclose**, or **Hide** ★ | Free: allow and hide. Pro: convert and disclose | 2 |
-| Gateway capability registry: read supported currencies from gateways that declare them, manual override, warnings for unsupported pairs ★ | Free | 2 |
+| Per gateway and currency: **Allow native**, **Convert and disclose**, or **Hide** * | Free: allow and hide. Pro: convert and disclose | 2 |
+| Gateway capability registry: read supported currencies from gateways that declare them, manual override, warnings for unsupported pairs * | Free | 2 |
 | Fallback policy when no gateway fits: block with a message, revert to base currency before payment, or show an estimate | Free | 2 |
 | Default gateway and ordering per currency | Free | 2 |
-| Routing rules beyond currency: country, cart total, product category or type, user role, shipping method ★ | Pro | 4 |
+| Routing rules beyond currency: country, cart total, product category or type, user role, shipping method * | Pro | 4 |
 | Editable disclosure notice at checkout (“You will be charged $X USD via PayPal”) for Blocks and classic | Pro | 2 |
 | Gateway- and currency-specific fees or discounts | Pro | 4 |
-| Admin simulator: choose currency and country, see the gateways, totals and charge currency a shopper would get ★ | Pro | 4 |
+| Admin simulator: choose currency and country, see the gateways, totals and charge currency a shopper would get * | Pro | 4 |
 
 ### F. Checkout and orders
 
 | Feature | Tier | Phase |
 | --- | --- | --- |
 | Cart and Checkout Blocks plus classic checkout (P) | Free | 2 |
-| Every order stores base currency, base total, display currency, charge currency, rate snapshot and markup ★ | Free | 2 |
-| Correct handling of pending-order reuse when a shopper retries with a different gateway ★ | Free | 2 |
+| Every order stores base currency, base total, display currency, charge currency, rate snapshot and markup * | Free | 2 |
+| Correct handling of pending-order reuse when a shopper retries with a different gateway * | Free | 2 |
 | Refunds and partial refunds in the charge currency | Free | 2 |
 | Emails, invoices and PDF plugins show the correct currency (P) | Free | 3 |
 | Admin order screen shows charge and base amounts side by side | Free | 3 |
@@ -160,8 +160,8 @@ Legend: **P** = parity with incumbents, **★** = differentiator. Tier is a prop
 
 | Feature | Tier | Phase |
 | --- | --- | --- |
-| Setup wizard: base currency, add currencies, rate provider, gateway rules, test order ★ | Free | 3 |
-| System Report and health checks (cache, rates age, gateway support, decimals) ★ | Free | 3 |
+| Setup wizard: base currency, add currencies, rate provider, gateway rules, test order * | Free | 3 |
+| System Report and health checks (cache, rates age, gateway support, decimals) * | Free | 3 |
 | Debug log and settings import/export | Free | 3 |
 | In-app help links and short docs per screen | Free | 5 |
 
