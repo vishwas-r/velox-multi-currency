@@ -37,7 +37,7 @@ define( 'VELOX_MC_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 spl_autoload_register(
 	function ( $class ) {
 		$prefix   = 'VeloX\\MultiCurrency\\';
-		$base_dir = VELOX_MC_PLUGIN_DIR . 'src/';
+		$base_dir = VELOX_MC_PLUGIN_DIR;
 
 		$len = strlen( $prefix );
 		if ( strncmp( $prefix, $class, $len ) !== 0 ) {
@@ -56,6 +56,8 @@ spl_autoload_register(
 // If vendor/autoload.php exists (developer environment), load it.
 if ( file_exists( VELOX_MC_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 	require_once VELOX_MC_PLUGIN_DIR . 'vendor/autoload.php';
+} elseif ( file_exists( dirname( VELOX_MC_PLUGIN_DIR ) . '/vendor/autoload.php' ) ) {
+	require_once dirname( VELOX_MC_PLUGIN_DIR ) . '/vendor/autoload.php';
 }
 
 /**
