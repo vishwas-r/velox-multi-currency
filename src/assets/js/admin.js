@@ -56,8 +56,44 @@
 			}
 		});
 
+		// Helper to enforce currency limits dynamically in Free mode.
+		function updateLimitState() {
+			var params = window.velox_admin_params || {};
+			var max = params.max_currencies || 3;
+			var isPro = !!params.is_pro;
+			if (isPro) {
+				return;
+			}
+			var currentCount = $('#velox-currencies-table tbody tr').length;
+			var $select = $('#new_currency_select');
+			var $btn = $('#velox-add-currency-btn');
+			var $msg = $('#velox-limit-message');
+
+			if (currentCount >= max) {
+				$select.prop('disabled', true);
+				$btn.prop('disabled', true);
+				$msg.show();
+			} else {
+				$select.prop('disabled', false);
+				$btn.prop('disabled', false);
+				$msg.hide();
+			}
+		}
+
+		updateLimitState();
+
 		// 2. Dynamic Add Currency to Table.
 		$('#velox-add-currency-btn').on('click', function() {
+			var params = window.velox_admin_params || {};
+			var max = params.max_currencies || 3;
+			var isPro = !!params.is_pro;
+			var currentCount = $('#velox-currencies-table tbody tr').length;
+
+			if (!isPro && currentCount >= max) {
+				updateLimitState();
+				return;
+			}
+
 			var $select = $('#new_currency_select');
 			var code = $select.val();
 			if (!code) {
@@ -90,6 +126,7 @@
 			$('#velox-currencies-table tbody').append(rowHtml);
 			$opt.remove();
 			$select.val('');
+			updateLimitState();
 		});
 
 		// 3. Remove currency row.
@@ -98,6 +135,7 @@
 			var code = $row.data('currency');
 			if (confirm('Are you sure you want to remove ' + code + '?')) {
 				$row.remove();
+				updateLimitState();
 			}
 		});
 

@@ -68,10 +68,16 @@ class RateService {
 	 * Register built-in providers.
 	 */
 	protected function register_default_providers(): void {
-		$this->register_provider( new ExchangeRateApiProvider() );
-		$this->register_provider( new FrankfurterProvider() );
-		$this->register_provider( new FloatRatesProvider() );
+		// European Central Bank is the official, zero-key free provider.
 		$this->register_provider( new EcbProvider() );
+
+		// Register additional multi-provider cascade in Pro mode or via filter.
+		$extra_providers = (array) apply_filters( 'velox_mc_extra_rate_providers', array() );
+		if ( velox_mc_is_pro() || ! empty( $extra_providers ) ) {
+			$this->register_provider( new ExchangeRateApiProvider() );
+			$this->register_provider( new FrankfurterProvider() );
+			$this->register_provider( new FloatRatesProvider() );
+		}
 	}
 
 	/**
@@ -95,14 +101,15 @@ class RateService {
 	/**
 	 * Get the currently active provider key.
 	 *
-	 * @return string Default 'exchangerate_api'.
+	 * @return string Default 'ecb'.
 	 */
 	public function get_active_provider_key(): string {
-		$saved = get_option( self::OPTION_PROVIDER, 'exchangerate_api' );
+		$default = velox_mc_is_pro() ? 'exchangerate_api' : 'ecb';
+		$saved   = get_option( self::OPTION_PROVIDER, $default );
 		if ( isset( $this->providers[ $saved ] ) ) {
 			return $saved;
 		}
-		return 'exchangerate_api';
+		return isset( $this->providers['ecb'] ) ? 'ecb' : (string) array_key_first( $this->providers );
 	}
 
 	/**

@@ -109,8 +109,10 @@ class SettingsPage {
 			'velox-admin',
 			'velox_admin_params',
 			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'velox_admin_nonce' ),
+				'ajax_url'       => admin_url( 'admin-ajax.php' ),
+				'nonce'          => wp_create_nonce( 'velox_admin_nonce' ),
+				'max_currencies' => absint( $this->currency_registry->get_max_currencies() ),
+				'is_pro'         => (bool) velox_mc_is_pro(),
 			)
 		);
 	}
@@ -247,6 +249,7 @@ class SettingsPage {
 				<?php
 				$max_currencies = $this->currency_registry->get_max_currencies();
 				$enabled_count  = count( $enabled );
+				$is_at_limit    = ( ! velox_mc_is_pro() && $enabled_count >= $max_currencies );
 				if ( ! velox_mc_is_pro() && $enabled_count >= $max_currencies ) :
 					?>
 					<div class="notice notice-info inline" style="margin:10px 0; width:100%;">
@@ -282,16 +285,25 @@ class SettingsPage {
 						}
 						?>
 					</span>
-					<label for="velox-rate-provider-select" style="font-weight:600; font-size:12px; margin-left:8px;">
+					<span style="font-weight:600; font-size:12px; margin-left:8px; color:#475569;">
 						<?php esc_html_e( 'Exchange:', 'velox-multi-currency' ); ?>
-					</label>
-					<select id="velox-rate-provider-select" name="velox_rate_provider" style="font-size:12px; max-width:280px; height:32px;">
-						<?php foreach ( $providers as $key => $prov ) : ?>
-							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $active_provider, $key ); ?>>
-								<?php echo esc_html( $prov->get_name() ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
+					</span>
+					<?php if ( count( $providers ) > 1 ) : ?>
+						<select id="velox-rate-provider-select" name="velox_rate_provider" style="font-size:12px; max-width:280px; height:32px;">
+							<?php foreach ( $providers as $key => $prov ) : ?>
+								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $active_provider, $key ); ?>>
+									<?php echo esc_html( $prov->get_name() ); ?>
+								</option>
+							<?php endforeach; ?>
+						</select>
+					<?php else : ?>
+						<?php $single_prov = reset( $providers ); ?>
+						<span class="velox-provider-badge" style="font-size:12px; font-weight:600; color:#334155; background:#f1f5f9; padding:4px 10px; border-radius:4px; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px;">
+							<span style="width:7px; height:7px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+							<?php echo esc_html( $single_prov ? $single_prov->get_name() : 'European Central Bank (Official Feed, Free)' ); ?>
+						</span>
+						<input type="hidden" id="velox-rate-provider-select" name="velox_rate_provider" value="<?php echo esc_attr( $single_prov ? $single_prov->get_key() : 'ecb' ); ?>">
+					<?php endif; ?>
 					<button type="button" class="button button-primary velox-sync-btn" id="velox-sync-rates-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
 						<span><?php esc_html_e( 'Sync Exchange Rates', 'velox-multi-currency' ); ?></span>
@@ -357,10 +369,10 @@ class SettingsPage {
 					</tbody>
 				</table>
 
-				<div class="velox-add-row">
+				<div class="velox-add-row" id="velox-add-currency-wrapper">
 					<label for="new_currency_select"><?php esc_html_e( 'Add Currency:', 'velox-multi-currency' ); ?></label>
-					<select id="new_currency_select">
-						<option value=""><?php esc_html_e( '-- Choose Currency --', 'velox-multi-currency' ); ?></option>
+					<select id="new_currency_select" <?php echo $is_at_limit ? 'disabled' : ''; ?>>
+						<option value=""><?php echo $is_at_limit ? esc_html__( '-- Free Limit Reached (3/3) --', 'velox-multi-currency' ) : esc_html__( '-- Choose Currency --', 'velox-multi-currency' ); ?></option>
 						<?php foreach ( $all as $c_code => $c_data ) : ?>
 							<?php if ( ! isset( $enabled[ $c_code ] ) ) : ?>
 								<option value="<?php echo esc_attr( $c_code ); ?>" data-name="<?php echo esc_attr( $c_data['name'] ); ?>" data-symbol="<?php echo esc_attr( $c_data['symbol'] ); ?>">
@@ -369,10 +381,14 @@ class SettingsPage {
 							<?php endif; ?>
 						<?php endforeach; ?>
 					</select>
-					<button type="button" class="button button-secondary velox-btn-add" id="velox-add-currency-btn">
+					<button type="button" class="button button-secondary velox-btn-add" id="velox-add-currency-btn" <?php echo $is_at_limit ? 'disabled' : ''; ?>>
 						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/></svg>
 						<?php esc_html_e( 'Add to List', 'velox-multi-currency' ); ?>
 					</button>
+					<span id="velox-limit-message" style="display:<?php echo $is_at_limit ? 'inline-block' : 'none'; ?>; margin-left:12px; font-size:12px; color:#e11d48; font-weight:600;">
+						<?php esc_html_e( 'Free limit reached (3 of 3 currencies).', 'velox-multi-currency' ); ?>
+						<a href="https://vishwas.me/" target="_blank" style="color:#4f46e5; text-decoration:underline; margin-left:4px;"><?php esc_html_e( 'Upgrade to Pro for unlimited &rarr;', 'velox-multi-currency' ); ?></a>
+					</span>
 				</div>
 
 				<p class="submit" style="margin-top:20px; margin-bottom:0;">
@@ -531,13 +547,24 @@ class SettingsPage {
 								<label for="velox_rate_provider_card"><?php esc_html_e( 'Exchange Rate Provider', 'velox-multi-currency' ); ?></label>
 							</th>
 							<td>
-								<select id="velox_rate_provider_card" name="velox_rate_provider" style="min-width:240px; height:34px;">
-									<?php foreach ( $providers as $key => $prov ) : ?>
-										<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $active_provider, $key ); ?>>
-											<?php echo esc_html( $prov->get_name() ); ?>
-										</option>
-									<?php endforeach; ?>
-								</select>
+								<?php if ( count( $providers ) > 1 ) : ?>
+									<select id="velox_rate_provider_card" name="velox_rate_provider" style="min-width:240px; height:34px;">
+										<?php foreach ( $providers as $key => $prov ) : ?>
+											<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $active_provider, $key ); ?>>
+												<?php echo esc_html( $prov->get_name() ); ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								<?php else : ?>
+									<?php $single_prov = reset( $providers ); ?>
+									<div style="display:flex; align-items:center; gap:8px;">
+										<span class="velox-provider-badge" style="font-size:13px; font-weight:600; color:#334155; background:#f1f5f9; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; display:inline-flex; align-items:center; gap:6px;">
+											<span style="width:8px; height:8px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+											<?php echo esc_html( $single_prov ? $single_prov->get_name() : 'European Central Bank (Official Feed, Free)' ); ?>
+										</span>
+										<input type="hidden" id="velox_rate_provider_card" name="velox_rate_provider" value="<?php echo esc_attr( $single_prov ? $single_prov->get_key() : 'ecb' ); ?>">
+									</div>
+								<?php endif; ?>
 								<p class="description">
 									<?php esc_html_e( 'The financial exchange service used during automatic updates.', 'velox-multi-currency' ); ?>
 								</p>
@@ -658,6 +685,11 @@ class SettingsPage {
 				'decimal_sep'  => '.',
 				'thousand_sep' => ',',
 			);
+		}
+
+		$max_currencies = $this->currency_registry->get_max_currencies();
+		if ( ! velox_mc_is_pro() && count( $updated ) > $max_currencies ) {
+			$updated = array_slice( $updated, 0, $max_currencies, true );
 		}
 
 		$this->currency_registry->save_enabled_currencies( $updated );
@@ -852,83 +884,124 @@ class SettingsPage {
 						</div>
 					<?php endforeach; ?>
 				</div>
+
+				<p class="submit" style="margin-top:20px; margin-bottom:0;">
+					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Dedicated Gateway Routing', 'velox-multi-currency' ); ?>">
+				</p>
 			</div>
 
-			<!-- Settlement & Conversion Matrix Panel -->
-			<div class="velox-panel" style="margin-top: 24px;">
-				<h2><?php esc_html_e( 'Payment Gateway & Settlement Matrix', 'velox-multi-currency' ); ?></h2>
-				<p class="description">
-					<?php esc_html_e( 'Fine-tune how each payment gateway processes transactions when dedicated exclusive mode is not locked. Controls whether a gateway charges natively in customer currency, converts to a preferred currency with checkout disclosure, or is completely hidden.', 'velox-multi-currency' ); ?>
-				</p>
+			<?php if ( velox_mc_is_pro() ) : ?>
+				<!-- Settlement & Conversion Matrix Panel (PRO) -->
+				<div class="velox-panel" style="margin-top: 24px;">
+					<h2><?php esc_html_e( 'Payment Gateway & Settlement Matrix', 'velox-multi-currency' ); ?></h2>
+					<p class="description">
+						<?php esc_html_e( 'Fine-tune how each payment gateway processes transactions when dedicated exclusive mode is not locked. Controls whether a gateway charges natively in customer currency, converts to a preferred currency with checkout disclosure, or is completely hidden.', 'velox-multi-currency' ); ?>
+					</p>
 
-				<div class="velox-matrix-scroll">
-					<table class="widefat fixed striped velox-matrix-table">
-						<thead>
-							<tr>
-								<th style="width: 200px;"><?php esc_html_e( 'Payment Gateway', 'velox-multi-currency' ); ?></th>
-								<?php foreach ( $enabled as $code => $data ) : ?>
-									<th>
-										<strong><?php echo esc_html( $code ); ?></strong>
-										<span style="font-size:11px; font-weight:normal; display:block; color:#666;">
-											<?php echo esc_html( $data['symbol'] ); ?>
-										</span>
-									</th>
-								<?php endforeach; ?>
-							</tr>
-						</thead>
-						<tbody>
-							<?php if ( empty( $gateways ) ) : ?>
+					<div class="velox-matrix-scroll">
+						<table class="widefat fixed striped velox-matrix-table">
+							<thead>
 								<tr>
-									<td colspan="<?php echo esc_attr( count( $enabled ) + 1 ); ?>">
-										<?php esc_html_e( 'No active payment gateways found in WooCommerce.', 'velox-multi-currency' ); ?>
-									</td>
+									<th style="width: 200px;"><?php esc_html_e( 'Payment Gateway', 'velox-multi-currency' ); ?></th>
+									<?php foreach ( $enabled as $code => $data ) : ?>
+										<th>
+											<strong><?php echo esc_html( $code ); ?></strong>
+											<span style="font-size:11px; font-weight:normal; display:block; color:#666;">
+												<?php echo esc_html( $data['symbol'] ); ?>
+											</span>
+										</th>
+									<?php endforeach; ?>
 								</tr>
-							<?php else : ?>
-								<?php foreach ( $gateways as $gateway_id => $gateway ) : ?>
+							</thead>
+							<tbody>
+								<?php if ( empty( $gateways ) ) : ?>
 									<tr>
-										<td>
-											<strong><?php echo esc_html( $gateway->get_title() ?: $gateway_id ); ?></strong>
-											<br>
-											<code style="font-size:11px;"><?php echo esc_html( $gateway_id ); ?></code>
+										<td colspan="<?php echo esc_attr( count( $enabled ) + 1 ); ?>">
+											<?php esc_html_e( 'No active payment gateways found in WooCommerce.', 'velox-multi-currency' ); ?>
 										</td>
-										<?php foreach ( $enabled as $code => $data ) : ?>
-											<?php
-											$rule = $this->capability_registry->get_rule( $gateway_id, $code, $base );
-											$mode = $rule['mode'];
-											?>
-											<td>
-												<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][mode]" class="velox-mode-select">
-													<option value="allow_native" <?php selected( $mode, 'allow_native' ); ?>><?php esc_html_e( 'Allow Native', 'velox-multi-currency' ); ?></option>
-													<?php if ( velox_mc_is_pro() ) : ?>
-														<option value="convert_disclose" <?php selected( $mode, 'convert_disclose' ); ?>><?php esc_html_e( 'Convert & Disclose', 'velox-multi-currency' ); ?></option>
-													<?php else : ?>
-														<option value="convert_disclose" disabled style="color:#94a3b8;"><?php esc_html_e( 'Convert & Disclose [PRO]', 'velox-multi-currency' ); ?></option>
-													<?php endif; ?>
-													<option value="hide" <?php selected( $mode, 'hide' ); ?>><?php esc_html_e( 'Hide Gateway', 'velox-multi-currency' ); ?></option>
-												</select>
-												<div class="velox-convert-to-wrap" style="margin-top: 5px; <?php echo ( 'convert_disclose' === $mode ) ? '' : 'display:none;'; ?>">
-													<span style="font-size: 10px; color:#666;"><?php esc_html_e( 'Charge in:', 'velox-multi-currency' ); ?></span>
-													<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][convert_to]" style="font-size:11px; width:100%;">
-														<?php foreach ( $enabled as $charge_code => $c_data ) : ?>
-															<option value="<?php echo esc_attr( $charge_code ); ?>" <?php selected( $rule['convert_to'] ?? $base, $charge_code ); ?>>
-																<?php echo esc_html( $charge_code ); ?>
-															</option>
-														<?php endforeach; ?>
-													</select>
-												</div>
-											</td>
-										<?php endforeach; ?>
 									</tr>
-								<?php endforeach; ?>
-							<?php endif; ?>
-						</tbody>
-					</table>
-				</div>
+								<?php else : ?>
+									<?php foreach ( $gateways as $gateway_id => $gateway ) : ?>
+										<tr>
+											<td>
+												<strong><?php echo esc_html( $gateway->get_title() ?: $gateway_id ); ?></strong>
+												<br>
+												<code style="font-size:11px;"><?php echo esc_html( $gateway_id ); ?></code>
+											</td>
+											<?php foreach ( $enabled as $code => $data ) : ?>
+												<?php
+												$rule = $this->capability_registry->get_rule( $gateway_id, $code, $base );
+												$mode = $rule['mode'];
+												?>
+												<td>
+													<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][mode]" class="velox-mode-select">
+														<option value="allow_native" <?php selected( $mode, 'allow_native' ); ?>><?php esc_html_e( 'Allow Native', 'velox-multi-currency' ); ?></option>
+														<option value="convert_disclose" <?php selected( $mode, 'convert_disclose' ); ?>><?php esc_html_e( 'Convert & Disclose', 'velox-multi-currency' ); ?></option>
+														<option value="hide" <?php selected( $mode, 'hide' ); ?>><?php esc_html_e( 'Hide Gateway', 'velox-multi-currency' ); ?></option>
+													</select>
+													<div class="velox-convert-to-wrap" style="margin-top: 5px; <?php echo ( 'convert_disclose' === $mode ) ? '' : 'display:none;'; ?>">
+														<span style="font-size: 10px; color:#666;"><?php esc_html_e( 'Charge in:', 'velox-multi-currency' ); ?></span>
+														<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][convert_to]" style="font-size:11px; width:100%;">
+															<?php foreach ( $enabled as $charge_code => $c_data ) : ?>
+																<option value="<?php echo esc_attr( $charge_code ); ?>" <?php selected( $rule['convert_to'] ?? $base, $charge_code ); ?>>
+																	<?php echo esc_html( $charge_code ); ?>
+																</option>
+															<?php endforeach; ?>
+														</select>
+													</div>
+												</td>
+											<?php endforeach; ?>
+										</tr>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</tbody>
+						</table>
+					</div>
 
-				<p class="submit">
-					<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Gateway Routing & Matrix Rules', 'velox-multi-currency' ); ?>">
-				</p>
-			</div>
+					<p class="submit">
+						<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Gateway Routing & Matrix Rules', 'velox-multi-currency' ); ?>">
+					</p>
+				</div>
+			<?php else : ?>
+				<!-- Option A: VeloX Pro Showcase Card -->
+				<div class="velox-panel velox-pro-matrix-card" style="margin-top: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; padding: 24px;">
+					<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+						<div style="display:flex; align-items:center; gap:10px;">
+							<span class="velox-badge" style="background:#4f46e5; color:#fff; font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:4px;">
+								<?php esc_html_e( 'PRO EXTENSION', 'velox-multi-currency' ); ?>
+							</span>
+							<h2 style="margin:0; font-size:1.25rem; font-weight:700; color:#0f172a;">
+								<?php esc_html_e( 'Payment Gateway & Settlement Matrix', 'velox-multi-currency' ); ?>
+							</h2>
+						</div>
+					</div>
+					<p style="color:#475569; font-size:13.5px; line-height:1.6; margin:0 0 16px; max-width:850px;">
+						<?php esc_html_e( 'Looking to fine-tune individual gateways per currency? VeloX Pro unlocks the full Payment Gateway Matrix with the killer "Convert & Disclose" mode. Customers browse in their domestic currency (e.g. INR or EUR), while your store automatically settles in your domestic merchant account currency (e.g. USD via PayPal or Stripe) with exact proportional item and tax scaling.', 'velox-multi-currency' ); ?>
+					</p>
+					<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-bottom:20px;">
+						<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
+							<strong style="color:#0f172a; font-size:13px; display:block; margin-bottom:4px;">⚡ <?php esc_html_e( 'Convert & Disclose Checkout', 'velox-multi-currency' ); ?></strong>
+							<span style="font-size:12px; color:#64748b;"><?php esc_html_e( 'Accept international buyers even if your domestic gateway only settles in a single currency.', 'velox-multi-currency' ); ?></span>
+						</div>
+						<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
+							<strong style="color:#0f172a; font-size:13px; display:block; margin-bottom:4px;">⚖️ <?php esc_html_e( 'Proportional Order Scaling', 'velox-multi-currency' ); ?></strong>
+							<span style="font-size:12px; color:#64748b;"><?php esc_html_e( 'Scales line items, shipping fees, custom fees, and tax lines down to the exact fraction of a cent.', 'velox-multi-currency' ); ?></span>
+						</div>
+						<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
+							<strong style="color:#0f172a; font-size:13px; display:block; margin-bottom:4px;">🛡️ <?php esc_html_e( 'Zero Gateway Conflicts', 'velox-multi-currency' ); ?></strong>
+							<span style="font-size:12px; color:#64748b;"><?php esc_html_e( 'Completely hide unsupported gateways per currency to avoid payment declines.', 'velox-multi-currency' ); ?></span>
+						</div>
+					</div>
+					<div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+						<a href="https://vishwas.me/" target="_blank" class="button button-primary" style="background:#4f46e5; border-color:#4338ca; height:36px; line-height:34px; padding:0 22px; font-weight:600; font-size:13px;">
+							<?php esc_html_e( 'Unlock Gateway Matrix in VeloX Pro &rarr;', 'velox-multi-currency' ); ?>
+						</a>
+						<span style="font-size:12px; color:#64748b;">
+							<?php esc_html_e( 'Includes unlimited currencies, GeoIP auto-detect & 4-tier failover.', 'velox-multi-currency' ); ?>
+						</span>
+					</div>
+				</div>
+			<?php endif; ?>
 		</form>
 		<?php
 	}
