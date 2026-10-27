@@ -294,11 +294,16 @@ class RateService {
 
 		$base_currency = $this->registry->get_base_currency();
 
-		// Build execution chain: primary provider first, then all remaining providers
+		// Check if multi-provider failover chain is enabled (unlocked by VeloX Pro)
+		$enable_failover = (bool) apply_filters( 'velox_mc_enable_failover', false );
+
+		// Build execution chain: primary provider first, then fallbacks if Pro is active
 		$chain = array( $primary_provider->get_key() => $primary_provider );
-		foreach ( $this->providers as $key => $inst ) {
-			if ( $key !== $primary_provider->get_key() ) {
-				$chain[ $key ] = $inst;
+		if ( $enable_failover ) {
+			foreach ( $this->providers as $key => $inst ) {
+				if ( $key !== $primary_provider->get_key() ) {
+					$chain[ $key ] = $inst;
+				}
 			}
 		}
 
@@ -328,8 +333,13 @@ class RateService {
 			break;
 		}
 
-		// If all providers failed, return comprehensive error
+		// If provider(s) failed, return error
 		if ( empty( $rates ) || ! $successful_provider ) {
+			if ( ! $enable_failover ) {
+				$msg = reset( $errors ) ?: __( 'Failed to fetch exchange rates from provider.', 'velox-multi-currency' );
+				return new \WP_Error( 'velox_rate_provider_failed', $msg );
+			}
+
 			$err_details = array();
 			foreach ( $errors as $prov_name => $msg ) {
 				$err_details[] = "{$prov_name}: {$msg}";

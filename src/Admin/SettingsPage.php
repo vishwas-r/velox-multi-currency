@@ -244,6 +244,30 @@ class SettingsPage {
 		<div class="velox-panel">
 			<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
 				<h2><?php esc_html_e( 'Configured Currencies', 'velox-multi-currency' ); ?></h2>
+				<?php
+				$max_currencies = $this->currency_registry->get_max_currencies();
+				$enabled_count  = count( $enabled );
+				if ( ! velox_mc_is_pro() && $enabled_count >= $max_currencies ) :
+					?>
+					<div class="notice notice-info inline" style="margin:10px 0; width:100%;">
+						<p>
+							<strong>
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: 1: Configured currencies count, 2: Maximum currencies count */
+										__( 'You have configured %1$d of %2$d currencies (Free limit).', 'velox-multi-currency' ),
+										absint( $enabled_count ),
+										absint( $max_currencies )
+									)
+								);
+								?>
+							</strong>
+							<?php esc_html_e( 'Upgrade to VeloX Pro to unlock unlimited currencies.', 'velox-multi-currency' ); ?>
+							<a href="https://vishwas.me/" target="_blank" style="font-weight:600; text-decoration:underline; margin-left:4px;"><?php esc_html_e( 'Unlock Unlimited Currencies &rarr;', 'velox-multi-currency' ); ?></a>
+						</p>
+					</div>
+				<?php endif; ?>
 				<div class="velox-sync-actions" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
 					<span class="velox-last-sync" style="font-size:12px; color:#666;">
 						<?php
@@ -532,83 +556,36 @@ class SettingsPage {
 			</form>
 		</div>
 
-		<!-- GeoIP Customer Country Auto-Detection Card -->
+		<!-- GeoIP Customer Country Auto-Detection Section -->
 		<?php
-		$geo_enabled  = get_option( CurrencyRegistry::OPTION_AUTO_GEO, 'yes' );
-		$geo_avail    = class_exists( '\WC_Geolocation' );
-		$current_loc  = $geo_avail ? \WC_Geolocation::geolocate_ip( \WC_Geolocation::get_ip_address(), true, false ) : array();
-		$user_country = ! empty( $current_loc['country'] ) ? strtoupper( $current_loc['country'] ) : '';
-		$map          = CurrencyRegistry::get_country_currency_map();
-		$auto_curr    = $user_country && isset( $map[ $user_country ] ) ? $map[ $user_country ] : '';
-		?>
-		<div class="velox-panel velox-geo-card" style="margin-top:20px;">
-			<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-				<div style="display:flex; align-items:center; gap:10px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#0284c7" class="bi bi-geo-alt" viewBox="0 0 16 16"><path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/><path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
-					<h2 style="margin:0; font-size:1.25rem; font-weight:600;">
-						<?php esc_html_e( 'Customer Country Auto-Detection (GeoIP)', 'velox-multi-currency' ); ?>
-					</h2>
-					<?php if ( 'yes' === $geo_enabled ) : ?>
-						<span class="velox-badge" style="background:#0284c7; font-weight:600; padding:3px 10px; border-radius:9999px;">
-							<?php esc_html_e( 'Auto-Detect Active', 'velox-multi-currency' ); ?>
+		if ( velox_mc_is_pro() ) {
+			do_action( 'velox_mc_admin_geoip_settings' );
+		} else {
+			?>
+			<div class="velox-panel velox-geo-card" style="margin-top:20px; border:1px dashed #c3c4c7; background:#fafafa;">
+				<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+					<div style="display:flex; align-items:center; gap:10px;">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#6366f1" class="bi bi-geo-alt" viewBox="0 0 16 16"><path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/><path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+						<h2 style="margin:0; font-size:1.25rem; font-weight:600;">
+							<?php esc_html_e( 'Customer Country Auto-Detection (GeoIP)', 'velox-multi-currency' ); ?>
+						</h2>
+						<span class="velox-pro-badge" style="background:#6366f1; color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase;">
+							<?php esc_html_e( 'PRO', 'velox-multi-currency' ); ?>
 						</span>
-					<?php else : ?>
-						<span class="velox-badge" style="background:#64748b; font-weight:600; padding:3px 10px; border-radius:9999px;">
-							<?php esc_html_e( 'Disabled', 'velox-multi-currency' ); ?>
-						</span>
-					<?php endif; ?>
+					</div>
+					<div>
+						<a href="https://vishwas.me/" target="_blank" class="button button-secondary" style="font-size:12px; font-weight:600;">
+							<?php esc_html_e( 'Unlock with VeloX Pro &rarr;', 'velox-multi-currency' ); ?>
+						</a>
+					</div>
 				</div>
-				<div style="font-size:12px; color:#64748b;">
-					<?php esc_html_e( 'Integrated with WooCommerce MaxMind Geolocation database', 'velox-multi-currency' ); ?>
-				</div>
+				<p style="color:#64748b; font-size:13px; margin:10px 0 0;">
+					<?php esc_html_e( 'Automatically detect your customer\'s country and switch to their domestic currency on their first visit using built-in MaxMind geolocation. Upgrade to VeloX Pro to enable.', 'velox-multi-currency' ); ?>
+				</p>
 			</div>
-
-			<form method="post" action="">
-				<?php wp_nonce_field( 'velox_save_settings', 'velox_nonce' ); ?>
-				<input type="hidden" name="velox_action" value="save_geo_settings">
-
-				<table class="form-table velox-form-table" style="margin-top:0;">
-					<tbody>
-						<tr>
-							<th scope="row" style="width:220px;">
-								<label for="velox_auto_detect_geo"><?php esc_html_e( 'GeoIP Auto-Switching', 'velox-multi-currency' ); ?></label>
-							</th>
-							<td>
-								<label class="velox-checkbox-label" style="font-size:14px;">
-									<input type="checkbox" name="velox_auto_detect_geo" id="velox_auto_detect_geo" value="yes" <?php checked( 'yes', $geo_enabled ); ?>>
-									<strong><?php esc_html_e( 'Automatically display prices in customer local currency on first visit', 'velox-multi-currency' ); ?></strong>
-								</label>
-								<p class="description">
-									<?php esc_html_e( 'When an international shopper lands on your store without an existing cookie, VeloX detects their country and switches to their local currency if enabled.', 'velox-multi-currency' ); ?>
-								</p>
-							</td>
-						</tr>
-						<tr>
-							<th scope="row">
-								<?php esc_html_e( 'Your Detected Location', 'velox-multi-currency' ); ?>
-							</th>
-							<td>
-								<div style="font-size:13px; color:#334155;">
-									<strong><?php echo esc_html( $user_country ? $user_country : __( 'Unknown / Localhost', 'velox-multi-currency' ) ); ?></strong>
-									<?php if ( $auto_curr ) : ?>
-										&rarr; <?php esc_html_e( 'Maps to currency:', 'velox-multi-currency' ); ?> <code><?php echo esc_html( $auto_curr ); ?></code>
-										<?php if ( isset( $enabled[ $auto_curr ] ) ) : ?>
-											<span style="color:#16a34a; font-weight:600;">(<?php esc_html_e( 'Enabled in Store', 'velox-multi-currency' ); ?>)</span>
-										<?php else : ?>
-											<span style="color:#64748b;">(<?php esc_html_e( 'Not enabled in store, defaults to Base', 'velox-multi-currency' ); ?>)</span>
-										<?php endif; ?>
-									<?php endif; ?>
-								</div>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-
-				<div style="margin-top:20px;">
-					<input type="submit" name="submit_geo" class="button button-primary" value="<?php esc_attr_e( 'Save GeoIP Settings', 'velox-multi-currency' ); ?>" style="height:34px; padding:0 20px;">
-				</div>
-			</form>
-		</div>
+			<?php
+		}
+		?>
 		<?php
 	}
 
@@ -922,7 +899,11 @@ class SettingsPage {
 											<td>
 												<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][mode]" class="velox-mode-select">
 													<option value="allow_native" <?php selected( $mode, 'allow_native' ); ?>><?php esc_html_e( 'Allow Native', 'velox-multi-currency' ); ?></option>
-													<option value="convert_disclose" <?php selected( $mode, 'convert_disclose' ); ?>><?php esc_html_e( 'Convert & Disclose', 'velox-multi-currency' ); ?></option>
+													<?php if ( velox_mc_is_pro() ) : ?>
+														<option value="convert_disclose" <?php selected( $mode, 'convert_disclose' ); ?>><?php esc_html_e( 'Convert & Disclose', 'velox-multi-currency' ); ?></option>
+													<?php else : ?>
+														<option value="convert_disclose" disabled style="color:#94a3b8;"><?php esc_html_e( 'Convert & Disclose [PRO]', 'velox-multi-currency' ); ?></option>
+													<?php endif; ?>
 													<option value="hide" <?php selected( $mode, 'hide' ); ?>><?php esc_html_e( 'Hide Gateway', 'velox-multi-currency' ); ?></option>
 												</select>
 												<div class="velox-convert-to-wrap" style="margin-top: 5px; <?php echo ( 'convert_disclose' === $mode ) ? '' : 'display:none;'; ?>">
@@ -1056,6 +1037,8 @@ class SettingsPage {
 				</tbody>
 			</table>
 		</div>
+
+		<?php do_action( 'velox_mc_admin_license_settings' ); ?>
 		<?php
 	}
 
