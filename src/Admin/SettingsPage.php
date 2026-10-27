@@ -195,11 +195,11 @@ class SettingsPage {
 					<?php esc_html_e( 'Currencies & Rates', 'velox-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=velox-settings&tab=switcher' ) ); ?>" class="nav-tab <?php echo 'switcher' === $active_tab ? 'nav-tab-active' : ''; ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-toggles velox-tab-icon" viewBox="0 0 16 16"><path d="M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7zM8 11.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m3 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3M4.5 7a3.5 3.5 0 0 0 0-7h7a3.5 3.5 0 0 0 0 7zM8 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m3 3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-left-right velox-tab-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>
 					<?php esc_html_e( 'Switcher & Display', 'velox-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=velox-settings&tab=gateway_routing' ) ); ?>" class="nav-tab <?php echo in_array( $active_tab, array( 'gateway_routing', 'gateway_matrix' ), true ) ? 'nav-tab-active' : ''; ?>">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-diagram-3 velox-tab-icon" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5A1.5 1.5 0 0 1 10 10v1a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 6 11v-1a1.5 1.5 0 0 1 1.5-1.5V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5zM8.5 3h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5m1.5 7h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5m-7 0h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5"/></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-credit-card velox-tab-icon" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"/><path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg>
 					<?php esc_html_e( 'Gateway Routing', 'velox-multi-currency' ); ?>
 				</a>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=velox-settings&tab=sales_by_currency' ) ); ?>" class="nav-tab <?php echo 'sales_by_currency' === $active_tab ? 'nav-tab-active' : ''; ?>">
@@ -405,7 +405,7 @@ class SettingsPage {
 		<div class="velox-panel velox-auto-sync-card" style="margin-top:20px;">
 			<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
 				<div style="display:flex; align-items:center; gap:10px;">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#4f46e5" class="bi bi-clock-history" viewBox="0 0 16 16"><path d="m8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022zm2.004.45a7 7 0 0 0-.985-.299l.219-.976q.576.129 1.126.342zm1.37.71a7 7 0 0 0-.439-.27l.493-.87a8 8 0 0 1 .979.654l-.615.789a7 7 0 0 0-.418-.302zm1.834 1.79a7 7 0 0 0-.653-.796l.724-.69q.406.429.747.91zm.744 1.352a7 7 0 0 0-.214-.468l.893-.45a8 8 0 0 1 .45 1.088l-.95.313a7 7 0 0 0-.179-.483m.53 2.507a7 7 0 0 0-.1-1.025l.985-.17q.1.586.113 1.196l-1 .009a7 7 0 0 0 .002-.01m-.182 2.553a7 7 0 0 0 .285-.985l.976.219a8 8 0 0 1-.342 1.126zM9 13l3-3-1.414-1.414L9 10.172V5H7v6.828l-1.586-1.586L4 11.657 7.657 15.314a2 2 0 0 0 2.828 0z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#4f46e5" class="bi bi-arrow-repeat" viewBox="0 0 16 16"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
 					<h2 style="margin:0; font-size:1.25rem; font-weight:600;">
 						<?php esc_html_e( 'Automatic Exchange Rate Sync', 'velox-multi-currency' ); ?>
 					</h2>
@@ -536,7 +536,7 @@ class SettingsPage {
 									),
 									12  => array(
 										'label' => __( 'Every 12 Hours (Twice daily)', 'velox-multi-currency' ),
-										'pro'   => false,
+										'pro'   => true,
 									),
 									24  => array(
 										'label' => __( 'Every 24 Hours (Once daily)', 'velox-multi-currency' ),
@@ -544,11 +544,15 @@ class SettingsPage {
 									),
 									48  => array(
 										'label' => __( 'Every 48 Hours (Every 2 days)', 'velox-multi-currency' ),
-										'pro'   => true,
+										'pro'   => false,
+									),
+									72  => array(
+										'label' => __( 'Every 72 Hours (Every 3 days)', 'velox-multi-currency' ),
+										'pro'   => false,
 									),
 									168 => array(
 										'label' => __( 'Every 168 Hours (Weekly)', 'velox-multi-currency' ),
-										'pro'   => true,
+										'pro'   => false,
 									),
 								);
 								$is_custom     = $is_pro && ! array_key_exists( $current_hours, $presets );
@@ -578,10 +582,10 @@ class SettingsPage {
 									<?php endif; ?>
 								</div>
 								<p class="description">
-									<?php esc_html_e( 'Choose how often exchange rates are updated. Standard intervals: 12 or 24 hours.', 'velox-multi-currency' ); ?>
+									<?php esc_html_e( 'Choose how often exchange rates are updated. Standard daily & weekly intervals (24h, 48h, 72h, 168h) are free.', 'velox-multi-currency' ); ?>
 									<?php if ( ! $is_pro ) : ?>
 										<span style="display:block; margin-top:4px; color:#4f46e5; font-size:12.5px;">
-											<strong><?php esc_html_e( 'High-Frequency Sync (1h, 2h, 4h, 6h, 8h, or custom hours):', 'velox-multi-currency' ); ?></strong>
+											<strong><?php esc_html_e( 'High-Frequency Sync (< 24h: 1h, 2h, 4h, 6h, 8h, 12h, or custom hours):', 'velox-multi-currency' ); ?></strong>
 											<?php esc_html_e( 'Available with', 'velox-multi-currency' ); ?>
 											<a href="https://vishwas.me/" target="_blank" style="color:#4338ca; font-weight:600; text-decoration:underline;"><?php esc_html_e( 'VeloX Pro &rarr;', 'velox-multi-currency' ); ?></a>
 										</span>
@@ -684,15 +688,15 @@ class SettingsPage {
 		// 2. Handle Auto-Sync Settings Save
 		if ( ( isset( $_POST['velox_action'] ) && 'save_auto_sync' === $_POST['velox_action'] ) || isset( $_POST['submit_auto_sync'] ) ) {
 			$enabled    = ( ! empty( $_POST['auto_sync_enabled'] ) && 'yes' === $_POST['auto_sync_enabled'] ) ? 'yes' : 'no';
-			$select_val = sanitize_text_field( wp_unslash( $_POST['auto_sync_interval_select'] ?? '12' ) );
+			$select_val = sanitize_text_field( wp_unslash( $_POST['auto_sync_interval_select'] ?? '24' ) );
 			$is_pro     = (bool) velox_mc_is_pro();
 
 			if ( 'custom' === $select_val && $is_pro ) {
-				$interval_hours = max( 1, absint( wp_unslash( $_POST['auto_sync_interval_custom'] ?? 12 ) ) );
+				$interval_hours = max( 1, absint( wp_unslash( $_POST['auto_sync_interval_custom'] ?? 24 ) ) );
 			} elseif ( ! $is_pro ) {
-				// In Free, strictly enforce 12 or 24 hours
+				// In Free, strictly allow >= 24h intervals (24, 48, 72, 168)
 				$val            = absint( $select_val );
-				$interval_hours = in_array( $val, array( 12, 24 ), true ) ? $val : 12;
+				$interval_hours = ( $val >= 24 && in_array( $val, array( 24, 48, 72, 168 ), true ) ) ? $val : 24;
 			} else {
 				$interval_hours = max( 1, absint( $select_val ) );
 			}

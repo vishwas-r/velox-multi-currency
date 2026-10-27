@@ -151,13 +151,13 @@ class RateService {
 	/**
 	 * Get allowed auto-sync intervals in hours.
 	 *
-	 * Free tier: 12, 24 hours.
-	 * Pro tier: 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 hours, and custom hours.
+	 * Free tier: 24, 48, 72, 168 hours (>= 24h).
+	 * Pro tier: 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 hours, and custom hours (< 24h unlocked).
 	 *
 	 * @return array<int>
 	 */
 	public function get_allowed_sync_intervals(): array {
-		$default = velox_mc_is_pro() ? array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 ) : array( 12, 24 );
+		$default = velox_mc_is_pro() ? array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 ) : array( 24, 48, 72, 168 );
 		return (array) apply_filters( 'velox_mc_sync_intervals', $default );
 	}
 
@@ -169,7 +169,7 @@ class RateService {
 	public function get_auto_sync_settings(): array {
 		$defaults = array(
 			'enabled'        => 'yes',
-			'interval_hours' => 12,
+			'interval_hours' => 24,
 		);
 
 		$saved = get_option( self::OPTION_AUTO_SYNC, array() );
@@ -179,11 +179,11 @@ class RateService {
 
 		$settings = wp_parse_args( $saved, $defaults );
 
-		// Enforce Free tier limit if Pro is not active
+		// Enforce Free tier limit (< 24h requires Pro)
 		if ( ! velox_mc_is_pro() ) {
 			$allowed = $this->get_allowed_sync_intervals();
-			if ( ! in_array( (int) $settings['interval_hours'], $allowed, true ) ) {
-				$settings['interval_hours'] = 12;
+			if ( (int) $settings['interval_hours'] < 24 || ! in_array( (int) $settings['interval_hours'], $allowed, true ) ) {
+				$settings['interval_hours'] = 24;
 			}
 		}
 
@@ -197,11 +197,11 @@ class RateService {
 	 * @return bool True if updated or unchanged.
 	 */
 	public function save_auto_sync_settings( array $settings ): bool {
-		$raw_hours = (int) ( $settings['interval_hours'] ?? 12 );
+		$raw_hours = (int) ( $settings['interval_hours'] ?? 24 );
 		$allowed   = $this->get_allowed_sync_intervals();
 
-		if ( ! velox_mc_is_pro() && ! in_array( $raw_hours, $allowed, true ) ) {
-			$raw_hours = 12;
+		if ( ! velox_mc_is_pro() && ( $raw_hours < 24 || ! in_array( $raw_hours, $allowed, true ) ) ) {
+			$raw_hours = 24;
 		}
 
 		$clean = array(
