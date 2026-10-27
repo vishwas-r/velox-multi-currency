@@ -1,10 +1,10 @@
 === VeloX - Multi-Currency & Payment Gateway for WooCommerce ===
 Contributors: vishwas-r
-Tags: currency switcher, multi currency, payment gateway, razorpay, woocommerce
-Requires at least: 6.5
+Tags: currency switcher, multi currency, payment gateway, woocommerce, currency
+Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,73 +12,76 @@ Multi-currency switcher and dedicated payment gateway router for WooCommerce. Di
 
 == Description ==
 
-**VeloX Multi-Currency** is the modern multi-currency switcher and payment gateway router for WooCommerce.
+**VeloX Multi-Currency** is a high-performance, precision multi-currency switcher and payment gateway routing engine built natively for modern WooCommerce.
 
-Show prices in any currency, and ensure every order is routed through the right gateway in the right currency.
+Show prices in customer currencies, eliminate floating-point rounding errors with deterministic minor-unit math, and route checkouts through compatible payment gateways.
 
 ### Why VeloX?
 
-Most multi-currency plugins only convert visual prices on product pages, creating serious failures at checkout:
-* **Gateway Currency Incompatibilities:** Gateways like PayPal reject unsupported currencies (e.g. domestic INR or 3-decimal currencies like KWD). Razorpay primarily settles in INR. Passing unsupported currencies causes transaction errors and abandoned carts.
-* **The "Gateway by Currency" Paywall:** Other plugins lock payment gateway filtering behind expensive annual licenses ($99 to $149/yr).
-* **Ugly Query Parameters:** Plugins that append `?currency=EUR` to URLs break server-side page caches and pollute search engine indices.
-* **WooCommerce Checkout Blocks Ready:** Built from day one for modern WooCommerce Cart & Checkout Blocks, as well as Classic Checkout and High-Performance Order Storage (HPOS).
+Most multi-currency plugins only convert visual numbers on product pages, creating serious friction and failures at checkout:
+* **The "Gateway by Currency" Paywall:** Other plugins lock basic payment gateway filtering behind expensive annual subscriptions ($99 to $149/yr).
+* **Gateway Incompatibilities:** Gateways reject unsupported currencies (e.g. PayPal rejecting domestic currencies or 3-decimal currencies like KWD; Razorpay primarily settling in INR).
+* **Static Cache Inversion:** Plugins that reverse-divide formatted prices (`price / rate`) break on stores using WP Rocket, LiteSpeed Cache, or Cloudflare, displaying distorted numbers to international visitors.
+* **WooCommerce Checkout Blocks Ready:** Engineered from the ground up for modern WooCommerce Cart & Checkout Blocks (Store API), as well as Classic Checkout and High-Performance Order Storage (HPOS).
 
-### Key Features
+### Free Version Features
 
-* **Dedicated Payment Gateway Routing:** Lock any currency exclusively to designated payment methods (e.g. INR -> Razorpay only, USD -> PayPal only).
-* **3-Mode Payment Gateway Matrix:**
-  * **Allow Native:** Charge the payment gateway directly in the customer's selected currency.
-  * **Convert & Disclose:** Keep the customer browsing in their local currency, but settle the order in the gateway's supported currency with an automatic, transparent checkout disclosure notice.
-  * **Hide:** Completely disable gateways that do not support the customer's currency.
-* **Zero-Reload AJAX Switching:** Pure AJAX real-time price and symbol updates across shop, product, cart, and checkout without page reloads.
-* **Floating Switcher & Top Header Bar:** Beautiful floating widget with corner placement selector and instant visual loader feedback.
-* **Multiple Exchange Rate Providers:** Choose between Frankfurter, FloatRates, ExchangeRate-API, or ECB.
-* **ISO 4217 Minor-Unit Money Math:** Strict integer-based money math with a built-in zero-guard to prevent low exchange rates from ever rounding down to 0.00.
-* **Custom Rounding & Buffer Markup:** Add an FX fee buffer (e.g. +2.5%) to offset bank conversion charges and apply charm pricing (.99, .95, nearest integer).
-* **HPOS & Blocks Compatible:** Declares full compatibility with WooCommerce High-Performance Order Storage and Cart/Checkout Blocks.
+* **Up to 3 Configured Currencies:** Configure your store base currency plus two additional international currencies (e.g. USD + EUR + GBP) with zero subscription fees.
+* **Dedicated Payment Gateway Routing:** Lock any currency to specific payment methods (e.g. INR -> Razorpay only, USD -> PayPal only).
+* **Gateway Matrix (Allow Native & Hide):** Enable compatible payment gateways or completely hide incompatible gateways for any specific currency.
+* **Cache-Safe Price Rendering:** Automatically embeds `data-velox-base` HTML attributes and emits `Vary: Cookie` headers so caching engines never serve frozen currency prices.
+* **Deterministic Integer Money Math:** Stores and calculates values in ISO-4217 minor units with an anti-zero guard to prevent small exchange rates from ever rounding down to 0.00.
+* **Real-Time AJAX Switching:** Instant price updates across shop, single product, cart, and checkout without full page reloads.
+* **Floating Switcher & Header Bar:** Built-in floating widget with placement controls and top navigation bar integration, plus the `[velox_currency_switcher]` shortcode.
+* **Automated Background Rate Sync:** WordPress Cron background scheduler with configurable 12-hour and 24-hour intervals, plus on-demand manual sync.
+* **100% HPOS & Blocks Compatible:** Fully compatible with High-Performance Order Storage (Custom Order Tables) and Cart/Checkout Blocks.
+
+### Need Enterprise Features? Upgrade to VeloX Pro
+
+Looking for advanced cross-border automation? **VeloX Pro** unlocks:
+* **Unlimited Currencies:** Remove the 3-currency limit and sell across dozens of global currencies.
+* **"Convert & Disclose" Gateway Mode:** Browse in customer currency, but charge via your domestic gateway in a fixed settlement currency (e.g. charge USD via PayPal for an INR cart) with automatic proportional line-item, fee, shipping, and tax scaling.
+* **Zero-Dependency GeoIP Auto-Detection:** Automatically detect customer country on first visit via built-in MaxMind geolocation and switch to their domestic currency with zero external API calls.
+* **4-Tier Autonomous Rate Failover Chain:** Zero-downtime exchange rates cascading through ExchangeRate-API, Frankfurter, FloatRates, and the European Central Bank (ECB).
+* **High-Frequency Auto-Sync:** Automated rate updates every 1, 2, 4, or 6 hours.
+* **Analytics Normalization:** Normalize multi-currency orders back to store base currency in WooCommerce Analytics reports.
+
+Visit [vishwas.me](https://vishwas.me/) to learn more about VeloX Pro.
 
 == Installation ==
 
 1. Upload the `velox-multi-currency` folder to your `/wp-content/plugins/` directory.
 2. Activate the plugin through the 'Plugins' menu in WordPress.
-3. Navigate to **WooCommerce -> VeloX** to configure your currencies and set your payment gateway matrix rules.
-4. Place the switcher on your storefront using the `[velox_switcher]` shortcode, floating widget, or header menu.
+3. Navigate to **WooCommerce -> VeloX** to configure your currencies and set your gateway routing rules.
+4. Place the switcher on your storefront using the floating widget, header bar, or `[velox_currency_switcher]` shortcode.
 
 == Frequently Asked Questions ==
 
 = Does VeloX work with WooCommerce Checkout Blocks? =
-Yes! VeloX integrates with the modern WooCommerce Store API to disable unsupported gateways and update settlement amounts reactively in the Checkout Block.
+Yes! VeloX integrates directly with the modern WooCommerce Store API to disable unsupported gateways and update settlement amounts reactively in the Checkout Block.
 
-= How are exchange rates updated? =
-Rates can be fetched automatically via background scheduler or on-demand from trusted providers with zero API keys required.
+= How does VeloX protect against static page caching? =
+VeloX injects immutable `data-velox-base` HTML attributes into `wc_price` output and sends `Vary: Cookie` headers. The frontend JavaScript reads the base attribute directly rather than reverse-dividing formatted text.
+
+= How are exchange rates fetched? =
+Rates are fetched automatically via WordPress Cron or on-demand from trusted public exchange rate providers with zero API keys required.
 
 = Can I set manual exchange rates? =
-Yes. You can edit the exchange rate and buffer markup percentage for any currency directly in the settings table.
+Yes. You can edit the exchange rate and buffer markup percentage (e.g. +2.5%) for any currency directly in the settings table.
 
-= What happens if a customer chooses a currency not supported by PayPal? =
-With VeloX's Gateway Routing, you can lock USD to PayPal and INR to Razorpay, or use the Gateway Matrix to hide incompatible gateways.
+= What is the currency limit in the free version? =
+The free version allows up to 3 active currencies simultaneously. For unlimited currencies, upgrade to VeloX Pro.
 
 == Changelog ==
 
-= 1.0.3 =
-* Feature: Added configurable background Auto-Sync for exchange rates every X hours (1h, 2h, 4h, 6h, 12h, 24h, or custom duration) powered by WordPress Cron.
-* Feature: Added dedicated Auto-Sync management card in Currencies tab with live status, next run calculation, and on-demand sync.
-
-= 1.0.2 =
-* Fix: Pure AJAX real-time price updating on Block Theme shop and single product templates.
-* Enhance: Dual-layer dynamic DOM price recalculation for block themes and custom page builders.
-* Fix: Synchronized currency symbol and numeric amounts across all template variants.
-
-= 1.0.1 =
-* Rebranded to VeloX Multi-Currency.
-* Added floating currency switcher and header bar switcher.
-* Added real-time AJAX currency switching without page reload.
-
 = 1.0.0 =
-* Initial release.
-* Added European Central Bank (ECB) zero-key exchange rate provider.
-* Added 3-mode Payment Gateway Routing Matrix (Allow Native, Convert & Disclose, Hide).
-* Added certified capability profiles for Stripe, PayPal, and Razorpay.
-* Added ISO 4217 Money value object with zero-guard math.
-* Declared full HPOS and WooCommerce Checkout Blocks compatibility.
+* Initial public release.
+* Support for up to 3 configured currencies with zero fees.
+* Dedicated Payment Gateway Routing (Allow Native & Hide per currency).
+* Deterministic ISO 4217 minor-unit money math with anti-zero rounding guard.
+* Edge-cache safe price rendering via `data-velox-base` HTML attributes.
+* Real-time zero-reload AJAX currency switching.
+* Floating switcher widget and top header bar switcher.
+* Automated background exchange rate sync via WordPress Cron (12h & 24h).
+* Declared full compatibility with High-Performance Order Storage (HPOS) and Checkout Blocks.
+* 100% compliant with WordPress Plugin Check (PCP) across 29 static checks.
