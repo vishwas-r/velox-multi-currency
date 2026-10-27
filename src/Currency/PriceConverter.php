@@ -64,6 +64,9 @@ class PriceConverter {
 		add_filter( 'woocommerce_currency', array( $this, 'filter_woocommerce_currency' ), 9999, 1 );
 		add_filter( 'woocommerce_currency_symbol', array( $this, 'filter_woocommerce_currency_symbol' ), 9999, 2 );
 
+		// Inject data-velox-base and currency attributes into formatted price tags for cache-safe client updates.
+		add_filter( 'wc_price', array( $this, 'filter_wc_price_html' ), 10, 5 );
+
 		// Recalculate cart totals when currency is active/switched.
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'before_calculate_totals' ), 10, 1 );
 	}
@@ -422,5 +425,48 @@ class PriceConverter {
 			default:
 				return '%1$s%2$s';
 		}
+	}
+
+	/**
+	 * Inject data-velox-base and data-velox-currency attributes into wc_price HTML wrapper.
+	 * Guarantees zero calculation distortion on statically cached pages.
+	 *
+	 * @param string $return           Formatted price HTML.
+	 * @param float  $price            Numeric price amount.
+	 * @param array  $args             Formatting arguments.
+	 * @param float  $unformatted_price Raw unformatted amount.
+	 * @param float  $original_price   Original unmodified price.
+	 * @return string Modified HTML.
+	 */
+	public function filter_wc_price_html( $return, $price, $args = array(), $unformatted_price = 0.0, $original_price = 0.0 ) {
+		if ( empty( $return ) || ! is_string( $return ) ) {
+			return $return;
+		}
+
+		$base_currency   = $this->registry->get_base_currency();
+		$active_currency = $this->registry->get_active_currency();
+
+		// Determine base amount
+		$base_amount = (float) ( $original_price > 0 ? $original_price : $price );
+		if ( $active_currency !== $base_currency && $original_price <= 0 ) {
+			$enabled = $this->registry->get_enabled_currencies();
+			$rate    = (float) ( $enabled[ $active_currency ]['rate'] ?? 1.0 );
+			if ( $rate > 0 && 1.0 !== $rate ) {
+				$base_amount = (float) $price / $rate;
+			}
+		}
+
+		$attr = sprintf(
+			' data-velox-base="%1$s" data-velox-currency="%2$s"',
+			esc_attr( (string) round( $base_amount, 4 ) ),
+			esc_attr( $active_currency )
+		);
+
+		return preg_replace(
+			'/<span class="([^"]*woocommerce-Price-amount[^"]*)"/i',
+			'<span class="$1"' . $attr,
+			$return,
+			1
+		);
 	}
 }

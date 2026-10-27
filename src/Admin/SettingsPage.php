@@ -132,16 +132,29 @@ class SettingsPage {
 			wp_send_json_error( $result->get_error_message() );
 		}
 
+		if ( ! empty( $result['is_fallback'] ) ) {
+			$message = sprintf(
+				/* translators: 1: Count of updated currencies, 2: Fallback provider name, 3: Primary provider name */
+				__( 'Success! Primary provider (%3$s) was unreachable; %1$d currencies were updated using fallback provider %2$s.', 'velox-multi-currency' ),
+				$result['count'],
+				$result['provider'],
+				$result['primary_provider'] ?? 'primary'
+			);
+		} else {
+			$message = sprintf(
+				/* translators: 1: Count of updated currencies, 2: Provider name */
+				__( 'Success! Exchange rates for %1$d currencies updated from %2$s.', 'velox-multi-currency' ),
+				$result['count'],
+				$result['provider']
+			);
+		}
+
 		wp_send_json_success(
 			array(
-				'message'  => sprintf(
-					/* translators: 1: Count of updated currencies, 2: Provider name */
-					__( 'Success! Exchange rates for %1$d currencies updated from %2$s.', 'velox-multi-currency' ),
-					$result['count'],
-					$result['provider']
-				),
-				'time'     => current_time( 'mysql' ),
-				'provider' => $result['provider'],
+				'message'     => $message,
+				'time'        => current_time( 'mysql' ),
+				'provider'    => $result['provider'],
+				'is_fallback' => ! empty( $result['is_fallback'] ),
 			)
 		);
 	}
@@ -518,6 +531,84 @@ class SettingsPage {
 				</div>
 			</form>
 		</div>
+
+		<!-- GeoIP Customer Country Auto-Detection Card -->
+		<?php
+		$geo_enabled  = get_option( CurrencyRegistry::OPTION_AUTO_GEO, 'yes' );
+		$geo_avail    = class_exists( '\WC_Geolocation' );
+		$current_loc  = $geo_avail ? \WC_Geolocation::geolocate_ip( \WC_Geolocation::get_ip_address(), true, false ) : array();
+		$user_country = ! empty( $current_loc['country'] ) ? strtoupper( $current_loc['country'] ) : '';
+		$map          = CurrencyRegistry::get_country_currency_map();
+		$auto_curr    = $user_country && isset( $map[ $user_country ] ) ? $map[ $user_country ] : '';
+		?>
+		<div class="velox-panel velox-geo-card" style="margin-top:20px;">
+			<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+				<div style="display:flex; align-items:center; gap:10px;">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#0284c7" class="bi bi-geo-alt" viewBox="0 0 16 16"><path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/><path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
+					<h2 style="margin:0; font-size:1.25rem; font-weight:600;">
+						<?php esc_html_e( 'Customer Country Auto-Detection (GeoIP)', 'velox-multi-currency' ); ?>
+					</h2>
+					<?php if ( 'yes' === $geo_enabled ) : ?>
+						<span class="velox-badge" style="background:#0284c7; font-weight:600; padding:3px 10px; border-radius:9999px;">
+							<?php esc_html_e( 'Auto-Detect Active', 'velox-multi-currency' ); ?>
+						</span>
+					<?php else : ?>
+						<span class="velox-badge" style="background:#64748b; font-weight:600; padding:3px 10px; border-radius:9999px;">
+							<?php esc_html_e( 'Disabled', 'velox-multi-currency' ); ?>
+						</span>
+					<?php endif; ?>
+				</div>
+				<div style="font-size:12px; color:#64748b;">
+					<?php esc_html_e( 'Integrated with WooCommerce MaxMind Geolocation database', 'velox-multi-currency' ); ?>
+				</div>
+			</div>
+
+			<form method="post" action="">
+				<?php wp_nonce_field( 'velox_save_settings', 'velox_nonce' ); ?>
+				<input type="hidden" name="velox_action" value="save_geo_settings">
+
+				<table class="form-table velox-form-table" style="margin-top:0;">
+					<tbody>
+						<tr>
+							<th scope="row" style="width:220px;">
+								<label for="velox_auto_detect_geo"><?php esc_html_e( 'GeoIP Auto-Switching', 'velox-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<label class="velox-checkbox-label" style="font-size:14px;">
+									<input type="checkbox" name="velox_auto_detect_geo" id="velox_auto_detect_geo" value="yes" <?php checked( 'yes', $geo_enabled ); ?>>
+									<strong><?php esc_html_e( 'Automatically display prices in customer local currency on first visit', 'velox-multi-currency' ); ?></strong>
+								</label>
+								<p class="description">
+									<?php esc_html_e( 'When an international shopper lands on your store without an existing cookie, VeloX detects their country and switches to their local currency if enabled.', 'velox-multi-currency' ); ?>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row">
+								<?php esc_html_e( 'Your Detected Location', 'velox-multi-currency' ); ?>
+							</th>
+							<td>
+								<div style="font-size:13px; color:#334155;">
+									<strong><?php echo esc_html( $user_country ? $user_country : __( 'Unknown / Localhost', 'velox-multi-currency' ) ); ?></strong>
+									<?php if ( $auto_curr ) : ?>
+										&rarr; <?php esc_html_e( 'Maps to currency:', 'velox-multi-currency' ); ?> <code><?php echo esc_html( $auto_curr ); ?></code>
+										<?php if ( isset( $enabled[ $auto_curr ] ) ) : ?>
+											<span style="color:#16a34a; font-weight:600;">(<?php esc_html_e( 'Enabled in Store', 'velox-multi-currency' ); ?>)</span>
+										<?php else : ?>
+											<span style="color:#64748b;">(<?php esc_html_e( 'Not enabled in store, defaults to Base', 'velox-multi-currency' ); ?>)</span>
+										<?php endif; ?>
+									<?php endif; ?>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div style="margin-top:20px;">
+					<input type="submit" name="submit_geo" class="button button-primary" value="<?php esc_attr_e( 'Save GeoIP Settings', 'velox-multi-currency' ); ?>" style="height:34px; padding:0 20px;">
+				</div>
+			</form>
+		</div>
 		<?php
 	}
 
@@ -527,7 +618,15 @@ class SettingsPage {
 	protected function save_currencies_tab(): void {
 		check_admin_referer( 'velox_save_settings', 'velox_nonce' );
 
-		// 1. Handle Auto-Sync Settings Save
+		// 1. Handle GeoIP Settings Save
+		if ( ( isset( $_POST['velox_action'] ) && 'save_geo_settings' === $_POST['velox_action'] ) || isset( $_POST['submit_geo'] ) ) {
+			$geo_val = ( ! empty( $_POST['velox_auto_detect_geo'] ) && 'yes' === $_POST['velox_auto_detect_geo'] ) ? 'yes' : 'no';
+			update_option( CurrencyRegistry::OPTION_AUTO_GEO, $geo_val );
+			echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'GeoIP auto-detection settings updated successfully.', 'velox-multi-currency' ) . '</p></div>';
+			return;
+		}
+
+		// 2. Handle Auto-Sync Settings Save
 		if ( ( isset( $_POST['velox_action'] ) && 'save_auto_sync' === $_POST['velox_action'] ) || isset( $_POST['submit_auto_sync'] ) ) {
 			$enabled    = ( ! empty( $_POST['auto_sync_enabled'] ) && 'yes' === $_POST['auto_sync_enabled'] ) ? 'yes' : 'no';
 			$select_val = sanitize_text_field( wp_unslash( $_POST['auto_sync_interval_select'] ?? '12' ) );

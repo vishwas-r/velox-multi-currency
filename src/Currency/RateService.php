@@ -208,9 +208,11 @@ class RateService {
 		$interval_hours = max( 1, (int) $settings['interval_hours'] );
 		$active_key     = $this->get_schedule_key( $interval_hours );
 
+		$is_init = function_exists( 'did_action' ) && did_action( 'init' );
+
 		$schedules[ $active_key ] = array(
 			'interval' => $interval_hours * HOUR_IN_SECONDS,
-			'display'  => did_action( 'init' )
+			'display'  => $is_init
 				? sprintf(
 					/* translators: %d: Number of hours */
 					__( 'Every %d Hours (VeloX)', 'velox-multi-currency' ),
@@ -226,7 +228,7 @@ class RateService {
 			if ( ! isset( $schedules[ $k ] ) ) {
 				$schedules[ $k ] = array(
 					'interval' => $h * HOUR_IN_SECONDS,
-					'display'  => did_action( 'init' )
+					'display'  => $is_init
 						? sprintf(
 							/* translators: %d: Number of hours */
 							__( 'Every %d Hours (VeloX)', 'velox-multi-currency' ),
@@ -274,24 +276,72 @@ class RateService {
 	}
 
 	/**
-	 * Sync rates from the provider and update enabled currencies.
+	 * Sync rates from the provider and update enabled currencies with automatic failover chain.
+	 *
+	 * If the primary provider encounters network issues, rate limits, or empty responses,
+	 * VeloX automatically tries the remaining providers in sequence.
 	 *
 	 * @param string|null $provider_key Optional specific provider to sync from.
-	 * @return array{count: int, provider: string}|\WP_Error Returns summary or WP_Error.
+	 * @return array{count: int, provider: string, is_fallback?: bool, primary_provider?: string}|\WP_Error Returns summary or WP_Error.
 	 */
 	public function sync_rates( ?string $provider_key = null ) {
 		if ( ! empty( $provider_key ) && isset( $this->providers[ $provider_key ] ) ) {
-			$provider = $this->providers[ $provider_key ];
+			$primary_provider = $this->providers[ $provider_key ];
 			$this->set_active_provider( $provider_key );
 		} else {
-			$provider = $this->get_active_provider();
+			$primary_provider = $this->get_active_provider();
 		}
 
 		$base_currency = $this->registry->get_base_currency();
-		$rates         = $provider->fetch_rates( $base_currency );
 
-		if ( is_wp_error( $rates ) ) {
-			return $rates;
+		// Build execution chain: primary provider first, then all remaining providers
+		$chain = array( $primary_provider->get_key() => $primary_provider );
+		foreach ( $this->providers as $key => $inst ) {
+			if ( $key !== $primary_provider->get_key() ) {
+				$chain[ $key ] = $inst;
+			}
+		}
+
+		$rates               = null;
+		$successful_provider = null;
+		$errors              = array();
+		$is_fallback         = false;
+
+		foreach ( $chain as $key => $provider ) {
+			$result = $provider->fetch_rates( $base_currency );
+
+			if ( is_wp_error( $result ) ) {
+				$errors[ $provider->get_name() ] = $result->get_error_message();
+				$is_fallback                     = true;
+				continue;
+			}
+
+			if ( ! is_array( $result ) || empty( $result ) ) {
+				$errors[ $provider->get_name() ] = __( 'Received empty rate payload.', 'velox-multi-currency' );
+				$is_fallback                     = true;
+				continue;
+			}
+
+			// Provider succeeded
+			$rates               = $result;
+			$successful_provider = $provider;
+			break;
+		}
+
+		// If all providers failed, return comprehensive error
+		if ( empty( $rates ) || ! $successful_provider ) {
+			$err_details = array();
+			foreach ( $errors as $prov_name => $msg ) {
+				$err_details[] = "{$prov_name}: {$msg}";
+			}
+			return new \WP_Error(
+				'velox_all_rate_providers_failed',
+				sprintf(
+					/* translators: %s: Comma-separated list of failure reasons */
+					__( 'All exchange rate providers failed to respond. Errors: %s', 'velox-multi-currency' ),
+					implode( '; ', $err_details )
+				)
+			);
 		}
 
 		$enabled       = $this->registry->get_enabled_currencies();
@@ -306,18 +356,26 @@ class RateService {
 			if ( isset( $rates[ $code ] ) && $rates[ $code ] > 0 ) {
 				$enabled[ $code ]['rate']          = (float) $rates[ $code ];
 				$enabled[ $code ]['synced_at']     = time();
-				$enabled[ $code ]['rate_provider'] = $provider->get_key();
+				$enabled[ $code ]['rate_provider'] = $successful_provider->get_key();
 				$updated_count++;
 			}
 		}
 
 		$this->registry->save_enabled_currencies( $enabled );
 		update_option( self::OPTION_LAST_SYNC, time() );
+		update_option( 'velox_mc_last_sync_provider', $successful_provider->get_key() );
 
-		return array(
+		$response = array(
 			'count'    => $updated_count,
-			'provider' => $provider->get_name(),
+			'provider' => $successful_provider->get_name(),
 		);
+
+		if ( $is_fallback ) {
+			$response['is_fallback']      = true;
+			$response['primary_provider'] = $primary_provider->get_name();
+		}
+
+		return $response;
 	}
 
 	/**

@@ -87,15 +87,23 @@
 				return;
 			}
 
-			// Clone element and strip currency symbol tags to isolate numeric string
+			// 1. Prefer explicit data-velox-base injected server-side by PriceConverter
+			var explicitBase = $el.attr('data-velox-base');
+			if (explicitBase && !isNaN(parseFloat(explicitBase)) && parseFloat(explicitBase) > 0) {
+				$el.attr('data-velox-base-amount', parseFloat(explicitBase));
+				return;
+			}
+
+			// 2. Fallback heuristic for third-party or theme-custom price markup
+			var htmlCurrency = $el.attr('data-velox-currency') || params.currency;
 			var $clone = $el.clone();
 			$clone.find('.woocommerce-Price-currencySymbol, .wc-block-components-formatted-money-amount__currency').remove();
 			var text = $clone.text();
 			var num = parseRawPriceText(text, thousandSep, decimalSep);
 
 			if (num > 0) {
-				// Base price = current active currency price / current active currency rate
-				var baseAmount = num / currentRate;
+				// If rendered HTML matches store base currency, num IS already the base amount
+				var baseAmount = (htmlCurrency === params.base_currency) ? num : (num / currentRate);
 				$el.attr('data-velox-base-amount', baseAmount);
 			}
 		});
@@ -355,15 +363,23 @@
 							return;
 						}
 
-						var baseAmount = parseFloat($amount.attr('data-velox-base-amount'));
+						var baseAmount = parseFloat($amount.attr('data-velox-base-amount')) || parseFloat($amount.attr('data-velox-base'));
 						if (!baseAmount || isNaN(baseAmount)) {
-							// If not cached yet, compute base from previous rate
-							var $clone = $amount.clone();
-							$clone.find('.woocommerce-Price-currencySymbol, .wc-block-components-formatted-money-amount__currency').remove();
-							var prevRate = parseFloat(params.rate) || 1.0;
-							var currentNum = parseRawPriceText($clone.text(), params.thousand_separator, params.decimal_separator);
-							if (currentNum > 0) {
-								baseAmount = currentNum / prevRate;
+							// If not cached yet, compute base from previous rate or explicit attribute
+							var explicit = $amount.attr('data-velox-base');
+							if (explicit && !isNaN(parseFloat(explicit)) && parseFloat(explicit) > 0) {
+								baseAmount = parseFloat(explicit);
+							} else {
+								var $clone = $amount.clone();
+								$clone.find('.woocommerce-Price-currencySymbol, .wc-block-components-formatted-money-amount__currency').remove();
+								var prevRate = parseFloat(params.rate) || 1.0;
+								var currentNum = parseRawPriceText($clone.text(), params.thousand_separator, params.decimal_separator);
+								if (currentNum > 0) {
+									var elCurr = $amount.attr('data-velox-currency') || params.currency;
+									baseAmount = (elCurr === params.base_currency) ? currentNum : (currentNum / prevRate);
+								}
+							}
+							if (baseAmount && !isNaN(baseAmount)) {
 								$amount.attr('data-velox-base-amount', baseAmount);
 							}
 						}

@@ -25,6 +25,11 @@ class CurrencyRegistry {
 	const OPTION_ENABLED = 'velox_enabled_currencies';
 
 	/**
+	 * Option name for GeoIP country auto-detection.
+	 */
+	const OPTION_AUTO_GEO = 'velox_auto_detect_geo';
+
+	/**
 	 * Currently active currency code in request.
 	 *
 	 * @var string|null
@@ -48,6 +53,77 @@ class CurrencyRegistry {
 			$this->base_currency = strtoupper( (string) get_option( 'woocommerce_currency', 'USD' ) );
 		}
 		return $this->base_currency;
+	}
+
+	/**
+	 * Get standard ISO country code to ISO currency code mapping.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function get_country_currency_map(): array {
+		$map = array(
+			// North America
+			'US' => 'USD', 'CA' => 'CAD', 'MX' => 'MXN',
+			// Europe - Eurozone
+			'AT' => 'EUR', 'BE' => 'EUR', 'CY' => 'EUR', 'EE' => 'EUR', 'FI' => 'EUR',
+			'FR' => 'EUR', 'DE' => 'EUR', 'GR' => 'EUR', 'IE' => 'EUR', 'IT' => 'EUR',
+			'LV' => 'EUR', 'LT' => 'EUR', 'LU' => 'EUR', 'MT' => 'EUR', 'NL' => 'EUR',
+			'PT' => 'EUR', 'SK' => 'EUR', 'SI' => 'EUR', 'ES' => 'EUR', 'HR' => 'EUR',
+			'ME' => 'EUR', 'XK' => 'EUR', 'AD' => 'EUR', 'MC' => 'EUR', 'SM' => 'EUR', 'VA' => 'EUR',
+			// Europe - Non-Euro
+			'GB' => 'GBP', 'CH' => 'CHF', 'SE' => 'SEK', 'NO' => 'NOK', 'DK' => 'DKK',
+			'PL' => 'PLN', 'CZ' => 'CZK', 'HU' => 'HUF', 'RO' => 'RON', 'BG' => 'BGN',
+			'IS' => 'ISK', 'RS' => 'RSD', 'AL' => 'ALL', 'BA' => 'BAM', 'MK' => 'MKD',
+			'TR' => 'TRY', 'UA' => 'UAH', 'GE' => 'GEL',
+			// Asia & Pacific
+			'IN' => 'INR', 'JP' => 'JPY', 'CN' => 'CNY', 'HK' => 'HKD', 'TW' => 'TWD',
+			'SG' => 'SGD', 'MY' => 'MYR', 'ID' => 'IDR', 'TH' => 'THB', 'PH' => 'PHP',
+			'VN' => 'VND', 'KR' => 'KRW', 'AU' => 'AUD', 'NZ' => 'NZD', 'PK' => 'PKR',
+			'BD' => 'BDT', 'LK' => 'LKR', 'NP' => 'NPR',
+			// Middle East
+			'AE' => 'AED', 'SA' => 'SAR', 'QA' => 'QAR', 'KW' => 'KWD', 'BH' => 'BHD',
+			'OM' => 'OMR', 'IL' => 'ILS', 'JO' => 'JOD', 'LB' => 'LBP',
+			// Africa
+			'ZA' => 'ZAR', 'EG' => 'EGP', 'NG' => 'NGN', 'KE' => 'KES', 'GH' => 'GHS',
+			'MA' => 'MAD', 'TZ' => 'TZS', 'UG' => 'UGX', 'DZ' => 'DZD',
+			// South & Central America
+			'BR' => 'BRL', 'AR' => 'ARS', 'CL' => 'CLP', 'CO' => 'COP', 'PE' => 'PEN',
+			'UY' => 'UYU', 'CR' => 'CRC', 'PA' => 'PAB', 'GT' => 'GTQ', 'DO' => 'DOP',
+		);
+
+		return (array) apply_filters( 'velox_country_currency_map', $map );
+	}
+
+	/**
+	 * Detect customer currency based on WooCommerce MaxMind Geolocation.
+	 *
+	 * @return string|null Detected currency code or null.
+	 */
+	public function detect_currency_from_geolocation(): ?string {
+		if ( ! class_exists( '\WC_Geolocation' ) ) {
+			return null;
+		}
+
+		$ip = \WC_Geolocation::get_ip_address();
+		if ( empty( $ip ) ) {
+			return null;
+		}
+
+		$location = \WC_Geolocation::geolocate_ip( $ip, true, false );
+		$country  = ! empty( $location['country'] ) ? strtoupper( trim( $location['country'] ) ) : '';
+
+		if ( empty( $country ) ) {
+			return null;
+		}
+
+		$map             = self::get_country_currency_map();
+		$target_currency = $map[ $country ] ?? null;
+
+		if ( ! empty( $target_currency ) && $this->is_currency_enabled( $target_currency ) ) {
+			return strtoupper( $target_currency );
+		}
+
+		return null;
 	}
 
 	/**
@@ -80,7 +156,16 @@ class CurrencyRegistry {
 			}
 		}
 
-		// 3. Allow filters (e.g. GeoIP auto-detect module).
+		// 3. Built-in GeoIP Country-to-Currency detection (initial visit without cookie/session).
+		if ( 'yes' === get_option( self::OPTION_AUTO_GEO, 'yes' ) ) {
+			$geo_curr = $this->detect_currency_from_geolocation();
+			if ( ! empty( $geo_curr ) && $this->is_currency_enabled( $geo_curr ) ) {
+				$this->set_active_currency( $geo_curr );
+				return $this->active_currency;
+			}
+		}
+
+		// 4. Custom filter hook fallback.
 		$detected = apply_filters( 'velox_detected_currency', $base );
 		if ( $this->is_currency_enabled( $detected ) ) {
 			$this->active_currency = strtoupper( $detected );

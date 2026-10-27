@@ -100,7 +100,37 @@ class Plugin {
 		if ( is_admin() ) {
 			$this->settings_page->init();
 			$this->product_pricing->init();
+		} else {
+			// Cache-safe headers and reverse-proxy/caching plugin integration.
+			add_action( 'send_headers', array( $this, 'send_cache_headers' ) );
+			add_filter( 'rocket_cache_dynamic_cookies', array( $this, 'register_caching_cookies' ) );
+			add_filter( 'litespeed_vary_cookies', array( $this, 'register_caching_cookies' ) );
 		}
+	}
+
+	/**
+	 * Send Vary: Cookie header so caching engines maintain separate cached pages per currency cookie.
+	 */
+	public function send_cache_headers(): void {
+		if ( ! is_admin() && ! headers_sent() ) {
+			header( 'Vary: Cookie', false );
+		}
+	}
+
+	/**
+	 * Register velox_currency with WP Rocket and LiteSpeed dynamic cookie vary systems.
+	 *
+	 * @param array|mixed $cookies Array of cookies.
+	 * @return array
+	 */
+	public function register_caching_cookies( $cookies ): array {
+		if ( ! is_array( $cookies ) ) {
+			$cookies = array();
+		}
+		if ( ! in_array( CurrencyRegistry::COOKIE_NAME, $cookies, true ) ) {
+			$cookies[] = CurrencyRegistry::COOKIE_NAME;
+		}
+		return $cookies;
 	}
 
 	public function get_currency_registry(): CurrencyRegistry {
