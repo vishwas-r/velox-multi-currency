@@ -159,7 +159,7 @@ class SettlementResolver {
 	 * @return string
 	 */
 	protected function get_gateway_title( string $gateway_id ): string {
-		$gateways = WC()->payment_gateways->payment_gateways() ?? array();
+		$gateways = ( function_exists( 'WC' ) && WC()->payment_gateways() ) ? WC()->payment_gateways()->payment_gateways() : array();
 		if ( isset( $gateways[ $gateway_id ] ) && ! empty( $gateways[ $gateway_id ]->title ) ) {
 			return $gateways[ $gateway_id ]->title;
 		}

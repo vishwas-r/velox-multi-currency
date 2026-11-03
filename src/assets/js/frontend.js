@@ -441,8 +441,9 @@
 								if (typeof cartDispatch.invalidateResolutionForStoreSelector === 'function') {
 									cartDispatch.invalidateResolutionForStoreSelector('getCartData');
 								}
+								var storeCartEndpoint = params.store_cart_url || ( ( window.wpApiSettings && window.wpApiSettings.root ) ? window.wpApiSettings.root + 'wc/store/v1/cart' : '/wp-json/wc/store/v1/cart' );
 								$.ajax({
-									url: '/wp-json/wc/store/v1/cart',
+									url: storeCartEndpoint,
 									type: 'GET',
 									cache: false,
 									dataType: 'json',

@@ -886,7 +886,7 @@ class SettingsPage {
 	protected function render_gateway_routing_tab(): void {
 		$enabled         = $this->currency_registry->get_enabled_currencies();
 		$base            = $this->currency_registry->get_base_currency();
-		$gateways        = WC()->payment_gateways->payment_gateways();
+		$gateways        = ( function_exists( 'WC' ) && WC()->payment_gateways() ) ? WC()->payment_gateways()->payment_gateways() : array();
 		$dedicated_rules = $this->capability_registry->get_dedicated_routing_rules();
 		?>
 		<form method="post" action="">
@@ -1196,7 +1196,22 @@ class SettingsPage {
 		</div>
 
 		<?php if ( velox_mc_is_pro() ) : ?>
-			<?php do_action( 'velox_mc_admin_license_settings' ); ?>
+			<div class="velox-panel" style="margin-top:20px; border:1px solid #c7d2fe; background:#f5f3ff; padding:20px; border-radius:8px;">
+				<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+					<div style="display:flex; align-items:center; gap:10px;">
+						<span class="dashicons dashicons-shield-alt" style="color:#6366f1; font-size:24px;"></span>
+						<h3 style="margin:0; font-size:15px; font-weight:600; color:#0f172a;">
+							<?php esc_html_e( 'VeloX Pro Active', 'velox-multi-currency' ); ?>
+						</h3>
+						<span class="velox-pro-badge" style="background:#10b981; color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px;">
+							<?php esc_html_e( 'ACTIVE & UNLOCKED', 'velox-multi-currency' ); ?>
+						</span>
+					</div>
+				</div>
+				<p style="color:#475569; font-size:13px; margin:10px 0 0; line-height:1.5;">
+					<?php esc_html_e( 'All enterprise features are fully unlocked: Unlimited Currencies, Convert & Disclose checkout mode, MaxMind GeoIP detection, 4-tier autonomous rate failover, and Analytics normalization.', 'velox-multi-currency' ); ?>
+				</p>
+			</div>
 		<?php else : ?>
 			<div class="velox-panel" style="margin-top:20px; border:1px dashed #cbd5e1; background:#f8fafc; padding:20px; border-radius:8px;">
 				<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -1230,27 +1245,26 @@ class SettingsPage {
 	 */
 	protected function render_sales_by_currency_tab(): void {
 		$base_curr = $this->currency_registry->get_base_currency();
-		$orders    = wc_get_orders(
+		$order_ids = wc_get_orders(
 			array(
-				'limit'  => 250,
+				'limit'  => 200,
 				'status' => array( 'wc-completed', 'wc-processing' ),
+				'return' => 'ids',
 			)
 		);
 
 		// Preload WooCommerce Analytics order stats to use canonical conversions recorded on each order's date.
 		global $wpdb;
-		$order_ids = array_map(
-			static function( $o ) {
-				return $o->get_id();
-			},
-			$orders
-		);
 
 		$stats_by_id = array();
 		if ( ! empty( $order_ids ) ) {
-			$id_list = implode( ',', array_map( 'absint', $order_ids ) );
-			$results = $wpdb->get_results(
-				"SELECT order_id, total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$id_list})"
+			$clean_ids    = array_map( 'absint', $order_ids );
+			$placeholders = implode( ',', array_fill( 0, count( $clean_ids ), '%d' ) );
+			$results      = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT order_id, total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$clean_ids
+				)
 			);
 			if ( ! empty( $results ) ) {
 				foreach ( $results as $row ) {
@@ -1261,10 +1275,13 @@ class SettingsPage {
 
 		$stats                    = array();
 		$total_store_revenue_base = 0.0;
-		$total_order_count        = count( $orders );
+		$total_order_count        = count( $order_ids );
 
-		foreach ( $orders as $order ) {
-			$order_id     = $order->get_id();
+		foreach ( $order_ids as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order ) {
+				continue;
+			}
 			$charge_curr  = $order->get_currency();
 			$charge_total = (float) $order->get_total();
 

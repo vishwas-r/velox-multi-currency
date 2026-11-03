@@ -71,10 +71,15 @@ class EcbProvider implements RateProviderInterface {
 			return new \WP_Error( 'velox_ecb_empty_body', 'ECB response was empty' );
 		}
 
-		// Disable external entity loading for XML safety.
-		$prev_entity_loader = libxml_disable_entity_loader( true ); // phpcs:ignore Generic.PHP.DeprecatedFunctions.Deprecated
-		$xml                = simplexml_load_string( $body );
-		if ( false !== $prev_entity_loader ) {
+		// Disable external entity loading for XML safety in PHP < 8.0.
+		$prev_entity_loader = null;
+		if ( PHP_VERSION_ID < 80000 && function_exists( 'libxml_disable_entity_loader' ) ) {
+			$prev_entity_loader = libxml_disable_entity_loader( true ); // phpcs:ignore Generic.PHP.DeprecatedFunctions.Deprecated
+		}
+
+		$xml = simplexml_load_string( $body );
+
+		if ( null !== $prev_entity_loader && function_exists( 'libxml_disable_entity_loader' ) ) {
 			libxml_disable_entity_loader( $prev_entity_loader ); // phpcs:ignore Generic.PHP.DeprecatedFunctions.Deprecated
 		}
 

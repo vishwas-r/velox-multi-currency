@@ -113,6 +113,14 @@ class ProductPricing {
 	 * @param int $post_id Product post ID.
 	 */
 	public function save_simple_product_pricing( int $post_id ): void {
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		if ( isset( $_POST['woocommerce_meta_nonce'] ) ) {
+			check_admin_referer( 'woocommerce_save_data', 'woocommerce_meta_nonce' );
+		}
+
 		$enabled = $this->currency_registry->get_enabled_currencies();
 		$base    = $this->currency_registry->get_base_currency();
 
@@ -208,6 +216,14 @@ class ProductPricing {
 	 * @param int $i            Variation index.
 	 */
 	public function save_variation_pricing( int $variation_id, int $i ): void {
+		if ( ! current_user_can( 'edit_post', $variation_id ) ) {
+			return;
+		}
+
+		if ( isset( $_POST['security'] ) ) {
+			check_admin_referer( 'save-variations', 'security' );
+		}
+
 		$enabled = $this->currency_registry->get_enabled_currencies();
 		$base    = $this->currency_registry->get_base_currency();
 

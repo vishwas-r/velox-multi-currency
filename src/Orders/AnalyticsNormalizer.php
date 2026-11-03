@@ -51,6 +51,11 @@ class AnalyticsNormalizer {
 			return $data;
 		}
 
+		// If VeloX Pro is active, let Pro handle comprehensive normalization to prevent double division.
+		if ( function_exists( 'velox_mc_is_pro' ) && velox_mc_is_pro() ) {
+			return $data;
+		}
+
 		$base_currency  = $this->currency_registry->get_base_currency();
 		$order_currency = $order->get_currency();
 

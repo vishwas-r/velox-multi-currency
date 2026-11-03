@@ -339,6 +339,8 @@ class RateService {
 	 * @return array{count: int, provider: string, is_fallback?: bool, primary_provider?: string}|\WP_Error Returns summary or WP_Error.
 	 */
 	public function sync_rates( ?string $provider_key = null ) {
+		$this->register_default_providers();
+
 		if ( ! empty( $provider_key ) && isset( $this->providers[ $provider_key ] ) ) {
 			$primary_provider = $this->providers[ $provider_key ];
 			$this->set_active_provider( $provider_key );

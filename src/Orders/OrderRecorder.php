@@ -113,7 +113,7 @@ class OrderRecorder {
 	 * @param \WC_Order $order Order instance.
 	 */
 	public function revalidate_order_on_payment_retry( \WC_Order $order ): void {
-		$gateway_id = $order->get_payment_method();
+		$gateway_id = isset( $_POST['payment_method'] ) ? sanitize_key( wp_unslash( $_POST['payment_method'] ) ) : $order->get_payment_method();
 		if ( empty( $gateway_id ) ) {
 			return;
 		}
@@ -124,13 +124,6 @@ class OrderRecorder {
 		$settlement = $this->resolver->resolve( $display_total, $display_currency, $gateway_id );
 
 		if ( $settlement->charge_currency !== $order->get_currency() ) {
-			$this->convert_order_line_items(
-				$order,
-				$display_currency,
-				$settlement->charge_currency,
-				$settlement->exchange_rate,
-				$settlement->rate_markup
-			);
 			$order->set_currency( $settlement->charge_currency );
 			$order->set_total( $settlement->charge_amount->to_major() );
 			$order->update_meta_data( '_velox_charge_currency', $settlement->charge_currency );
@@ -143,6 +136,9 @@ class OrderRecorder {
 			$base_rate      = ( $final_currency !== $base_currency && isset( $enabled[ $final_currency ]['rate'] ) ) ? (float) $enabled[ $final_currency ]['rate'] : 1.0;
 			$order->update_meta_data( '_velox_exchange_rate', $base_rate );
 			$order->update_meta_data( '_velox_settlement_rate', $settlement->exchange_rate );
+
+			// Fire hook for Pro proportional line item, fee, shipping, and tax scaling.
+			do_action( 'velox_mc_order_settlement_applied', $order, $settlement, $display_currency );
 
 			$order->save();
 		}

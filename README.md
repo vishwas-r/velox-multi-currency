@@ -58,7 +58,6 @@ Looking for cross-border enterprise automation? Check out [**VeloX Pro**](https:
 | **Rate Auto-Sync Schedules** | 12h, 24h | **1h, 2h, 4h, 6h, 12h, 24h, custom** |
 | **Analytics Normalization** | Raw WooCommerce Reporting | **Normalized Multi-Currency Sales Dashboard** |
 | **Edge Cache Immunity** | `data-velox-base` + `Vary: Cookie` | **Full WP Rocket & LiteSpeed Dynamic Cookie Rules** |
-| **License & Automatic Updates** | WordPress.org | **1-Click Commercial Dashboard Updates** |
 
 ---
 

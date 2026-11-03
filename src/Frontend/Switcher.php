@@ -450,6 +450,7 @@ class Switcher {
 			'velox_params',
 			array(
 				'ajax_url'           => admin_url( 'admin-ajax.php' ),
+				'store_cart_url'     => function_exists( 'rest_url' ) ? rest_url( 'wc/store/v1/cart' ) : '/wp-json/wc/store/v1/cart',
 				'nonce'              => wp_create_nonce( 'velox_nonce' ),
 				'active_currency'    => $active_curr,
 				'current_product_id' => $current_product_id,

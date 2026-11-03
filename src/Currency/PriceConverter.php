@@ -399,13 +399,16 @@ class PriceConverter {
 		$base_currency   = $this->registry->get_base_currency();
 		$active_currency = $this->registry->get_active_currency();
 
-		// Determine base amount
+		// Determine base amount.
 		$base_amount = (float) ( $original_price > 0 ? $original_price : $price );
 		if ( $active_currency !== $base_currency && $original_price <= 0 ) {
-			$enabled = $this->registry->get_enabled_currencies();
-			$rate    = (float) ( $enabled[ $active_currency ]['rate'] ?? 1.0 );
-			if ( $rate > 0 && 1.0 !== $rate ) {
-				$base_amount = (float) $price / $rate;
+			$enabled        = $this->registry->get_enabled_currencies();
+			$config         = $enabled[ $active_currency ] ?? array();
+			$rate           = (float) ( $config['rate'] ?? 1.0 );
+			$markup         = (float) ( $config['markup'] ?? 0.0 );
+			$effective_rate = ( $markup > 0 ) ? ( $rate * ( 1 + ( $markup / 100 ) ) ) : $rate;
+			if ( $effective_rate > 0 && 1.0 !== $effective_rate ) {
+				$base_amount = (float) $price / $effective_rate;
 			}
 		}
 
