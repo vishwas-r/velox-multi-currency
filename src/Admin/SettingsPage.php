@@ -189,6 +189,8 @@ class SettingsPage {
 				<span class="velox-badge">v<?php echo esc_html( VELOX_MC_VERSION ); ?></span>
 			</h1>
 
+			<?php do_action( 'velox_mc_admin_settings_notices' ); ?>
+
 			<nav class="nav-tab-wrapper">
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=velox-settings&tab=currencies' ) ); ?>" class="nav-tab <?php echo 'currencies' === $active_tab ? 'nav-tab-active' : ''; ?>">
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-cash-stack velox-tab-icon" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2z"/></svg>
@@ -210,6 +212,7 @@ class SettingsPage {
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-gear velox-tab-icon" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/></svg>
 					<?php esc_html_e( 'System & Diagnostics', 'velox-multi-currency' ); ?>
 				</a>
+				<?php do_action( 'velox_mc_admin_nav_tabs', $active_tab ); ?>
 			</nav>
 
 			<div class="velox-tab-content">
@@ -222,8 +225,10 @@ class SettingsPage {
 					$this->render_gateway_routing_tab();
 				} elseif ( 'sales_by_currency' === $active_tab ) {
 					$this->render_sales_by_currency_tab();
-				} else {
+				} elseif ( 'diagnostics' === $active_tab ) {
 					$this->render_diagnostics_tab();
+				} else {
+					do_action( 'velox_mc_admin_tab_content', $active_tab );
 				}
 				?>
 			</div>
@@ -1215,6 +1220,8 @@ class SettingsPage {
 				</p>
 			</div>
 		<?php endif; ?>
+
+		<?php do_action( 'velox_mc_admin_diagnostics_after' ); ?>
 		<?php
 	}
 
@@ -1230,15 +1237,59 @@ class SettingsPage {
 			)
 		);
 
-		$stats = array();
+		// Preload WooCommerce Analytics order stats to use canonical conversions recorded on each order's date.
+		global $wpdb;
+		$order_ids = array_map(
+			static function( $o ) {
+				return $o->get_id();
+			},
+			$orders
+		);
+
+		$stats_by_id = array();
+		if ( ! empty( $order_ids ) ) {
+			$id_list = implode( ',', array_map( 'absint', $order_ids ) );
+			$results = $wpdb->get_results(
+				"SELECT order_id, total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$id_list})"
+			);
+			if ( ! empty( $results ) ) {
+				foreach ( $results as $row ) {
+					$stats_by_id[ (int) $row->order_id ] = (float) $row->total_sales;
+				}
+			}
+		}
+
+		$stats                    = array();
 		$total_store_revenue_base = 0.0;
 		$total_order_count        = count( $orders );
 
 		foreach ( $orders as $order ) {
-			$charge_curr   = $order->get_currency();
-			$charge_total  = (float) $order->get_total();
-			$rate          = (float) $order->get_meta( '_velox_exchange_rate' );
-			$order_base_eq = ( $rate > 0 && 1.0 !== $rate ) ? ( $charge_total / $rate ) : $charge_total;
+			$order_id     = $order->get_id();
+			$charge_curr  = $order->get_currency();
+			$charge_total = (float) $order->get_total();
+
+			// 1. If order was charged in base currency, no conversion needed.
+			if ( $charge_curr === $base_curr ) {
+				$order_base_eq = $charge_total;
+			} elseif ( isset( $stats_by_id[ $order_id ] ) && $stats_by_id[ $order_id ] > 0 ) {
+				// 2. Use exact conversion per order recorded during the order date in Analytics.
+				$order_base_eq = $stats_by_id[ $order_id ];
+			} else {
+				// 3. Fallback: retrieve historical exchange rate snapshot recorded on the order at checkout.
+				$rate = (float) $order->get_meta( '_velox_exchange_rate' );
+				if ( $rate <= 0 ) {
+					$gw_rate = (float) $order->get_meta( '_gateway_currency_rate' );
+					if ( $gw_rate > 0 ) {
+						$rate = $gw_rate > 1.0 ? ( 1.0 / $gw_rate ) : $gw_rate;
+					}
+				}
+
+				if ( $rate > 0 && 1.0 !== $rate ) {
+					$order_base_eq = $charge_total / $rate;
+				} else {
+					$order_base_eq = $charge_total;
+				}
+			}
 
 			if ( ! isset( $stats[ $charge_curr ] ) ) {
 				$stats[ $charge_curr ] = array(

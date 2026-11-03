@@ -66,9 +66,6 @@ class PriceConverter {
 
 		// Inject data-velox-base and currency attributes into formatted price tags for cache-safe client updates.
 		add_filter( 'wc_price', array( $this, 'filter_wc_price_html' ), 10, 5 );
-
-		// Recalculate cart totals when currency is active/switched.
-		add_action( 'woocommerce_before_calculate_totals', array( $this, 'before_calculate_totals' ), 10, 1 );
 	}
 
 	/**
@@ -118,50 +115,6 @@ class PriceConverter {
 
 		self::$filtering_symbol = false;
 		return html_entity_decode( (string) $result, ENT_QUOTES, 'UTF-8' );
-	}
-
-	/**
-	 * Recalculate cart item prices when currency is switched.
-	 *
-	 * @param \WC_Cart $cart Cart object.
-	 */
-	public function before_calculate_totals( $cart ): void {
-		if ( is_admin() && ! wp_doing_ajax() ) {
-			return;
-		}
-
-		$this->converted_cache = array();
-
-		$base_currency   = $this->registry->get_base_currency();
-		$active_currency = $this->registry->get_active_currency();
-
-		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-			if ( ! isset( $cart_item['data'] ) || ! ( $cart_item['data'] instanceof \WC_Product ) ) {
-				continue;
-			}
-
-			$product = $cart_item['data'];
-
-			if ( $active_currency === $base_currency ) {
-				$base_price = get_post_meta( $product->get_id(), '_price', true );
-				if ( '' !== $base_price && false !== $base_price ) {
-					$product->set_price( (float) $base_price );
-				}
-				continue;
-			}
-
-			$fixed_price = $this->get_fixed_price( $product, $active_currency );
-			if ( null !== $fixed_price && '' !== $fixed_price ) {
-				$product->set_price( (float) $fixed_price );
-				continue;
-			}
-
-			$base_price = get_post_meta( $product->get_id(), '_price', true );
-			if ( '' !== $base_price && false !== $base_price ) {
-				$converted = $this->convert_raw_price( (float) $base_price, $base_currency, $active_currency );
-				$product->set_price( (float) $converted );
-			}
-		}
 	}
 
 	/**
@@ -272,13 +225,13 @@ class PriceConverter {
 	 * @return array
 	 */
 	public function filter_wc_price_args( array $args ): array {
-		$active_currency = $this->registry->get_active_currency();
+		$target_currency = ! empty( $args['currency'] ) ? $args['currency'] : $this->registry->get_active_currency();
 		$enabled         = $this->registry->get_enabled_currencies();
-		$config          = $enabled[ $active_currency ] ?? null;
+		$config          = $enabled[ $target_currency ] ?? null;
 
 		if ( $config ) {
-			$args['currency']           = $active_currency;
-			$args['decimals']           = isset( $config['decimals'] ) ? (int) $config['decimals'] : Money::get_decimals( $active_currency );
+			$args['currency']           = $target_currency;
+			$args['decimals']           = isset( $config['decimals'] ) ? (int) $config['decimals'] : Money::get_decimals( $target_currency );
 			$args['price_format']       = $this->get_price_format_string( $config['position'] ?? 'left' );
 			$args['decimal_separator']  = $config['decimal_sep'] ?? '.';
 			$args['thousand_separator'] = $config['thousand_sep'] ?? ',';

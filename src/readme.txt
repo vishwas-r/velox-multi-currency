@@ -32,7 +32,7 @@ Most multi-currency plugins only convert visual numbers on product pages, creati
 * **Cache-Safe Price Rendering:** Automatically embeds `data-velox-base` HTML attributes and emits `Vary: Cookie` headers so caching engines never serve frozen currency prices.
 * **Deterministic Integer Money Math:** Stores and calculates values in ISO-4217 minor units with an anti-zero guard to prevent small exchange rates from ever rounding down to 0.00.
 * **Real-Time AJAX Switching:** Instant price updates across shop, single product, cart, and checkout without full page reloads.
-* **Floating Switcher & Header Bar:** Built-in floating widget with placement controls and top navigation bar integration, plus the `[velox_currency_switcher]` shortcode.
+* **Floating Switcher, Shortcodes & Header Bar:** Built-in floating widget with placement controls and top navigation bar integration, plus the `[velox_currency_switcher]` and `[velox_price id="..."]` shortcodes.
 * **Automated Background Rate Sync:** WordPress Cron background scheduler with configurable 12-hour and 24-hour intervals, plus on-demand manual sync.
 * **100% HPOS & Blocks Compatible:** Fully compatible with High-Performance Order Storage (Custom Order Tables) and Cart/Checkout Blocks.
 

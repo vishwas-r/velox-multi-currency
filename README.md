@@ -37,7 +37,7 @@ Most multi-currency plugins only convert visual numbers on product pages, creati
 - **Deterministic Minor-Unit Money Math:** All amounts are computed in ISO-4217 minor units with an anti-zero guard that prevents small rates from ever rounding to `0.00`.
 - **Cache-Safe Price Rendering:** Intercepts `wc_price` to inject `data-velox-base` HTML attributes and emits `Vary: Cookie` headers. JavaScript reads the immutable base price, eliminating reverse-division corruption on statically cached pages.
 - **Zero-Reload AJAX Switching:** Instant storefront price and symbol recalculation across shop, product, cart, and checkout without full page reloads.
-- **Storefront Switcher Widgets:** Floating currency switcher widget with corner placement controls, top navigation bar integration, and `[velox_currency_switcher]` shortcode.
+- **Storefront Switchers & Dynamic Price Shortcodes:** Floating currency switcher widget with corner placement controls, top navigation bar integration, and dynamic shortcodes: `[velox_currency_switcher]` and `[velox_price id="..."]` (with regular, sale, and raw price support).
 - **Scheduled Background Rate Sync:** WordPress Cron background scheduler with configurable 12-hour and 24-hour sync intervals, plus on-demand manual sync.
 - **100% HPOS & Checkout Blocks Compatible:** Built from day one for WooCommerce Custom Order Tables (HPOS) and modern Store API Checkout Blocks.
 - **100% WordPress Plugin Check (PCP) Compliant:** 0 Errors, 0 Warnings across all 29 official static checks.

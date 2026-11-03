@@ -462,6 +462,10 @@
 					$(document.body).trigger('wc_fragment_refresh');
 					$(document.body).trigger('update_checkout');
 
+					// 10. VeloX custom events for pricing tables, themes, and extensions
+					$(document).trigger('velox_currency_switched', [data]);
+					$(document.body).trigger('velox_currency_switched', [data]);
+
 					// If on cart page, trigger cart totals update
 					if ($('body').hasClass('woocommerce-cart')) {
 						var $updateCartBtn = $('button[name="update_cart"]');
@@ -501,6 +505,22 @@
 			e.preventDefault();
 			var selected = $(this).data('currency');
 			switchCurrency(selected, $(this));
+		});
+
+		// 2b. Custom switcher buttons or toggle elements (e.g. [data-velox-currency])
+		$(document).on('click', '[data-velox-currency]', function(e) {
+			e.preventDefault();
+			var selected = $(this).attr('data-velox-currency') || $(this).data('velox-currency');
+			if (selected) {
+				switchCurrency(selected, $(this));
+			}
+		});
+
+		// 2c. Custom document event to switch currency programmatically
+		$(document).on('velox_switch_currency', function(e, targetCurrency) {
+			if (targetCurrency) {
+				switchCurrency(targetCurrency);
+			}
 		});
 
 		// 3. Floating widget trigger toggle
@@ -552,5 +572,32 @@
 				}
 			});
 		});
+
+		// 6. Auto-select payment method and token on checkout refresh
+		$(document.body).on('updated_checkout', function() {
+			var $methods = $('input[name="payment_method"]');
+			if ($methods.length === 1 && !$methods.is(':checked')) {
+				$methods.prop('checked', true).trigger('change');
+			} else if ($methods.length > 1 && !$methods.is(':checked')) {
+				$methods.first().prop('checked', true).trigger('change');
+			}
+
+			// Ensure token radio or "new" payment method is selected
+			$('.woocommerce-SavedPaymentMethods').each(function() {
+				var $tokens = $(this).find(':input.woocommerce-SavedPaymentMethods-tokenInput');
+				if ($tokens.length && !$tokens.is(':checked')) {
+					$tokens.last().prop('checked', true).trigger('change');
+				}
+				if ($(this).data('count') === 0 || $(this).attr('data-count') === '0') {
+					$(this).find('.woocommerce-SavedPaymentMethods-new').css('display', 'none');
+				}
+			});
+		});
 	});
+
+	// Expose public API for theme integrations & pricing tables
+	window.VeloX = window.VeloX || {};
+	window.VeloX.switchCurrency = switchCurrency;
+	window.VeloX.formatPrice = formatPriceNumber;
+	window.VeloX.getVisibleProductIds = getVisibleProductIds;
 })(jQuery);

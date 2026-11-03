@@ -61,7 +61,7 @@ class AnalyticsNormalizer {
 
 		// Retrieve rate snapshot stored at checkout.
 		$rate = (float) $order->get_meta( '_velox_exchange_rate' );
-		if ( $rate <= 0 ) {
+		if ( $rate <= 0 || ( 1.0 === $rate && $order_currency !== $base_currency ) ) {
 			// Fallback to active registry rate if order has no snapshot.
 			$enabled = $this->currency_registry->get_enabled_currencies();
 			$rate    = (float) ( $enabled[ $order_currency ]['rate'] ?? 1.0 );

@@ -70,6 +70,9 @@ class GatewayRouter {
 		// 4. AJAX handler for refreshing disclosure when payment method is toggled.
 		add_action( 'wp_ajax_velox_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
 		add_action( 'wp_ajax_nopriv_velox_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
+
+		// 5. Ensure "Use a new payment method" radio or first token is checked by default if none is selected.
+		add_filter( 'wc_payment_gateway_form_saved_payment_methods_html', array( $this, 'filter_saved_payment_methods_html' ), 10, 2 );
 	}
 
 	/**
@@ -100,18 +103,54 @@ class GatewayRouter {
 					unset( $available_gateways[ $gateway_id ] );
 				}
 			}
-			return $available_gateways;
+		} else {
+			// 2. Matrix Routing Rules.
+			foreach ( $available_gateways as $gateway_id => $gateway ) {
+				$rule = $this->capability_registry->get_rule( $gateway_id, $display_currency, $base_currency );
+				if ( SettlementMode::HIDE === $rule['mode'] ) {
+					unset( $available_gateways[ $gateway_id ] );
+				}
+			}
 		}
 
-		// 2. Matrix Routing Rules.
-		foreach ( $available_gateways as $gateway_id => $gateway ) {
-			$rule = $this->capability_registry->get_rule( $gateway_id, $display_currency, $base_currency );
-			if ( SettlementMode::HIDE === $rule['mode'] ) {
-				unset( $available_gateways[ $gateway_id ] );
+		// 3. Auto-select first available gateway if current chosen gateway is not available in active currency.
+		if ( ! empty( $available_gateways ) && function_exists( 'WC' ) && WC()->session ) {
+			$current_chosen = WC()->session->get( 'chosen_payment_method' );
+			if ( empty( $current_chosen ) || ! isset( $available_gateways[ $current_chosen ] ) ) {
+				$default_id = array_key_first( $available_gateways );
+				WC()->session->set( 'chosen_payment_method', $default_id );
+				foreach ( $available_gateways as $gid => $ginstance ) {
+					$ginstance->chosen = ( $gid === $default_id );
+				}
 			}
 		}
 
 		return $available_gateways;
+	}
+
+	/**
+	 * Auto-select "Use a new payment method" radio button if no saved payment method is checked.
+	 *
+	 * @param string              $html    Saved payment methods list HTML.
+	 * @param \WC_Payment_Gateway $gateway Gateway instance.
+	 * @return string Modified HTML.
+	 */
+	public function filter_saved_payment_methods_html( string $html, $gateway ): string {
+		if ( empty( $html ) ) {
+			return $html;
+		}
+
+		// If no token radio button is checked, auto-check the "new" payment method option.
+		if ( false === strpos( $html, 'checked' ) ) {
+			$html = preg_replace(
+				'/(<input[^>]*value="new"[^>]*?)(\/?>)/i',
+				'$1 checked="checked"$2',
+				$html,
+				1
+			);
+		}
+
+		return $html;
 	}
 
 	/**

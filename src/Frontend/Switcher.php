@@ -69,6 +69,7 @@ class Switcher {
 		// Shortcodes.
 		add_shortcode( 'velox_switcher', array( $this, 'render_shortcode' ) );
 		add_shortcode( 'velox_currency_switcher', array( $this, 'render_shortcode' ) );
+		add_shortcode( 'velox_price', array( $this, 'render_price_shortcode' ) );
 
 		// Floating Widget (hooked into footer).
 		add_action( 'wp_footer', array( $this, 'render_floating_widget' ) );
@@ -83,6 +84,53 @@ class Switcher {
 
 		// Enqueue frontend scripts & styles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+	}
+
+	/**
+	 * Render dynamic product price via [velox_price] shortcode.
+	 *
+	 * Attributes:
+	 * - id: WooCommerce Product ID.
+	 * - type: 'sale' (default), 'regular', or 'raw'.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string Formatted price HTML or string.
+	 */
+	public function render_price_shortcode( $atts = array() ): string {
+		$atts = shortcode_atts(
+			array(
+				'id'   => 0,
+				'type' => 'sale',
+			),
+			$atts,
+			'velox_price'
+		);
+
+		$product_id = absint( $atts['id'] );
+		if ( ! $product_id && function_exists( 'is_product' ) && is_product() ) {
+			$product_id = absint( get_the_ID() );
+		}
+
+		if ( ! $product_id || ! function_exists( 'wc_get_product' ) ) {
+			return '';
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			return '';
+		}
+
+		if ( 'regular' === $atts['type'] ) {
+			$price = $product->get_regular_price();
+		} else {
+			$price = $product->get_price();
+		}
+
+		if ( 'raw' === $atts['type'] ) {
+			return (string) $price;
+		}
+
+		return function_exists( 'wc_price' ) ? wc_price( $price ) : (string) $price;
 	}
 
 	/**
@@ -137,19 +185,24 @@ class Switcher {
 		?>
 		<div class="velox-floating-widget <?php echo esc_attr( $pos_class ); ?>" id="velox-floating-widget">
 			<button type="button" class="velox-floating-trigger" aria-haspopup="true" aria-expanded="false" title="<?php esc_attr_e( 'Change currency', 'velox-multi-currency' ); ?>">
+				<svg class="velox-trigger-globe" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="12" r="10"></circle>
+					<line x1="2" y1="12" x2="22" y2="12"></line>
+					<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+				</svg>
 				<span class="velox-trigger-symbol"><?php echo wp_kses_post( $act_symbol ); ?></span>
 				<span class="velox-trigger-code"><?php echo esc_html( $active_currency ); ?></span>
-				<svg class="velox-chevron" width="10" height="10" viewBox="0 0 16 16" fill="currentColor">
+				<svg class="velox-chevron" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
 					<path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/>
 				</svg>
-				<svg class="velox-trigger-spinner velox-spin" width="12" height="12" viewBox="0 0 16 16" fill="none" style="display:none;">
+				<svg class="velox-trigger-spinner velox-spin" width="14" height="14" viewBox="0 0 16 16" fill="none" style="display:none;">
 					<circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-opacity="0.25"/>
 					<path d="M14 8A6 6 0 0 0 8 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
 				</svg>
 			</button>
 			<div class="velox-floating-dropdown" role="menu">
 				<div class="velox-floating-header">
-					<?php esc_html_e( 'Select Currency', 'velox-multi-currency' ); ?>
+					<span class="velox-floating-title"><?php esc_html_e( 'Select Currency', 'velox-multi-currency' ); ?></span>
 				</div>
 				<ul class="velox-floating-list">
 					<?php foreach ( $enabled as $code => $data ) : ?>
@@ -157,11 +210,13 @@ class Switcher {
 						$is_selected = ( $code === $active_currency );
 						$item_symbol = html_entity_decode( (string) ( $data['symbol'] ?? '' ), ENT_QUOTES, 'UTF-8' );
 						?>
-						<li class="velox-floating-item <?php echo $is_selected ? 'is-active' : ''; ?>" data-currency="<?php echo esc_attr( $code ); ?>">
+						<li class="velox-floating-item <?php echo $is_selected ? 'is-active' : ''; ?>" data-currency="<?php echo esc_attr( $code ); ?>" role="menuitem">
 							<span class="velox-item-symbol"><?php echo wp_kses_post( $item_symbol ); ?></span>
-							<span class="velox-item-code"><strong><?php echo esc_html( $code ); ?></strong></span>
-							<span class="velox-item-name"><?php echo esc_html( $data['name'] ?? '' ); ?></span>
-							<svg class="velox-item-check" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+							<div class="velox-item-details">
+								<span class="velox-item-code"><strong><?php echo esc_html( $code ); ?></strong></span>
+								<span class="velox-item-name"><?php echo esc_html( $data['name'] ?? '' ); ?></span>
+							</div>
+							<svg class="velox-item-check" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
 								<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
 							</svg>
 						</li>
@@ -361,6 +416,31 @@ class Switcher {
 			$current_product_id = absint( get_the_ID() );
 		}
 
+		$page_product_ids = array();
+		if ( $current_product_id ) {
+			$page_product_ids[] = $current_product_id;
+		}
+		global $post;
+		if ( $post && ! empty( $post->post_content ) ) {
+			if ( preg_match_all( '/(?:add-to-cart=|data-product_id=["\']|velox_price\s+[^\]]*id=["\']?)(\d+)/i', $post->post_content, $matches ) ) {
+				$page_product_ids = array_merge( $page_product_ids, array_map( 'absint', $matches[1] ) );
+			}
+		}
+
+		$initial_prices = array();
+		if ( ! empty( $page_product_ids ) && function_exists( 'wc_get_product' ) ) {
+			foreach ( array_unique( $page_product_ids ) as $pid ) {
+				$prod = wc_get_product( $pid );
+				if ( $prod ) {
+					$initial_prices[ $pid ] = array(
+						'price'         => (float) $prod->get_price(),
+						'regular_price' => (float) $prod->get_regular_price(),
+						'sale_price'    => (float) $prod->get_sale_price(),
+					);
+				}
+			}
+		}
+
 		$active_curr = $this->registry->get_active_currency();
 		$enabled     = $this->registry->get_enabled_currencies();
 		$curr_config = $enabled[ $active_curr ] ?? array();
@@ -379,6 +459,7 @@ class Switcher {
 				'price_format'       => function_exists( 'get_woocommerce_price_format' ) ? get_woocommerce_price_format() : '%1$s%2$s',
 				'decimal_separator'  => function_exists( 'wc_get_price_decimal_separator' ) ? wc_get_price_decimal_separator() : '.',
 				'thousand_separator' => function_exists( 'wc_get_price_thousand_separator' ) ? wc_get_price_thousand_separator() : ',',
+				'prices'             => $initial_prices,
 			)
 		);
 	}

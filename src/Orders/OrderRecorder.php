@@ -81,13 +81,24 @@ class OrderRecorder {
 			$order->set_currency( $display_currency );
 		}
 
+		// Resolve base-to-order exchange rate snapshot.
+		$enabled        = $this->currency_registry->get_enabled_currencies();
+		$final_currency = $order->get_currency();
+		$base_rate      = 1.0;
+		if ( $final_currency !== $base_currency && isset( $enabled[ $final_currency ]['rate'] ) ) {
+			$base_rate = (float) $enabled[ $final_currency ]['rate'];
+		} elseif ( $display_currency !== $base_currency && isset( $enabled[ $display_currency ]['rate'] ) ) {
+			$base_rate = (float) $enabled[ $display_currency ]['rate'];
+		}
+
 		// Store HPOS metadata snapshot on order object.
 		$order->update_meta_data( '_velox_display_currency', $settlement->display_currency );
 		$order->update_meta_data( '_velox_display_total', $settlement->display_amount->to_major_string() );
 		$order->update_meta_data( '_velox_charge_currency', $settlement->charge_currency );
 		$order->update_meta_data( '_velox_charge_total', $settlement->charge_amount->to_major_string() );
 		$order->update_meta_data( '_velox_base_currency', $base_currency );
-		$order->update_meta_data( '_velox_exchange_rate', $settlement->exchange_rate );
+		$order->update_meta_data( '_velox_exchange_rate', $base_rate );
+		$order->update_meta_data( '_velox_settlement_rate', $settlement->exchange_rate );
 		$order->update_meta_data( '_velox_rate_markup', $settlement->rate_markup );
 		$order->update_meta_data( '_velox_settlement_mode', $settlement->mode );
 
@@ -125,6 +136,14 @@ class OrderRecorder {
 			$order->update_meta_data( '_velox_charge_currency', $settlement->charge_currency );
 			$order->update_meta_data( '_velox_charge_total', $settlement->charge_amount->to_major_string() );
 			$order->update_meta_data( '_velox_settlement_mode', $settlement->mode );
+
+			$enabled        = $this->currency_registry->get_enabled_currencies();
+			$base_currency  = $this->currency_registry->get_base_currency();
+			$final_currency = $order->get_currency();
+			$base_rate      = ( $final_currency !== $base_currency && isset( $enabled[ $final_currency ]['rate'] ) ) ? (float) $enabled[ $final_currency ]['rate'] : 1.0;
+			$order->update_meta_data( '_velox_exchange_rate', $base_rate );
+			$order->update_meta_data( '_velox_settlement_rate', $settlement->exchange_rate );
+
 			$order->save();
 		}
 	}
