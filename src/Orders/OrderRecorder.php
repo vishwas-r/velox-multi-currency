@@ -113,6 +113,7 @@ class OrderRecorder {
 	 * @param \WC_Order $order Order instance.
 	 */
 	public function revalidate_order_on_payment_retry( \WC_Order $order ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- Payment method is verified upstream by WooCommerce pay_action handler.
 		$gateway_id = isset( $_POST['payment_method'] ) ? sanitize_key( wp_unslash( $_POST['payment_method'] ) ) : $order->get_payment_method();
 		if ( empty( $gateway_id ) ) {
 			return;

@@ -1258,18 +1258,28 @@ class SettingsPage {
 
 		$stats_by_id = array();
 		if ( ! empty( $order_ids ) ) {
-			$clean_ids    = array_map( 'absint', $order_ids );
-			$placeholders = implode( ',', array_fill( 0, count( $clean_ids ), '%d' ) );
-			$results      = $wpdb->get_results(
-				$wpdb->prepare(
-					"SELECT order_id, total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$clean_ids
-				)
-			);
-			if ( ! empty( $results ) ) {
-				foreach ( $results as $row ) {
-					$stats_by_id[ (int) $row->order_id ] = (float) $row->total_sales;
+			$clean_ids = array_map( 'absint', $order_ids );
+			$cache_key = 'velox_sales_stats_' . md5( implode( ',', $clean_ids ) );
+			$cached    = wp_cache_get( $cache_key, 'velox_multi_currency' );
+
+			if ( false !== $cached && is_array( $cached ) ) {
+				$stats_by_id = $cached;
+			} else {
+				$placeholders = implode( ',', array_fill( 0, count( $clean_ids ), '%d' ) );
+				// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				$results = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT order_id, total_sales, net_total FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$placeholders})",
+						$clean_ids
+					)
+				);
+				// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+				if ( ! empty( $results ) ) {
+					foreach ( $results as $row ) {
+						$stats_by_id[ (int) $row->order_id ] = (float) $row->total_sales;
+					}
 				}
+				wp_cache_set( $cache_key, $stats_by_id, 'velox_multi_currency', 60 );
 			}
 		}
 

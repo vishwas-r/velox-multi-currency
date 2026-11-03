@@ -2,7 +2,7 @@
 Contributors: vishwas-r
 Tags: currency switcher, multi currency, payment gateway, woocommerce, currency
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 7.4
 Requires Plugins: woocommerce
 Stable tag: 1.0.0
