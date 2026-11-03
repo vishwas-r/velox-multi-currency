@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:          VeloX - Multi-Currency & Payment Gateway for WooCommerce
- * Plugin URI:           https://velox.dev/plugins/velox-multi-currency
+ * Plugin URI:           https://github.com/vishwas-r/velox-multi-currency
  * Description:          Cache-safe multi-currency switcher, automatic live exchange rates, and dedicated payment gateway routing for WooCommerce.
  * Version:              1.0.0
  * Requires at least:    6.0

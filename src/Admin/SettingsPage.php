@@ -264,15 +264,13 @@ class SettingsPage {
 								echo esc_html(
 									sprintf(
 										/* translators: 1: Configured currencies count, 2: Maximum currencies count */
-										__( 'You have configured %1$d of %2$d currencies (Free limit).', 'velox-multi-currency' ),
+										__( 'You have configured %1$d of %2$d currencies.', 'velox-multi-currency' ),
 										absint( $enabled_count ),
 										absint( $max_currencies )
 									)
 								);
 								?>
 							</strong>
-							<?php esc_html_e( 'Upgrade to VeloX Pro to unlock unlimited currencies.', 'velox-multi-currency' ); ?>
-							<a href="https://vishwas.me/" target="_blank" style="font-weight:600; text-decoration:underline; margin-left:4px;"><?php esc_html_e( 'Unlock Unlimited Currencies &rarr;', 'velox-multi-currency' ); ?></a>
 						</p>
 					</div>
 				<?php endif; ?>
@@ -391,8 +389,7 @@ class SettingsPage {
 						<?php esc_html_e( 'Add to List', 'velox-multi-currency' ); ?>
 					</button>
 					<span id="velox-limit-message" style="display:<?php echo $is_at_limit ? 'inline-block' : 'none'; ?>; margin-left:12px; font-size:12px; color:#e11d48; font-weight:600;">
-						<?php esc_html_e( 'Free limit reached (3 of 3 currencies).', 'velox-multi-currency' ); ?>
-						<a href="https://vishwas.me/" target="_blank" style="color:#4f46e5; text-decoration:underline; margin-left:4px;"><?php esc_html_e( 'Upgrade to Pro for unlimited &rarr;', 'velox-multi-currency' ); ?></a>
+						<?php esc_html_e( 'Maximum limit reached (3 currencies).', 'velox-multi-currency' ); ?>
 					</span>
 				</div>
 
@@ -519,63 +516,41 @@ class SettingsPage {
 								$current_hours = (int) $auto_sync['interval_hours'];
 								$is_pro        = (bool) velox_mc_is_pro();
 								$presets       = array(
-									1   => array(
-										'label' => __( 'Every 1 Hour', 'velox-multi-currency' ),
-										'pro'   => true,
-									),
-									2   => array(
-										'label' => __( 'Every 2 Hours', 'velox-multi-currency' ),
-										'pro'   => true,
-									),
-									4   => array(
-										'label' => __( 'Every 4 Hours', 'velox-multi-currency' ),
-										'pro'   => true,
-									),
-									6   => array(
-										'label' => __( 'Every 6 Hours', 'velox-multi-currency' ),
-										'pro'   => true,
-									),
-									8   => array(
-										'label' => __( 'Every 8 Hours', 'velox-multi-currency' ),
-										'pro'   => true,
-									),
-									12  => array(
-										'label' => __( 'Every 12 Hours (Twice daily)', 'velox-multi-currency' ),
-										'pro'   => true,
-									),
-									24  => array(
-										'label' => __( 'Every 24 Hours (Once daily)', 'velox-multi-currency' ),
-										'pro'   => false,
-									),
-									48  => array(
-										'label' => __( 'Every 48 Hours (Every 2 days)', 'velox-multi-currency' ),
-										'pro'   => false,
-									),
-									72  => array(
-										'label' => __( 'Every 72 Hours (Every 3 days)', 'velox-multi-currency' ),
-										'pro'   => false,
-									),
-									168 => array(
-										'label' => __( 'Every 168 Hours (Weekly)', 'velox-multi-currency' ),
-										'pro'   => false,
-									),
+									24  => __( 'Every 24 Hours (Once daily)', 'velox-multi-currency' ),
+									48  => __( 'Every 48 Hours (Every 2 days)', 'velox-multi-currency' ),
+									72  => __( 'Every 72 Hours (Every 3 days)', 'velox-multi-currency' ),
+									168 => __( 'Every 168 Hours (Weekly)', 'velox-multi-currency' ),
 								);
-								$is_custom     = $is_pro && ! array_key_exists( $current_hours, $presets );
+
+								if ( $is_pro ) {
+									$presets = array(
+										1   => __( 'Every 1 Hour', 'velox-multi-currency' ),
+										2   => __( 'Every 2 Hours', 'velox-multi-currency' ),
+										4   => __( 'Every 4 Hours', 'velox-multi-currency' ),
+										6   => __( 'Every 6 Hours', 'velox-multi-currency' ),
+										8   => __( 'Every 8 Hours', 'velox-multi-currency' ),
+										12  => __( 'Every 12 Hours (Twice daily)', 'velox-multi-currency' ),
+										24  => __( 'Every 24 Hours (Once daily)', 'velox-multi-currency' ),
+										48  => __( 'Every 48 Hours (Every 2 days)', 'velox-multi-currency' ),
+										72  => __( 'Every 72 Hours (Every 3 days)', 'velox-multi-currency' ),
+										168 => __( 'Every 168 Hours (Weekly)', 'velox-multi-currency' ),
+									);
+								}
+
+								$is_custom = $is_pro && ! array_key_exists( $current_hours, $presets );
 								?>
 								<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
 									<select name="auto_sync_interval_select" id="auto_sync_interval_select" style="min-width:260px; height:34px;">
-										<?php foreach ( $presets as $hours => $info ) : ?>
-											<?php
-											$disabled = ( ! $is_pro && $info['pro'] );
-											$label    = $info['label'] . ( $disabled ? ' [PRO]' : '' );
-											?>
-											<option value="<?php echo esc_attr( (string) $hours ); ?>" <?php selected( $hours, $current_hours ); ?> <?php echo $disabled ? 'disabled' : ''; ?>>
+										<?php foreach ( $presets as $hours => $label ) : ?>
+											<option value="<?php echo esc_attr( (string) $hours ); ?>" <?php selected( $hours, $current_hours ); ?>>
 												<?php echo esc_html( $label ); ?>
 											</option>
 										<?php endforeach; ?>
-										<option value="custom" <?php selected( true, $is_custom ); ?> <?php echo ( ! $is_pro ) ? 'disabled' : ''; ?>>
-											<?php echo esc_html( __( 'Custom Duration...', 'velox-multi-currency' ) . ( ! $is_pro ? ' [PRO]' : '' ) ); ?>
-										</option>
+										<?php if ( $is_pro ) : ?>
+											<option value="custom" <?php selected( true, $is_custom ); ?>>
+												<?php esc_html_e( 'Custom Duration...', 'velox-multi-currency' ); ?>
+											</option>
+										<?php endif; ?>
 									</select>
 
 									<?php if ( $is_pro ) : ?>
@@ -587,14 +562,7 @@ class SettingsPage {
 									<?php endif; ?>
 								</div>
 								<p class="description">
-									<?php esc_html_e( 'Choose how often exchange rates are updated. Standard daily & weekly intervals (24h, 48h, 72h, 168h) are free.', 'velox-multi-currency' ); ?>
-									<?php if ( ! $is_pro ) : ?>
-										<span style="display:block; margin-top:4px; color:#4f46e5; font-size:12.5px;">
-											<strong><?php esc_html_e( 'High-Frequency Sync (< 24h: 1h, 2h, 4h, 6h, 8h, 12h, or custom hours):', 'velox-multi-currency' ); ?></strong>
-											<?php esc_html_e( 'Available with', 'velox-multi-currency' ); ?>
-											<a href="https://vishwas.me/" target="_blank" style="color:#4338ca; font-weight:600; text-decoration:underline;"><?php esc_html_e( 'VeloX Pro &rarr;', 'velox-multi-currency' ); ?></a>
-										</span>
-									<?php endif; ?>
+									<?php esc_html_e( 'Choose how often exchange rates are automatically updated in the background via WordPress Cron.', 'velox-multi-currency' ); ?>
 								</p>
 							</td>
 						</tr>
@@ -645,30 +613,6 @@ class SettingsPage {
 		<?php
 		if ( velox_mc_is_pro() ) {
 			do_action( 'velox_mc_admin_geoip_settings' );
-		} else {
-			?>
-			<div class="velox-panel velox-geo-card" style="margin-top:20px; border:1px dashed #c3c4c7; background:#fafafa;">
-				<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-					<div style="display:flex; align-items:center; gap:10px;">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#6366f1" class="bi bi-geo-alt" viewBox="0 0 16 16"><path d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10"/><path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>
-						<h2 style="margin:0; font-size:1.25rem; font-weight:600;">
-							<?php esc_html_e( 'Customer Country Auto-Detection (GeoIP)', 'velox-multi-currency' ); ?>
-						</h2>
-						<span class="velox-pro-badge" style="background:#6366f1; color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; text-transform:uppercase;">
-							<?php esc_html_e( 'PRO', 'velox-multi-currency' ); ?>
-						</span>
-					</div>
-					<div>
-						<a href="https://vishwas.me/" target="_blank" class="button button-secondary" style="font-size:12px; font-weight:600;">
-							<?php esc_html_e( 'Unlock with VeloX Pro &rarr;', 'velox-multi-currency' ); ?>
-						</a>
-					</div>
-				</div>
-				<p style="color:#64748b; font-size:13px; margin:10px 0 0;">
-					<?php esc_html_e( 'Automatically detect your customer\'s country and switch to their domestic currency on their first visit using built-in MaxMind geolocation. Upgrade to VeloX Pro to enable.', 'velox-multi-currency' ); ?>
-				</p>
-			</div>
-			<?php
 		}
 		?>
 		<?php
@@ -1035,54 +979,6 @@ class SettingsPage {
 						<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Gateway Routing & Matrix Rules', 'velox-multi-currency' ); ?>">
 					</p>
 				</div>
-			<?php else : ?>
-				<!-- Option A: VeloX Pro Showcase Card -->
-				<div class="velox-panel velox-pro-matrix-card" style="margin-top: 24px; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; padding: 24px;">
-					<div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
-						<div style="display:flex; align-items:center; gap:10px;">
-							<span class="velox-badge" style="background:#4f46e5; color:#fff; font-size:11px; font-weight:700; text-transform:uppercase; padding:3px 8px; border-radius:4px;">
-								<?php esc_html_e( 'PRO EXTENSION', 'velox-multi-currency' ); ?>
-							</span>
-							<h2 style="margin:0; font-size:1.25rem; font-weight:700; color:#0f172a;">
-								<?php esc_html_e( 'Payment Gateway & Settlement Matrix', 'velox-multi-currency' ); ?>
-							</h2>
-						</div>
-					</div>
-					<p style="color:#475569; font-size:13.5px; line-height:1.6; margin:0 0 16px; max-width:850px;">
-						<?php esc_html_e( 'Looking to fine-tune individual gateways per currency? VeloX Pro unlocks the full Payment Gateway Matrix with the killer "Convert & Disclose" mode. Customers browse in their domestic currency (e.g. INR or EUR), while your store automatically settles in your domestic merchant account currency (e.g. USD via PayPal or Stripe) with exact proportional item and tax scaling.', 'velox-multi-currency' ); ?>
-					</p>
-					<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-bottom:20px;">
-						<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
-							<strong style="color:#0f172a; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#4f46e5" class="bi bi-arrow-left-right" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5"/></svg>
-								<?php esc_html_e( 'Convert & Disclose Checkout', 'velox-multi-currency' ); ?>
-							</strong>
-							<span style="font-size:12px; color:#64748b;"><?php esc_html_e( 'Accept international buyers even if your domestic gateway only settles in a single currency.', 'velox-multi-currency' ); ?></span>
-						</div>
-						<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
-							<strong style="color:#0f172a; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#4f46e5" class="bi bi-calculator" viewBox="0 0 16 16"><path d="M12 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/><path d="M4 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z"/></svg>
-								<?php esc_html_e( 'Proportional Order Scaling', 'velox-multi-currency' ); ?>
-							</strong>
-							<span style="font-size:12px; color:#64748b;"><?php esc_html_e( 'Scales line items, shipping fees, custom fees, and tax lines down to the exact fraction of a cent.', 'velox-multi-currency' ); ?></span>
-						</div>
-						<div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:14px;">
-							<strong style="color:#0f172a; font-size:13px; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-								<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#4f46e5" class="bi bi-shield-check" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/></svg>
-								<?php esc_html_e( 'Zero Gateway Conflicts', 'velox-multi-currency' ); ?>
-							</strong>
-							<span style="font-size:12px; color:#64748b;"><?php esc_html_e( 'Completely hide unsupported gateways per currency to avoid payment declines.', 'velox-multi-currency' ); ?></span>
-						</div>
-					</div>
-					<div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-						<a href="https://vishwas.me/" target="_blank" class="button button-primary" style="background:#4f46e5; border-color:#4338ca; height:36px; line-height:34px; padding:0 22px; font-weight:600; font-size:13px;">
-							<?php esc_html_e( 'Unlock Gateway Matrix in VeloX Pro &rarr;', 'velox-multi-currency' ); ?>
-						</a>
-						<span style="font-size:12px; color:#64748b;">
-							<?php esc_html_e( 'Includes unlimited currencies, GeoIP auto-detect & 4-tier failover.', 'velox-multi-currency' ); ?>
-						</span>
-					</div>
-				</div>
 			<?php endif; ?>
 		</form>
 		<?php
@@ -1212,28 +1108,6 @@ class SettingsPage {
 					<?php esc_html_e( 'All enterprise features are fully unlocked: Unlimited Currencies, Convert & Disclose checkout mode, MaxMind GeoIP detection, 4-tier autonomous rate failover, and Analytics normalization.', 'velox-multi-currency' ); ?>
 				</p>
 			</div>
-		<?php else : ?>
-			<div class="velox-panel" style="margin-top:20px; border:1px dashed #cbd5e1; background:#f8fafc; padding:20px; border-radius:8px;">
-				<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-					<div style="display:flex; align-items:center; gap:10px;">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#4f46e5" class="bi bi-shield-check" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/><path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/></svg>
-						<h3 style="margin:0; font-size:15px; font-weight:600; color:#0f172a;">
-							<?php esc_html_e( 'VeloX Pro Commercial Extension', 'velox-multi-currency' ); ?>
-						</h3>
-						<span class="velox-badge" style="background:#64748b; font-size:10px; font-weight:700; text-transform:uppercase; padding:2px 7px; border-radius:10px;">
-							<?php esc_html_e( 'FREE TIER ACTIVE', 'velox-multi-currency' ); ?>
-						</span>
-					</div>
-					<div>
-						<a href="https://vishwas.me/" target="_blank" class="button button-secondary" style="font-size:12px; font-weight:600;">
-							<?php esc_html_e( 'Upgrade to Pro &rarr;', 'velox-multi-currency' ); ?>
-						</a>
-					</div>
-				</div>
-				<p style="color:#64748b; font-size:13px; margin:10px 0 0; line-height:1.5;">
-					<?php esc_html_e( 'Unlock Unlimited Currencies, Customer GeoIP Detection, High-Frequency Rate Updates (1h-8h), Payment Gateway Matrix with Convert & Disclose, and WooCommerce Analytics Normalization.', 'velox-multi-currency' ); ?>
-				</p>
-			</div>
 		<?php endif; ?>
 
 		<?php do_action( 'velox_mc_admin_diagnostics_after' ); ?>
@@ -1337,13 +1211,6 @@ class SettingsPage {
 			<h2><?php esc_html_e( 'Sales & Revenue Breakdown by Currency', 'velox-multi-currency' ); ?></h2>
 			<p class="description">
 				<?php esc_html_e( 'Analyzes your last 250 completed/processing orders and calculates true normalized revenue in your store base currency.', 'velox-multi-currency' ); ?>
-				<?php if ( ! velox_mc_is_pro() ) : ?>
-					<span style="display:block; margin-top:6px; color:#4f46e5; font-size:12.5px;">
-						<strong><?php esc_html_e( 'WooCommerce Analytics Dashboard Integration:', 'velox-multi-currency' ); ?></strong>
-						<?php esc_html_e( 'VeloX Pro automatically normalizes multi-currency sales inside core WooCommerce Analytics reports (Revenue, Orders, Taxes).', 'velox-multi-currency' ); ?>
-						<a href="https://vishwas.me/" target="_blank" style="color:#4338ca; font-weight:600; text-decoration:underline;"><?php esc_html_e( 'Learn more &rarr;', 'velox-multi-currency' ); ?></a>
-					</span>
-				<?php endif; ?>
 			</p>
 
 			<div class="velox-stat-cards">
