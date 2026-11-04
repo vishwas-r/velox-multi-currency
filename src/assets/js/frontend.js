@@ -225,10 +225,12 @@
 		initPriceCache();
 
 		var productIds = getVisibleProductIds();
+		var ajaxUrl = (params.wc_ajax_url && params.wc_ajax_url.length) ? params.wc_ajax_url.toString().replace('%%endpoint%%', 'velox_switch_currency') : params.ajax_url;
 
 		$.ajax({
-			url: params.ajax_url,
+			url: ajaxUrl,
 			type: 'POST',
+			cache: false,
 			data: {
 				action: 'velox_switch_currency',
 				nonce: params.nonce,
@@ -486,7 +488,24 @@
 				$floatingWidget.removeClass('is-loading');
 				$('.velox-floating-item').removeClass('is-switching');
 				$('.velox-header-curr-btn').removeClass('is-loading');
-				alert('Network error while switching currency.');
+
+				// Graceful client-side fallback if server request fails
+				if (params.currencies && params.currencies[targetCurrency]) {
+					var currInfo = params.currencies[targetCurrency];
+					var fallbackData = {
+						currency: targetCurrency,
+						symbol: currInfo.symbol,
+						rate: currInfo.rate,
+						decimals: currInfo.decimals,
+						thousand_separator: params.thousand_separator || ',',
+						decimal_separator: params.decimal_separator || '.'
+					};
+					document.cookie = 'velox_currency=' + encodeURIComponent(targetCurrency) + '; path=/; max-age=' + (30 * 86400);
+					try { localStorage.setItem('laxCurrency', targetCurrency); } catch (e) { }
+
+					$(document).trigger('velox_currency_switched', [fallbackData]);
+					$(document.body).trigger('velox_currency_switched', [fallbackData]);
+				}
 			}
 		});
 	}

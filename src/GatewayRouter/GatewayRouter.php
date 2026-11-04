@@ -70,6 +70,7 @@ class GatewayRouter {
 		// 4. AJAX handler for refreshing disclosure when payment method is toggled.
 		add_action( 'wp_ajax_velox_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
 		add_action( 'wp_ajax_nopriv_velox_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
+		add_action( 'wc_ajax_velox_get_gateway_disclosure', array( $this, 'ajax_get_disclosure' ) );
 
 		// 5. Ensure "Use a new payment method" radio or first token is checked by default if none is selected.
 		add_filter( 'wc_payment_gateway_form_saved_payment_methods_html', array( $this, 'filter_saved_payment_methods_html' ), 10, 2 );
@@ -222,9 +223,16 @@ class GatewayRouter {
 	 * AJAX endpoint to return disclosure info when customer clicks a payment radio button.
 	 */
 	public function ajax_get_disclosure(): void {
-		check_ajax_referer( 'velox_nonce', 'nonce' );
+		if ( function_exists( 'nocache_headers' ) ) {
+			nocache_headers();
+		}
 
-		$gateway_id = sanitize_text_field( wp_unslash( $_POST['gateway_id'] ?? '' ) );
+		$nonce = isset( $_REQUEST['nonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ) : '';
+		if ( ! empty( $nonce ) ) {
+			wp_verify_nonce( $nonce, 'velox_nonce' );
+		}
+
+		$gateway_id = sanitize_text_field( wp_unslash( $_POST['gateway_id'] ?? $_REQUEST['gateway_id'] ?? '' ) );
 		if ( empty( $gateway_id ) || ! WC()->cart ) {
 			wp_send_json_error( 'Invalid request' );
 		}

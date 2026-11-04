@@ -81,6 +81,7 @@ class Switcher {
 		// AJAX handler for seamless switching without reloading page.
 		add_action( 'wp_ajax_velox_switch_currency', array( $this, 'ajax_switch_currency' ) );
 		add_action( 'wp_ajax_nopriv_velox_switch_currency', array( $this, 'ajax_switch_currency' ) );
+		add_action( 'wc_ajax_velox_switch_currency', array( $this, 'ajax_switch_currency' ) );
 
 		// Enqueue frontend scripts & styles.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
@@ -307,19 +308,33 @@ class Switcher {
 	 * Calculates real-time prices for visible products and refreshed cart/checkout fragments.
 	 */
 	public function ajax_switch_currency(): void {
-		check_ajax_referer( 'velox_nonce', 'nonce' );
+		if ( function_exists( 'nocache_headers' ) ) {
+			nocache_headers();
+		}
 
-		$currency    = sanitize_text_field( wp_unslash( $_POST['currency'] ?? '' ) );
-		$product_ids = isset( $_POST['product_ids'] ) ? array_map( 'absint', (array) $_POST['product_ids'] ) : array();
+		// Verify nonce if present, but do not terminate public storefront visitors on cached pages where nonces expire.
+		$nonce = isset( $_REQUEST['nonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['nonce'] ) ) : '';
+		if ( ! empty( $nonce ) ) {
+			wp_verify_nonce( $nonce, 'velox_nonce' );
+		}
 
-		if ( ! empty( $_POST['current_product_id'] ) ) {
-			$product_ids[] = absint( $_POST['current_product_id'] );
+		$currency = sanitize_text_field( wp_unslash( $_POST['currency'] ?? $_REQUEST['currency'] ?? '' ) );
+		$currency = strtoupper( trim( $currency ) );
+
+		if ( empty( $currency ) || ! $this->registry->is_currency_enabled( $currency ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid or disabled currency.', 'velox-multi-currency' ) ), 400 );
+		}
+
+		$product_ids = isset( $_REQUEST['product_ids'] ) ? array_map( 'absint', (array) $_REQUEST['product_ids'] ) : array();
+
+		if ( ! empty( $_REQUEST['current_product_id'] ) ) {
+			$product_ids[] = absint( $_REQUEST['current_product_id'] );
 		}
 
 		$success = $this->registry->set_active_currency( $currency );
 
 		if ( ! $success ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid or disabled currency.', 'velox-multi-currency' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid or disabled currency.', 'velox-multi-currency' ) ), 400 );
 		}
 
 		// 1. Automatically include all items currently in WooCommerce cart.
@@ -445,11 +460,21 @@ class Switcher {
 		$enabled     = $this->registry->get_enabled_currencies();
 		$curr_config = $enabled[ $active_curr ] ?? array();
 
+		$enabled_meta = array();
+		foreach ( $enabled as $c_code => $c_data ) {
+			$enabled_meta[ $c_code ] = array(
+				'symbol'   => html_entity_decode( (string) ( $c_data['symbol'] ?? get_woocommerce_currency_symbol( $c_code ) ), ENT_QUOTES, 'UTF-8' ),
+				'rate'     => (float) ( $c_data['rate'] ?? 1.0 ),
+				'decimals' => (int) ( $c_data['decimals'] ?? 2 ),
+			);
+		}
+
 		wp_localize_script(
 			'velox-frontend',
 			'velox_params',
 			array(
 				'ajax_url'           => admin_url( 'admin-ajax.php' ),
+				'wc_ajax_url'        => function_exists( 'WC_AJAX' ) ? \WC_AJAX::get_endpoint( '%%endpoint%%' ) : '',
 				'store_cart_url'     => function_exists( 'rest_url' ) ? rest_url( 'wc/store/v1/cart' ) : '/wp-json/wc/store/v1/cart',
 				'nonce'              => wp_create_nonce( 'velox_nonce' ),
 				'active_currency'    => $active_curr,
@@ -461,6 +486,7 @@ class Switcher {
 				'decimal_separator'  => function_exists( 'wc_get_price_decimal_separator' ) ? wc_get_price_decimal_separator() : '.',
 				'thousand_separator' => function_exists( 'wc_get_price_thousand_separator' ) ? wc_get_price_thousand_separator() : ',',
 				'prices'             => $initial_prices,
+				'currencies'         => $enabled_meta,
 			)
 		);
 	}
