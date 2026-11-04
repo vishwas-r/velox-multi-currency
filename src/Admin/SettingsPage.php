@@ -744,7 +744,7 @@ class SettingsPage {
 							<td>
 								<label class="velox-checkbox-label">
 									<input type="checkbox" name="floating_enabled" id="floating_enabled" value="yes" <?php checked( 'yes', $settings['floating_enabled'] ); ?>>
-									<strong><?php esc_html_e( 'Enable floating currency switcher widget on all pages', 'velox-multi-currency' ); ?></strong>
+									<strong><?php esc_html_e( 'Enable floating currency switcher widget', 'velox-multi-currency' ); ?></strong>
 								</label>
 								<p class="description">
 									<?php esc_html_e( 'Renders a modern, floating pill widget fixed to the viewport with instant dropdown selection.', 'velox-multi-currency' ); ?>
@@ -766,6 +766,40 @@ class SettingsPage {
 								<p class="description">
 									<?php esc_html_e( 'Pin position of the floating widget on the user screen.', 'velox-multi-currency' ); ?>
 								</p>
+							</td>
+						</tr>
+
+						<tr>
+							<th scope="row">
+								<label><?php esc_html_e( 'Display Locations', 'velox-multi-currency' ); ?></label>
+							</th>
+							<td>
+								<fieldset>
+									<legend class="screen-reader-text"><?php esc_html_e( 'Display Locations', 'velox-multi-currency' ); ?></legend>
+									<p style="margin: 0 0 8px;">
+										<label class="velox-checkbox-label">
+											<input type="checkbox" name="floating_show_wc" id="floating_show_wc" value="yes" <?php checked( 'yes', $settings['floating_show_wc'] ?? 'yes' ); ?>>
+											<strong><?php esc_html_e( 'WooCommerce Pages', 'velox-multi-currency' ); ?></strong>
+											<span class="description" style="margin-left: 6px;"><?php esc_html_e( '(Shop, Single Products, Categories, Cart, Checkout, and My Account)', 'velox-multi-currency' ); ?></span>
+										</label>
+									</p>
+									<p style="margin: 0 0 12px;">
+										<label class="velox-checkbox-label">
+											<input type="checkbox" name="floating_show_all" id="floating_show_all" value="yes" <?php checked( 'yes', $settings['floating_show_all'] ?? 'no' ); ?>>
+											<strong><?php esc_html_e( 'Entire Website', 'velox-multi-currency' ); ?></strong>
+											<span class="description" style="margin-left: 6px;"><?php esc_html_e( '(Display on all public pages and blog posts across the site)', 'velox-multi-currency' ); ?></span>
+										</label>
+									</p>
+									<div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; max-width: 600px;">
+										<label for="floating_custom_pages" style="display: block; font-weight: 600; margin-bottom: 4px;">
+											<?php esc_html_e( 'Custom Pages (Slugs or IDs):', 'velox-multi-currency' ); ?>
+										</label>
+										<input type="text" name="floating_custom_pages" id="floating_custom_pages" value="<?php echo esc_attr( $settings['floating_custom_pages'] ?? '' ); ?>" class="regular-text" style="width: 100%;" placeholder="<?php esc_attr_e( 'e.g. pricing, custom-landing, 55', 'velox-multi-currency' ); ?>">
+										<p class="description" style="margin: 4px 0 0;">
+											<?php esc_html_e( 'Comma-separated list of page slugs or IDs where the switcher should also display. Pages with [velox_price] or [velox_switcher] shortcodes are automatically included.', 'velox-multi-currency' ); ?>
+										</p>
+									</div>
+								</fieldset>
 							</td>
 						</tr>
 
@@ -814,10 +848,16 @@ class SettingsPage {
 	protected function save_switcher_tab(): void {
 		check_admin_referer( 'velox_save_settings', 'velox_nonce' );
 
+		$custom_pages_raw = sanitize_text_field( wp_unslash( $_POST['floating_custom_pages'] ?? '' ) );
+		$custom_pages     = implode( ', ', array_filter( array_map( 'trim', explode( ',', $custom_pages_raw ) ) ) );
+
 		$settings = array(
-			'floating_enabled'  => isset( $_POST['floating_enabled'] ) ? 'yes' : 'no',
-			'floating_position' => sanitize_key( wp_unslash( $_POST['floating_position'] ?? 'bottom-right' ) ),
-			'header_enabled'    => isset( $_POST['header_enabled'] ) ? 'yes' : 'no',
+			'floating_enabled'      => isset( $_POST['floating_enabled'] ) ? 'yes' : 'no',
+			'floating_position'     => sanitize_key( wp_unslash( $_POST['floating_position'] ?? 'bottom-right' ) ),
+			'floating_show_wc'      => isset( $_POST['floating_show_wc'] ) ? 'yes' : 'no',
+			'floating_show_all'     => isset( $_POST['floating_show_all'] ) ? 'yes' : 'no',
+			'floating_custom_pages' => $custom_pages,
+			'header_enabled'        => isset( $_POST['header_enabled'] ) ? 'yes' : 'no',
 		);
 
 		$this->get_switcher()->save_settings( $settings );

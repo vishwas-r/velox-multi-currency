@@ -40,13 +40,16 @@ class Switcher {
 	/**
 	 * Get switcher display settings with defaults.
 	 *
-	 * @return array{floating_enabled: string, floating_position: string, header_enabled: string}
+	 * @return array{floating_enabled: string, floating_position: string, floating_show_wc: string, floating_show_all: string, floating_custom_pages: string, header_enabled: string}
 	 */
 	public function get_settings(): array {
 		$defaults = array(
-			'floating_enabled'  => 'yes',
-			'floating_position' => 'bottom-right',
-			'header_enabled'    => 'yes',
+			'floating_enabled'      => 'yes',
+			'floating_position'     => 'bottom-right',
+			'floating_show_wc'      => 'yes',
+			'floating_show_all'     => 'no',
+			'floating_custom_pages' => 'pricing',
+			'header_enabled'        => 'yes',
 		);
 		$saved    = get_option( self::OPTION_SETTINGS, array() );
 		return wp_parse_args( is_array( $saved ) ? $saved : array(), $defaults );
@@ -164,14 +167,84 @@ class Switcher {
 	}
 
 	/**
+	 * Determine whether the floating switcher widget should display on the current page.
+	 *
+	 * Restricts the widget based on user display rules:
+	 * - Entire Website (if enabled).
+	 * - WooCommerce shop, product, category, tag, and archive pages (is_woocommerce).
+	 * - Cart and Checkout pages (is_cart, is_checkout).
+	 * - Customer account pages (is_account_page).
+	 * - Custom pages specified by ID or slug (e.g. pricing, custom-landing).
+	 * - Any page embedding VeloX pricing/switcher shortcodes.
+	 *
+	 * @return bool
+	 */
+	public function should_show_floating_widget(): bool {
+		if ( is_admin() ) {
+			return false;
+		}
+
+		$settings = $this->get_settings();
+		if ( 'yes' !== ( $settings['floating_enabled'] ?? 'no' ) ) {
+			return false;
+		}
+
+		// 1. Entire website enabled.
+		if ( 'yes' === ( $settings['floating_show_all'] ?? 'no' ) ) {
+			return (bool) apply_filters( 'velox_mc_show_floating_widget', true );
+		}
+
+		$is_target_page = false;
+
+		// 2. WooCommerce commerce pages.
+		if ( 'yes' === ( $settings['floating_show_wc'] ?? 'yes' ) ) {
+			if ( ( function_exists( 'is_woocommerce' ) && is_woocommerce() )
+				|| ( function_exists( 'is_cart' ) && is_cart() )
+				|| ( function_exists( 'is_checkout' ) && is_checkout() )
+				|| ( function_exists( 'is_account_page' ) && is_account_page() ) ) {
+				$is_target_page = true;
+			}
+		}
+
+		// 3. Custom pages by slug or ID.
+		$custom_pages_raw = trim( (string) ( $settings['floating_custom_pages'] ?? '' ) );
+		if ( ! $is_target_page && ! empty( $custom_pages_raw ) && function_exists( 'is_page' ) ) {
+			$custom_pages = array_filter( array_map( 'trim', explode( ',', $custom_pages_raw ) ) );
+			foreach ( $custom_pages as $page_identifier ) {
+				if ( is_page( $page_identifier ) ) {
+					$is_target_page = true;
+					break;
+				}
+			}
+		}
+
+		// 4. Any page embedding VeloX shortcodes.
+		global $post;
+		if ( ! $is_target_page && $post instanceof \WP_Post && ! empty( $post->post_content ) ) {
+			if ( has_shortcode( $post->post_content, 'velox_price' )
+				|| has_shortcode( $post->post_content, 'velox_switcher' )
+				|| has_shortcode( $post->post_content, 'velox_currency_switcher' ) ) {
+				$is_target_page = true;
+			}
+		}
+
+		/**
+		 * Filter whether the floating currency switcher widget should render on the current page.
+		 *
+		 * @param bool $is_target_page Whether the current page matches display criteria.
+		 */
+		return (bool) apply_filters( 'velox_mc_show_floating_widget', $is_target_page );
+	}
+
+	/**
 	 * Render Floating Widget in wp_footer.
 	 */
 	public function render_floating_widget(): void {
-		$settings = $this->get_settings();
-		if ( 'yes' !== $settings['floating_enabled'] ) {
+		if ( ! $this->should_show_floating_widget() ) {
 			return;
 		}
 
+		$settings        = $this->get_settings();
 		$enabled         = $this->registry->get_enabled_currencies();
 		$active_currency = $this->registry->get_active_currency();
 
