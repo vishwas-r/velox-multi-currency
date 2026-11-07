@@ -71,24 +71,25 @@ class RateService {
 	 * Register built-in providers.
 	 */
 	protected function register_default_providers(): void {
-		// European Central Bank is the official, zero-key free provider.
 		if ( ! isset( $this->providers['ecb'] ) ) {
 			$this->register_provider( new EcbProvider() );
 		}
-
-		// Register additional multi-provider cascade in Pro mode or via filter.
-		$extra_providers = (array) apply_filters( 'velox_mc_extra_rate_providers', array() );
-		if ( velox_mc_is_pro() || ! empty( $extra_providers ) ) {
-			if ( ! isset( $this->providers['exchangerate_api'] ) ) {
-				$this->register_provider( new ExchangeRateApiProvider() );
-			}
-			if ( ! isset( $this->providers['frankfurter'] ) ) {
-				$this->register_provider( new FrankfurterProvider() );
-			}
-			if ( ! isset( $this->providers['floatrates'] ) ) {
-				$this->register_provider( new FloatRatesProvider() );
-			}
+		if ( ! isset( $this->providers['frankfurter'] ) ) {
+			$this->register_provider( new FrankfurterProvider() );
 		}
+		if ( ! isset( $this->providers['exchangerate_api'] ) ) {
+			$this->register_provider( new ExchangeRateApiProvider() );
+		}
+		if ( ! isset( $this->providers['floatrates'] ) ) {
+			$this->register_provider( new FloatRatesProvider() );
+		}
+
+		/**
+		 * Allow external extensions to register additional rate providers.
+		 *
+		 * @param RateService $this RateService instance.
+		 */
+		do_action( 'velox_mc_register_rate_providers', $this );
 	}
 
 	/**
@@ -117,8 +118,7 @@ class RateService {
 	 */
 	public function get_active_provider_key(): string {
 		$this->register_default_providers();
-		$default = velox_mc_is_pro() ? 'exchangerate_api' : 'ecb';
-		$saved   = get_option( self::OPTION_PROVIDER, $default );
+		$saved = get_option( self::OPTION_PROVIDER, 'ecb' );
 		if ( isset( $this->providers[ $saved ] ) ) {
 			return $saved;
 		}
@@ -165,14 +165,10 @@ class RateService {
 	/**
 	 * Get allowed auto-sync intervals in hours.
 	 *
-	 * Free tier: 24, 48, 72, 168 hours (>= 24h).
-	 * Pro tier: 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 hours, and custom hours (< 24h unlocked).
-	 *
 	 * @return array<int>
 	 */
 	public function get_allowed_sync_intervals(): array {
-		$default = velox_mc_is_pro() ? array( 1, 2, 4, 6, 8, 12, 24, 48, 72, 168 ) : array( 24, 48, 72, 168 );
-		return (array) apply_filters( 'velox_mc_sync_intervals', $default );
+		return (array) apply_filters( 'velox_mc_sync_intervals', array( 12, 24, 48, 72, 168 ) );
 	}
 
 	/**
@@ -193,12 +189,9 @@ class RateService {
 
 		$settings = wp_parse_args( $saved, $defaults );
 
-		// Enforce Free tier limit (< 24h requires Pro)
-		if ( ! velox_mc_is_pro() ) {
-			$allowed = $this->get_allowed_sync_intervals();
-			if ( (int) $settings['interval_hours'] < 24 || ! in_array( (int) $settings['interval_hours'], $allowed, true ) ) {
-				$settings['interval_hours'] = 24;
-			}
+		$allowed = $this->get_allowed_sync_intervals();
+		if ( ! in_array( (int) $settings['interval_hours'], $allowed, true ) ) {
+			$settings['interval_hours'] = 24;
 		}
 
 		return $settings;
@@ -214,7 +207,7 @@ class RateService {
 		$raw_hours = (int) ( $settings['interval_hours'] ?? 24 );
 		$allowed   = $this->get_allowed_sync_intervals();
 
-		if ( ! velox_mc_is_pro() && ( $raw_hours < 24 || ! in_array( $raw_hours, $allowed, true ) ) ) {
+		if ( ! in_array( $raw_hours, $allowed, true ) ) {
 			$raw_hours = 24;
 		}
 
@@ -350,10 +343,10 @@ class RateService {
 
 		$base_currency = $this->registry->get_base_currency();
 
-		// Check if multi-provider failover chain is enabled (unlocked by VeloX Pro)
-		$enable_failover = (bool) apply_filters( 'velox_mc_enable_failover', velox_mc_is_pro() );
+		// Multi-provider failover chain.
+		$enable_failover = (bool) apply_filters( 'velox_mc_enable_failover', true );
 
-		// Build execution chain: primary provider first, then fallbacks if Pro is active
+		// Build execution chain: primary provider first, then available fallbacks.
 		$chain = array( $primary_provider->get_key() => $primary_provider );
 		if ( $enable_failover ) {
 			foreach ( $this->providers as $key => $inst ) {

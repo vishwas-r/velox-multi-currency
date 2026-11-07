@@ -49,21 +49,18 @@
 
 		// 1b. Auto-sync interval custom duration toggle.
 		$(document).on('change', '#auto_sync_interval_select', function() {
-			var params = window.velox_admin_params || {};
-			var isPro = !!params.is_pro;
-			if (isPro && $(this).val() === 'custom') {
+			if ($(this).val() === 'custom') {
 				$('#velox-custom-hours-wrapper').css('display', 'inline-flex');
 			} else {
 				$('#velox-custom-hours-wrapper').hide();
 			}
 		});
 
-		// Helper to enforce currency limits dynamically in Free mode.
+		// Helper to enforce configured currency limits.
 		function updateLimitState() {
 			var params = window.velox_admin_params || {};
-			var max = params.max_currencies || 3;
-			var isPro = !!params.is_pro;
-			if (isPro) {
+			var max = parseInt(params.max_currencies, 10);
+			if (isNaN(max) || max <= 0) {
 				return;
 			}
 			var currentCount = $('#velox-currencies-table tbody tr').length;
@@ -87,11 +84,10 @@
 		// 2. Dynamic Add Currency to Table.
 		$('#velox-add-currency-btn').on('click', function() {
 			var params = window.velox_admin_params || {};
-			var max = params.max_currencies || 3;
-			var isPro = !!params.is_pro;
+			var max = parseInt(params.max_currencies, 10);
 			var currentCount = $('#velox-currencies-table tbody tr').length;
 
-			if (!isPro && currentCount >= max) {
+			if (max > 0 && currentCount >= max) {
 				updateLimitState();
 				return;
 			}

@@ -75,70 +75,28 @@ class SettlementResolver {
 		}
 
 		// 2. Mode: ALLOW_NATIVE (Charge directly in the display currency).
-		if ( SettlementMode::ALLOW_NATIVE === $mode || $display_currency === $target_charge ) {
-			return new SettlementResult(
-				$display_currency,
-				$display_money,
-				$display_currency,
-				$display_money,
-				1.0,
-				0.0,
-				SettlementMode::ALLOW_NATIVE,
-				false,
-				''
-			);
-		}
-
-		// 3. Mode: CONVERT_DISCLOSE (Convert display currency to gateway settlement currency).
-		$default_modes   = velox_mc_is_pro() ? array( SettlementMode::ALLOW_NATIVE, SettlementMode::HIDE, SettlementMode::CONVERT_DISCLOSE ) : array( SettlementMode::ALLOW_NATIVE, SettlementMode::HIDE );
-		$supported_modes = apply_filters( 'velox_mc_supported_gateway_modes', $default_modes );
-		if ( ! in_array( SettlementMode::CONVERT_DISCLOSE, $supported_modes, true ) && ! in_array( 'disclose', $supported_modes, true ) ) {
-			return new SettlementResult(
-				$display_currency,
-				$display_money,
-				$display_currency,
-				$display_money,
-				1.0,
-				0.0,
-				SettlementMode::ALLOW_NATIVE,
-				false,
-				''
-			);
-		}
-
-		$enabled     = $this->currency_registry->get_enabled_currencies();
-		$from_config = $enabled[ $display_currency ] ?? null;
-		$to_config   = $enabled[ $target_charge ] ?? null;
-
-		$from_rate = (float) ( $from_config['rate'] ?? 1.0 );
-		$to_rate   = (float) ( $to_config['rate'] ?? 1.0 );
-		$markup    = (float) ( $to_config['markup'] ?? 0.0 );
-
-		// Calculate cross-rate: 1 DISPLAY = (to_rate / from_rate) CHARGE.
-		$cross_rate = ( $from_rate > 0 ) ? ( $to_rate / $from_rate ) : 1.0;
-
-		$charge_money = $display_money->convert_to( $target_charge, $cross_rate, $markup );
-
-		// Generate human-friendly disclosure notice.
-		$notice = sprintf(
-			/* translators: 1: Charge amount & currency, 2: Display amount & currency, 3: Gateway name */
-			__( 'Note: You will be charged %1$s via %3$s (converted from %2$s).', 'velox-multi-currency' ),
-			$this->format_amount( $charge_money ),
-			$this->format_amount( $display_money ),
-			$this->get_gateway_title( $gateway_id )
-		);
-
-		return new SettlementResult(
+		$result = new SettlementResult(
 			$display_currency,
 			$display_money,
-			$target_charge,
-			$charge_money,
-			$cross_rate,
-			$markup,
-			SettlementMode::CONVERT_DISCLOSE,
-			true,
-			$notice
+			$display_currency,
+			$display_money,
+			1.0,
+			0.0,
+			SettlementMode::ALLOW_NATIVE,
+			false,
+			''
 		);
+
+		/**
+		 * Filter settlement result to allow add-ons (such as Pro) to provide conversion & disclosure.
+		 *
+		 * @param SettlementResult $result           Resolved result.
+		 * @param float|int|string $display_total    Total in display currency.
+		 * @param string           $display_currency Customer's display currency.
+		 * @param string           $gateway_id       Payment gateway ID.
+		 * @param array            $rule             Gateway rule array.
+		 */
+		return apply_filters( 'velox_mc_resolve_settlement', $result, $display_total, $display_currency, $gateway_id, $rule );
 	}
 
 	/**
@@ -147,7 +105,7 @@ class SettlementResolver {
 	 * @param Money $money Money.
 	 * @return string
 	 */
-	protected function format_amount( Money $money ): string {
+	public function format_amount( Money $money ): string {
 		$symbol = get_woocommerce_currency_symbol( $money->get_currency() );
 		return sprintf( '%s%s %s', $symbol, $money->to_major_string(), $money->get_currency() );
 	}
@@ -158,7 +116,7 @@ class SettlementResolver {
 	 * @param string $gateway_id Gateway ID.
 	 * @return string
 	 */
-	protected function get_gateway_title( string $gateway_id ): string {
+	public function get_gateway_title( string $gateway_id ): string {
 		$gateways = ( function_exists( 'WC' ) && WC()->payment_gateways() ) ? WC()->payment_gateways()->payment_gateways() : array();
 		if ( isset( $gateways[ $gateway_id ] ) && ! empty( $gateways[ $gateway_id ]->title ) ) {
 			return $gateways[ $gateway_id ]->title;

@@ -84,17 +84,6 @@ if ( ! function_exists( 'velox_mc' ) ) {
 	}
 }
 
-if ( ! function_exists( 'velox_mc_is_pro' ) ) {
-	/**
-	 * Check whether VeloX Pro extension is active.
-	 *
-	 * @return bool
-	 */
-	function velox_mc_is_pro(): bool {
-		return (bool) apply_filters( 'velox_mc_is_pro', false );
-	}
-}
-
 /**
  * Initialize VeloX on plugins_loaded.
  */

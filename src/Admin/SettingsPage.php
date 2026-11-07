@@ -112,7 +112,6 @@ class SettingsPage {
 				'ajax_url'       => admin_url( 'admin-ajax.php' ),
 				'nonce'          => wp_create_nonce( 'velox_admin_nonce' ),
 				'max_currencies' => absint( $this->currency_registry->get_max_currencies() ),
-				'is_pro'         => (bool) velox_mc_is_pro(),
 			)
 		);
 	}
@@ -254,8 +253,8 @@ class SettingsPage {
 				<?php
 				$max_currencies = $this->currency_registry->get_max_currencies();
 				$enabled_count  = count( $enabled );
-				$is_at_limit    = ( ! velox_mc_is_pro() && $enabled_count >= $max_currencies );
-				if ( ! velox_mc_is_pro() && $enabled_count >= $max_currencies ) :
+				$is_at_limit    = ( $max_currencies > 0 && $enabled_count >= $max_currencies );
+				if ( $is_at_limit ) :
 					?>
 					<div class="notice notice-info inline" style="margin:10px 0; width:100%;">
 						<p>
@@ -514,30 +513,14 @@ class SettingsPage {
 							<td>
 								<?php
 								$current_hours = (int) $auto_sync['interval_hours'];
-								$is_pro        = (bool) velox_mc_is_pro();
-								$presets       = array(
+								$default_presets = array(
+									12  => __( 'Every 12 Hours (Twice daily)', 'velox-multi-currency' ),
 									24  => __( 'Every 24 Hours (Once daily)', 'velox-multi-currency' ),
 									48  => __( 'Every 48 Hours (Every 2 days)', 'velox-multi-currency' ),
 									72  => __( 'Every 72 Hours (Every 3 days)', 'velox-multi-currency' ),
 									168 => __( 'Every 168 Hours (Weekly)', 'velox-multi-currency' ),
 								);
-
-								if ( $is_pro ) {
-									$presets = array(
-										1   => __( 'Every 1 Hour', 'velox-multi-currency' ),
-										2   => __( 'Every 2 Hours', 'velox-multi-currency' ),
-										4   => __( 'Every 4 Hours', 'velox-multi-currency' ),
-										6   => __( 'Every 6 Hours', 'velox-multi-currency' ),
-										8   => __( 'Every 8 Hours', 'velox-multi-currency' ),
-										12  => __( 'Every 12 Hours (Twice daily)', 'velox-multi-currency' ),
-										24  => __( 'Every 24 Hours (Once daily)', 'velox-multi-currency' ),
-										48  => __( 'Every 48 Hours (Every 2 days)', 'velox-multi-currency' ),
-										72  => __( 'Every 72 Hours (Every 3 days)', 'velox-multi-currency' ),
-										168 => __( 'Every 168 Hours (Weekly)', 'velox-multi-currency' ),
-									);
-								}
-
-								$is_custom = $is_pro && ! array_key_exists( $current_hours, $presets );
+								$presets = (array) apply_filters( 'velox_mc_sync_interval_presets', $default_presets );
 								?>
 								<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
 									<select name="auto_sync_interval_select" id="auto_sync_interval_select" style="min-width:260px; height:34px;">
@@ -546,20 +529,7 @@ class SettingsPage {
 												<?php echo esc_html( $label ); ?>
 											</option>
 										<?php endforeach; ?>
-										<?php if ( $is_pro ) : ?>
-											<option value="custom" <?php selected( true, $is_custom ); ?>>
-												<?php esc_html_e( 'Custom Duration...', 'velox-multi-currency' ); ?>
-											</option>
-										<?php endif; ?>
 									</select>
-
-									<?php if ( $is_pro ) : ?>
-										<div id="velox-custom-hours-wrapper" style="display:<?php echo $is_custom ? 'inline-flex' : 'none'; ?>; align-items:center; gap:6px;">
-											<label for="auto_sync_interval_custom" style="font-weight:500; font-size:13px;"><?php esc_html_e( 'Every', 'velox-multi-currency' ); ?></label>
-											<input type="number" min="1" max="720" step="1" name="auto_sync_interval_custom" id="auto_sync_interval_custom" value="<?php echo esc_attr( (string) $current_hours ); ?>" style="width:80px; height:34px;">
-											<span style="font-size:13px; color:#475569;"><?php esc_html_e( 'Hours', 'velox-multi-currency' ); ?></span>
-										</div>
-									<?php endif; ?>
 								</div>
 								<p class="description">
 									<?php esc_html_e( 'Choose how often exchange rates are automatically updated in the background via WordPress Cron.', 'velox-multi-currency' ); ?>
@@ -609,11 +579,9 @@ class SettingsPage {
 			</form>
 		</div>
 
-		<!-- GeoIP Customer Country Auto-Detection Section -->
+		<!-- Additional Currencies Tab Sections -->
 		<?php
-		if ( velox_mc_is_pro() ) {
-			do_action( 'velox_mc_admin_geoip_settings' );
-		}
+		do_action( 'velox_mc_admin_geoip_settings' );
 		?>
 		<?php
 	}
@@ -624,31 +592,15 @@ class SettingsPage {
 	protected function save_currencies_tab(): void {
 		check_admin_referer( 'velox_save_settings', 'velox_nonce' );
 
-		// 1. Handle GeoIP Settings Save (Pro feature)
-		if ( ( isset( $_POST['velox_action'] ) && 'save_geo_settings' === $_POST['velox_action'] ) || isset( $_POST['submit_geo'] ) ) {
-			if ( velox_mc_is_pro() ) {
-				$geo_val = ( ! empty( $_POST['velox_auto_detect_geo'] ) && 'yes' === $_POST['velox_auto_detect_geo'] ) ? 'yes' : 'no';
-				update_option( CurrencyRegistry::OPTION_AUTO_GEO, $geo_val );
-				echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'GeoIP auto-detection settings updated successfully.', 'velox-multi-currency' ) . '</p></div>';
-			}
-			return;
-		}
+		// 1. Hook for saving additional currency tab settings.
+		do_action( 'velox_mc_admin_save_currencies_tab' );
 
 		// 2. Handle Auto-Sync Settings Save
 		if ( ( isset( $_POST['velox_action'] ) && 'save_auto_sync' === $_POST['velox_action'] ) || isset( $_POST['submit_auto_sync'] ) ) {
 			$enabled    = ( ! empty( $_POST['auto_sync_enabled'] ) && 'yes' === $_POST['auto_sync_enabled'] ) ? 'yes' : 'no';
-			$select_val = sanitize_text_field( wp_unslash( $_POST['auto_sync_interval_select'] ?? '24' ) );
-			$is_pro     = (bool) velox_mc_is_pro();
-
-			if ( 'custom' === $select_val && $is_pro ) {
-				$interval_hours = max( 1, absint( wp_unslash( $_POST['auto_sync_interval_custom'] ?? 24 ) ) );
-			} elseif ( ! $is_pro ) {
-				// In Free, strictly allow >= 24h intervals (24, 48, 72, 168)
-				$val            = absint( $select_val );
-				$interval_hours = ( $val >= 24 && in_array( $val, array( 24, 48, 72, 168 ), true ) ) ? $val : 24;
-			} else {
-				$interval_hours = max( 1, absint( $select_val ) );
-			}
+			$select_val = absint( wp_unslash( $_POST['auto_sync_interval_select'] ?? 24 ) );
+			$allowed    = $this->rate_service->get_allowed_sync_intervals();
+			$interval_hours = in_array( $select_val, $allowed, true ) ? $select_val : 24;
 
 			$this->rate_service->save_auto_sync_settings(
 				array(
@@ -659,9 +611,6 @@ class SettingsPage {
 
 			if ( isset( $_POST['velox_rate_provider'] ) ) {
 				$provider_key = sanitize_key( wp_unslash( $_POST['velox_rate_provider'] ) );
-				if ( ! $is_pro ) {
-					$provider_key = 'ecb';
-				}
 				$this->rate_service->set_active_provider( $provider_key );
 			}
 
@@ -701,7 +650,7 @@ class SettingsPage {
 		}
 
 		$max_currencies = $this->currency_registry->get_max_currencies();
-		if ( ! velox_mc_is_pro() && count( $updated ) > $max_currencies ) {
+		if ( $max_currencies > 0 && count( $updated ) > $max_currencies ) {
 			$updated = array_slice( $updated, 0, $max_currencies, true );
 		}
 
@@ -709,9 +658,6 @@ class SettingsPage {
 
 		if ( isset( $_POST['velox_rate_provider'] ) ) {
 			$provider_key = sanitize_key( wp_unslash( $_POST['velox_rate_provider'] ) );
-			if ( ! velox_mc_is_pro() ) {
-				$provider_key = 'ecb';
-			}
 			$this->rate_service->set_active_provider( $provider_key );
 		}
 
@@ -947,79 +893,7 @@ class SettingsPage {
 				</p>
 			</div>
 
-			<?php if ( velox_mc_is_pro() ) : ?>
-				<!-- Settlement & Conversion Matrix Panel (PRO) -->
-				<div class="velox-panel" style="margin-top: 24px;">
-					<h2><?php esc_html_e( 'Payment Gateway & Settlement Matrix', 'velox-multi-currency' ); ?></h2>
-					<p class="description">
-						<?php esc_html_e( 'Fine-tune how each payment gateway processes transactions when dedicated exclusive mode is not locked. Controls whether a gateway charges natively in customer currency, converts to a preferred currency with checkout disclosure, or is completely hidden.', 'velox-multi-currency' ); ?>
-					</p>
-
-					<div class="velox-matrix-scroll">
-						<table class="widefat fixed striped velox-matrix-table">
-							<thead>
-								<tr>
-									<th style="width: 200px;"><?php esc_html_e( 'Payment Gateway', 'velox-multi-currency' ); ?></th>
-									<?php foreach ( $enabled as $code => $data ) : ?>
-										<th>
-											<strong><?php echo esc_html( $code ); ?></strong>
-											<span style="font-size:11px; font-weight:normal; display:block; color:#666;">
-												<?php echo esc_html( $data['symbol'] ); ?>
-											</span>
-										</th>
-									<?php endforeach; ?>
-								</tr>
-							</thead>
-							<tbody>
-								<?php if ( empty( $gateways ) ) : ?>
-									<tr>
-										<td colspan="<?php echo esc_attr( count( $enabled ) + 1 ); ?>">
-											<?php esc_html_e( 'No active payment gateways found in WooCommerce.', 'velox-multi-currency' ); ?>
-										</td>
-									</tr>
-								<?php else : ?>
-									<?php foreach ( $gateways as $gateway_id => $gateway ) : ?>
-										<tr>
-											<td>
-												<strong><?php echo esc_html( $gateway->get_title() ?: $gateway_id ); ?></strong>
-												<br>
-												<code style="font-size:11px;"><?php echo esc_html( $gateway_id ); ?></code>
-											</td>
-											<?php foreach ( $enabled as $code => $data ) : ?>
-												<?php
-												$rule = $this->capability_registry->get_rule( $gateway_id, $code, $base );
-												$mode = $rule['mode'];
-												?>
-												<td>
-													<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][mode]" class="velox-mode-select">
-														<option value="allow_native" <?php selected( $mode, 'allow_native' ); ?>><?php esc_html_e( 'Allow Native', 'velox-multi-currency' ); ?></option>
-														<option value="convert_disclose" <?php selected( $mode, 'convert_disclose' ); ?>><?php esc_html_e( 'Convert & Disclose', 'velox-multi-currency' ); ?></option>
-														<option value="hide" <?php selected( $mode, 'hide' ); ?>><?php esc_html_e( 'Hide Gateway', 'velox-multi-currency' ); ?></option>
-													</select>
-													<div class="velox-convert-to-wrap" style="margin-top: 5px; <?php echo ( 'convert_disclose' === $mode ) ? '' : 'display:none;'; ?>">
-														<span style="font-size: 10px; color:#666;"><?php esc_html_e( 'Charge in:', 'velox-multi-currency' ); ?></span>
-														<select name="matrix[<?php echo esc_attr( $gateway_id ); ?>][<?php echo esc_attr( $code ); ?>][convert_to]" style="font-size:11px; width:100%;">
-															<?php foreach ( $enabled as $charge_code => $c_data ) : ?>
-																<option value="<?php echo esc_attr( $charge_code ); ?>" <?php selected( $rule['convert_to'] ?? $base, $charge_code ); ?>>
-																	<?php echo esc_html( $charge_code ); ?>
-																</option>
-															<?php endforeach; ?>
-														</select>
-													</div>
-												</td>
-											<?php endforeach; ?>
-										</tr>
-									<?php endforeach; ?>
-								<?php endif; ?>
-							</tbody>
-						</table>
-					</div>
-
-					<p class="submit">
-						<input type="submit" name="submit" class="button button-primary" value="<?php esc_attr_e( 'Save Gateway Routing & Matrix Rules', 'velox-multi-currency' ); ?>">
-					</p>
-				</div>
-			<?php endif; ?>
+			<?php do_action( 'velox_mc_admin_after_gateway_routing', $enabled, $gateways, $base ); ?>
 		</form>
 		<?php
 	}
@@ -1050,30 +924,10 @@ class SettingsPage {
 		}
 		$this->capability_registry->save_dedicated_routing_rules( $clean_dedicated );
 
-		// 2. Process Matrix Rules (Pro feature).
-		if ( velox_mc_is_pro() && ! empty( $_POST['matrix'] ) ) {
-			$matrix       = (array) wp_unslash( $_POST['matrix'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$clean_matrix = array();
+		// 2. Hook for extensions to save additional routing rules (e.g. Pro matrix).
+		do_action( 'velox_mc_admin_save_gateway_routing' );
 
-			foreach ( $matrix as $gateway_id => $currencies ) {
-				$clean_gw = sanitize_text_field( $gateway_id );
-				foreach ( (array) $currencies as $curr => $rule ) {
-					$clean_curr = strtoupper( sanitize_text_field( $curr ) );
-					$mode       = sanitize_key( $rule['mode'] ?? 'allow_native' );
-					$convert_to = strtoupper( sanitize_text_field( $rule['convert_to'] ?? 'USD' ) );
-
-					if ( SettlementMode::is_valid( $mode ) ) {
-						$clean_matrix[ $clean_gw ][ $clean_curr ] = array(
-							'mode'       => $mode,
-							'convert_to' => $convert_to,
-						);
-					}
-				}
-			}
-			$this->capability_registry->save_matrix( $clean_matrix );
-		}
-
-		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Gateway routing and matrix rules saved successfully.', 'velox-multi-currency' ) . '</p></div>';
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Dedicated gateway routing rules saved successfully.', 'velox-multi-currency' ) . '</p></div>';
 	}
 
 	/**
@@ -1130,25 +984,6 @@ class SettingsPage {
 				</tbody>
 			</table>
 		</div>
-
-		<?php if ( velox_mc_is_pro() ) : ?>
-			<div class="velox-panel" style="margin-top:20px; border:1px solid #c7d2fe; background:#f5f3ff; padding:20px; border-radius:8px;">
-				<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-					<div style="display:flex; align-items:center; gap:10px;">
-						<span class="dashicons dashicons-shield-alt" style="color:#6366f1; font-size:24px;"></span>
-						<h3 style="margin:0; font-size:15px; font-weight:600; color:#0f172a;">
-							<?php esc_html_e( 'VeloX Pro Active', 'velox-multi-currency' ); ?>
-						</h3>
-						<span class="velox-pro-badge" style="background:#10b981; color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px;">
-							<?php esc_html_e( 'ACTIVE & UNLOCKED', 'velox-multi-currency' ); ?>
-						</span>
-					</div>
-				</div>
-				<p style="color:#475569; font-size:13px; margin:10px 0 0; line-height:1.5;">
-					<?php esc_html_e( 'All enterprise features are fully unlocked: Unlimited Currencies, Convert & Disclose checkout mode, MaxMind GeoIP detection, 4-tier autonomous rate failover, and Analytics normalization.', 'velox-multi-currency' ); ?>
-				</p>
-			</div>
-		<?php endif; ?>
 
 		<?php do_action( 'velox_mc_admin_diagnostics_after' ); ?>
 		<?php

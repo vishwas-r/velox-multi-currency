@@ -51,8 +51,8 @@ class AnalyticsNormalizer {
 			return $data;
 		}
 
-		// If VeloX Pro is active, let Pro handle comprehensive normalization to prevent double division.
-		if ( function_exists( 'velox_mc_is_pro' ) && velox_mc_is_pro() ) {
+		// Allow external extensions to override or replace core analytics normalization.
+		if ( ! apply_filters( 'velox_mc_enable_core_analytics_normalization', true ) ) {
 			return $data;
 		}
 

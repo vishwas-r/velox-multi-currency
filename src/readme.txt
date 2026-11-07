@@ -17,14 +17,12 @@ Multi-currency switcher and dedicated payment gateway router for WooCommerce. Di
 
 Show prices in customer currencies, eliminate floating-point rounding errors with deterministic minor-unit integer math, and route checkouts exclusively through compatible payment gateways.
 
-### Why VeloX?
+### Architectural Highlights
 
-Most multi-currency plugins only convert visual numbers on product pages, creating serious friction and failures at checkout:
-
-* **The "Gateway by Currency" Paywall:** Other plugins lock basic payment gateway filtering behind expensive annual subscriptions ($99 to $149/yr).
-* **Gateway Incompatibilities:** Gateways reject unsupported currencies (e.g. PayPal rejecting domestic currencies or 3-decimal currencies like KWD; Razorpay primarily settling in INR).
-* **Static Cache Inversion:** Plugins that reverse-divide formatted prices (`price / rate`) break on stores using WP Rocket, LiteSpeed Cache, or Cloudflare, displaying distorted numbers to international visitors.
-* **WooCommerce Checkout Blocks Ready:** Engineered from the ground up for modern WooCommerce Cart & Checkout Blocks (Store API), as well as Classic Checkout and High-Performance Order Storage (HPOS).
+* **Dedicated Payment Gateway Routing:** Restrict specific currencies to designated payment gateways (e.g., INR to Razorpay, USD to PayPal or Stripe) to prevent payment decline errors during checkout.
+* **Cache-Safe Price Rendering:** Leverages immutable `data-velox-base` HTML attributes and `Vary: Cookie` HTTP headers so page caches (WP Rocket, LiteSpeed, Cloudflare) never display frozen currency rates.
+* **Deterministic Minor-Unit Integer Math:** Eliminates IEEE 754 floating-point rounding issues with zero-fraction arithmetic and anti-zero rounding guard.
+* **WooCommerce Store API & Checkout Blocks:** Full native compatibility with modern WooCommerce Cart & Checkout Blocks as well as Classic Checkout and High-Performance Order Storage (HPOS).
 
 ### Key Features
 
@@ -34,8 +32,43 @@ Most multi-currency plugins only convert visual numbers on product pages, creati
 * **Deterministic Integer Money Math:** Stores and calculates values in ISO-4217 minor units with an anti-zero guard to prevent small exchange rates from ever rounding down to 0.00.
 * **Real-Time AJAX Switching:** Instant price updates across shop, single product, cart, and checkout without full page reloads.
 * **Floating Switcher, Shortcodes & Header Bar:** Built-in floating widget with corner placement controls and top navigation bar integration, plus the `[velox_currency_switcher]` and `[velox_price id="..."]` shortcodes.
-* **Automated Background Rate Sync:** WordPress Cron background scheduler with configurable 12-hour and 24-hour intervals, plus on-demand manual sync.
+* **Automated Background Rate Sync:** WordPress Cron background scheduler with configurable sync intervals, plus on-demand manual sync.
 * **100% HPOS & Blocks Compatible:** Fully compatible with High-Performance Order Storage (Custom Order Tables) and Cart/Checkout Blocks.
+
+== External Services ==
+
+This plugin connects to external foreign exchange rate services to retrieve current currency exchange rates. Rate synchronization runs either automatically via WordPress Cron according to your configured interval (e.g., every 24 hours) or manually when an administrator clicks "Sync Rates Now" in the plugin settings.
+
+When synchronizing rates, the plugin transmits an HTTP GET request containing only the store's 3-letter base currency ISO code (e.g. "EUR" or "USD") to fetch the public rate table. No user data, customer information, cookies, IP addresses, or sensitive store data are transmitted to any of these external services.
+
+The following external exchange rate services are supported:
+
+1. **European Central Bank (ECB) Reference Rates**
+   * **Service Purpose:** Provides daily Euro foreign exchange reference rates published by the European Central Bank.
+   * **Data Sent:** An HTTP GET request to download the public daily XML reference rates table (`eurofxref-daily.xml`). No user or store data is transmitted.
+   * **Service Provider:** European Central Bank.
+   * **Terms of Use:** https://www.ecb.europa.eu/services/terms/html/index.en.html
+   * **Privacy Policy:** https://www.ecb.europa.eu/services/terms/html/index.en.html
+
+2. **Frankfurter API**
+   * **Service Purpose:** Open-source foreign exchange rate API tracking ECB daily reference rates.
+   * **Data Sent:** An HTTP GET request querying latest rates with base currency code in URL parameters (`https://api.frankfurter.dev/v1/latest?base=EUR`). No user or personal data is transmitted.
+   * **Service Provider:** Frankfurter Open Source API.
+   * **Terms of Use:** https://github.com/hakanensari/frankfurter
+   * **Privacy Policy:** https://www.frankfurter.app/privacy
+
+3. **ExchangeRate-API (Open Access Feed)**
+   * **Service Purpose:** Real-time currency exchange rates open feed.
+   * **Data Sent:** An HTTP GET request querying latest exchange rates by base currency (`https://open.er-api.com/v6/latest/USD`). No user or personal data is transmitted.
+   * **Service Provider:** ExchangeRate-API.
+   * **Terms of Service:** https://www.exchangerate-api.com/terms
+   * **Privacy Policy:** https://www.exchangerate-api.com/privacy
+
+4. **FloatRates**
+   * **Service Purpose:** Daily foreign exchange rate JSON feeds.
+   * **Data Sent:** An HTTP GET request downloading the daily rates JSON for the base currency (`https://www.floatrates.com/daily/usd.json`). No user or personal data is transmitted.
+   * **Service Provider:** FloatRates.
+   * **Terms of Use & Privacy:** https://www.floatrates.com/faq.html
 
 == Installation ==
 

@@ -38,14 +38,13 @@ class SettlementMode {
 	 * @return bool
 	 */
 	public static function is_valid( string $mode ): bool {
-		return in_array(
-			$mode,
+		$supported = (array) apply_filters(
+			'velox_mc_supported_gateway_modes',
 			array(
 				self::ALLOW_NATIVE,
-				self::CONVERT_DISCLOSE,
 				self::HIDE,
-			),
-			true
+			)
 		);
+		return in_array( $mode, $supported, true );
 	}
 }
