@@ -37,38 +37,14 @@ Show prices in customer currencies, eliminate floating-point rounding errors wit
 
 == External Services ==
 
-This plugin connects to external foreign exchange rate services to retrieve current currency exchange rates. Rate synchronization runs either automatically via WordPress Cron according to your configured interval (e.g., every 24 hours) or manually when an administrator clicks "Sync Rates Now" in the plugin settings.
+This plugin connects to an external foreign exchange rate service provided by the European Central Bank (ECB) to retrieve current foreign exchange reference rates. Rate synchronization runs either automatically via WordPress Cron according to your configured interval (e.g., every 24 hours) or manually when an administrator clicks "Sync Rates Now" in the plugin settings.
 
-When synchronizing rates, the plugin transmits an HTTP GET request containing only the store's 3-letter base currency ISO code (e.g. "EUR" or "USD") to fetch the public rate table. No user data, customer information, cookies, IP addresses, or sensitive store data are transmitted to any of these external services.
+When synchronizing rates, the plugin transmits an HTTP GET request to download the public daily XML reference rates table (`eurofxref-daily.xml`). No user data, customer information, cookies, IP addresses, or sensitive store data are transmitted.
 
-The following external exchange rate services are supported:
-
-1. **European Central Bank (ECB) Reference Rates**
-   * **Service Purpose:** Provides daily Euro foreign exchange reference rates published by the European Central Bank.
-   * **Data Sent:** An HTTP GET request to download the public daily XML reference rates table (`eurofxref-daily.xml`). No user or store data is transmitted.
-   * **Service Provider:** European Central Bank.
-   * **Terms of Use:** https://www.ecb.europa.eu/services/terms/html/index.en.html
-   * **Privacy Policy:** https://www.ecb.europa.eu/services/terms/html/index.en.html
-
-2. **Frankfurter API**
-   * **Service Purpose:** Open-source foreign exchange rate API tracking ECB daily reference rates.
-   * **Data Sent:** An HTTP GET request querying latest rates with base currency code in URL parameters (`https://api.frankfurter.dev/v1/latest?base=EUR`). No user or personal data is transmitted.
-   * **Service Provider:** Frankfurter Open Source API.
-   * **Terms of Use:** https://github.com/hakanensari/frankfurter
-   * **Privacy Policy:** https://www.frankfurter.app/privacy
-
-3. **ExchangeRate-API (Open Access Feed)**
-   * **Service Purpose:** Real-time currency exchange rates open feed.
-   * **Data Sent:** An HTTP GET request querying latest exchange rates by base currency (`https://open.er-api.com/v6/latest/USD`). No user or personal data is transmitted.
-   * **Service Provider:** ExchangeRate-API.
-   * **Terms of Service:** https://www.exchangerate-api.com/terms
-   * **Privacy Policy:** https://www.exchangerate-api.com/privacy
-
-4. **FloatRates**
-   * **Service Purpose:** Daily foreign exchange rate JSON feeds.
-   * **Data Sent:** An HTTP GET request downloading the daily rates JSON for the base currency (`https://www.floatrates.com/daily/usd.json`). No user or personal data is transmitted.
-   * **Service Provider:** FloatRates.
-   * **Terms of Use & Privacy:** https://www.floatrates.com/faq.html
+* **Service Purpose:** Provides daily Euro foreign exchange reference rates published by the European Central Bank.
+* **Data Sent:** An HTTP GET request to download the public daily XML reference rates table. No user or store data is transmitted.
+* **Service Provider:** European Central Bank.
+* **Terms of Use & Privacy Policy:** https://www.ecb.europa.eu/services/terms/html/index.en.html
 
 == Installation ==
 

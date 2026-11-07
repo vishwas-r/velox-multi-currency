@@ -8,9 +8,6 @@
 namespace VeloX\MultiCurrency\Currency;
 
 use VeloX\MultiCurrency\Currency\RateProvider\EcbProvider;
-use VeloX\MultiCurrency\Currency\RateProvider\ExchangeRateApiProvider;
-use VeloX\MultiCurrency\Currency\RateProvider\FloatRatesProvider;
-use VeloX\MultiCurrency\Currency\RateProvider\FrankfurterProvider;
 use VeloX\MultiCurrency\Currency\RateProvider\RateProviderInterface;
 
 defined( 'ABSPATH' ) || exit;
@@ -67,25 +64,13 @@ class RateService {
 	/**
 	 * Register built-in providers.
 	 */
-	/**
-	 * Register built-in providers.
-	 */
 	protected function register_default_providers(): void {
 		if ( ! isset( $this->providers['ecb'] ) ) {
 			$this->register_provider( new EcbProvider() );
 		}
-		if ( ! isset( $this->providers['frankfurter'] ) ) {
-			$this->register_provider( new FrankfurterProvider() );
-		}
-		if ( ! isset( $this->providers['exchangerate_api'] ) ) {
-			$this->register_provider( new ExchangeRateApiProvider() );
-		}
-		if ( ! isset( $this->providers['floatrates'] ) ) {
-			$this->register_provider( new FloatRatesProvider() );
-		}
 
 		/**
-		 * Allow external extensions to register additional rate providers.
+		 * Allow external extensions (such as Pro) to register additional rate providers.
 		 *
 		 * @param RateService $this RateService instance.
 		 */
@@ -143,7 +128,7 @@ class RateService {
 	 */
 	public function get_active_provider(): RateProviderInterface {
 		$key = $this->get_active_provider_key();
-		return $this->providers[ $key ] ?? new ExchangeRateApiProvider();
+		return $this->providers[ $key ] ?? ( $this->providers['ecb'] ?? new EcbProvider() );
 	}
 
 	/**
