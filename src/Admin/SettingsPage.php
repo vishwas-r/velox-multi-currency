@@ -924,7 +924,7 @@ class SettingsPage {
 		}
 		$this->capability_registry->save_dedicated_routing_rules( $clean_dedicated );
 
-		// 2. Hook for extensions to save additional routing rules (e.g. Pro matrix).
+		// 2. Hook for extensions to save additional routing rules.
 		do_action( 'velox_mc_admin_save_gateway_routing' );
 
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Dedicated gateway routing rules saved successfully.', 'velox-multi-currency' ) . '</p></div>';

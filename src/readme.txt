@@ -65,7 +65,7 @@ Under the Gateway Routing tab in **WooCommerce -> VeloX**, you can enable exclus
 VeloX injects immutable `data-velox-base` HTML attributes into `wc_price` output and sends `Vary: Cookie` headers. The frontend JavaScript reads the base attribute directly rather than reverse-dividing formatted text.
 
 = How are exchange rates fetched? =
-Rates are fetched automatically via WordPress Cron or on-demand from trusted public exchange rate providers with zero API keys required.
+Rates are fetched automatically via WordPress Cron or on-demand from the official European Central Bank reference rates feed with zero API keys required.
 
 = Can I set manual exchange rates? =
 Yes. You can edit the exchange rate and buffer markup percentage (e.g. +2.5%) for any currency directly in the settings table.

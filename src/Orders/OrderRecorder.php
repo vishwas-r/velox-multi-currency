@@ -72,7 +72,7 @@ class OrderRecorder {
 
 		$settlement = $this->resolver->resolve( $current_total, $display_currency, $gateway_id );
 
-		// If in Convert and Disclose mode (Pro feature), update order currency, total, and fire Pro hook.
+		// If settlement currency differs from display currency, update order currency and fire hook.
 		if ( $settlement->charge_currency !== $display_currency ) {
 			$order->set_currency( $settlement->charge_currency );
 			$order->set_total( $settlement->charge_amount->to_major() );
@@ -138,7 +138,7 @@ class OrderRecorder {
 			$order->update_meta_data( '_velox_exchange_rate', $base_rate );
 			$order->update_meta_data( '_velox_settlement_rate', $settlement->exchange_rate );
 
-			// Fire hook for Pro proportional line item, fee, shipping, and tax scaling.
+			// Fire hook for proportional line item, fee, shipping, and tax scaling.
 			do_action( 'velox_mc_order_settlement_applied', $order, $settlement, $display_currency );
 
 			$order->save();

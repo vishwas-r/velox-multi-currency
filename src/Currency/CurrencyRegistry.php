@@ -58,8 +58,7 @@ class CurrencyRegistry {
 	/**
 	 * Get maximum allowed enabled currencies.
 	 *
-	 * Free tier default: 3 currencies.
-	 * Pro tier: Unlimited.
+	 * Default: 3 currencies. Filterable via velox_mc_max_currencies hook.
 	 *
 	 * @return int
 	 */
@@ -97,7 +96,7 @@ class CurrencyRegistry {
 			}
 		}
 
-		// 3. Pro GeoIP Auto-Detection via filter.
+		// 3. GeoIP Auto-Detection via filter hook.
 		$geo_curr = apply_filters( 'velox_mc_detected_currency', null, $this->get_enabled_currencies() );
 		if ( ! empty( $geo_curr ) && $this->is_currency_enabled( $geo_curr ) ) {
 			$this->set_active_currency( $geo_curr );

@@ -88,7 +88,7 @@ class SettlementResolver {
 		);
 
 		/**
-		 * Filter settlement result to allow add-ons (such as Pro) to provide conversion & disclosure.
+		 * Filter settlement result to allow add-ons or extensions to provide custom settlement modes.
 		 *
 		 * @param SettlementResult $result           Resolved result.
 		 * @param float|int|string $display_total    Total in display currency.
