@@ -31,16 +31,16 @@ Most multi-currency plugins only convert visual numbers on product pages, creati
 
 ## Free Version Features
 
-- **Up to 3 Configured Currencies:** Configure your store base currency plus two foreign currencies (e.g., USD + EUR + GBP) with zero subscription fees.
+- **Unlimited Configured Currencies:** Configure and sell in unlimited international currencies with custom exchange rate markups and precision rounding rules with zero fees.
 - **Dedicated Payment Gateway Routing:** Lock any currency to designated gateways (e.g., INR &rarr; Razorpay only, USD &rarr; PayPal only).
 - **Gateway Matrix (Allow Native & Hide):** Enable compatible payment methods or completely suppress incompatible gateways per currency.
 - **Deterministic Minor-Unit Money Math:** All amounts are computed in ISO-4217 minor units with an anti-zero guard that prevents small rates from ever rounding to `0.00`.
 - **Cache-Safe Price Rendering:** Intercepts `wc_price` to inject `data-velox-base` HTML attributes and emits `Vary: Cookie` headers. JavaScript reads the immutable base price, eliminating reverse-division corruption on statically cached pages.
 - **Zero-Reload AJAX Switching:** Instant storefront price and symbol recalculation across shop, product, cart, and checkout without full page reloads.
 - **Storefront Switchers & Dynamic Price Shortcodes:** Floating currency switcher widget with corner placement controls, top navigation bar integration, and dynamic shortcodes: `[velox_currency_switcher]` and `[velox_price id="..."]` (with regular, sale, and raw price support).
-- **Scheduled Background Rate Sync:** WordPress Cron background scheduler with configurable 12-hour and 24-hour sync intervals, plus on-demand manual sync.
+- **Scheduled Background Rate Sync:** Daily and twice-daily European Central Bank (ECB) exchange rate sync via WordPress Cron, plus on-demand manual sync.
 - **100% HPOS & Checkout Blocks Compatible:** Built from day one for WooCommerce Custom Order Tables (HPOS) and modern Store API Checkout Blocks.
-- **100% WordPress Plugin Check (PCP) Compliant:** 0 Errors, 0 Warnings across all 29 official static checks.
+- **100% WordPress Plugin Check (PCP) Compliant:** 0 Errors, 0 Warnings across all official static checks.
 
 ---
 
@@ -50,13 +50,14 @@ Looking for cross-border enterprise automation? Check out [**VeloX Pro**](https:
 
 | Capability | VeloX Free | VeloX Pro |
 | :--- | :---: | :---: |
-| **Configured Currencies** | Up to 3 | **Unlimited** |
-| **Payment Gateway Filtering** | Dedicated Routing | **Dedicated Routing & 3-Mode Matrix (Convert & Disclose)** |
+| **Configured Currencies** | **Unlimited** | **Unlimited** |
+| **Payment Gateway Filtering** | Dedicated Routing (Allow Native & Hide) | **Dedicated Routing & 3-Mode Matrix (Convert & Disclose)** |
 | **Convert & Disclose Line-Item Scaling** | — | **Proportional Line-Item, Fee, Shipping & Tax Scaling** |
-| **Customer GeoIP Auto-Detection** | — | **Zero-Dependency Core MaxMind with 50+ Country Map** |
-| **Exchange Rate Failover Chain** | European Central Bank (Official Feed) | **Autonomous 4-Tier Zero-Downtime Cascade** |
+| **Customer GeoIP Auto-Detection** | Manual Switcher | **Zero-Dependency Core MaxMind with 50+ Country Map** |
+| **Exchange Rate Providers** | European Central Bank (Official ECB Feed) | **Autonomous 4-Tier Zero-Downtime Cascade (Frankfurter, ExchangeRate-API, FloatRates, ECB)** |
 | **Rate Auto-Sync Schedules** | 12h, 24h | **1h, 2h, 4h, 6h, 12h, 24h, custom** |
-| **Analytics Normalization** | Raw WooCommerce Reporting | **Normalized Multi-Currency Sales Dashboard** |
+| **Analytics Normalization** | Standard WooCommerce Reporting | **Normalized Multi-Currency Sales Dashboard** |
+| **Migration Tools** | Manual | **1-Click FOX / WOOCS Migration Assistant** |
 | **Edge Cache Immunity** | `data-velox-base` + `Vary: Cookie` | **Full WP Rocket & LiteSpeed Dynamic Cookie Rules** |
 
 ---
@@ -66,9 +67,9 @@ Looking for cross-border enterprise automation? Check out [**VeloX Pro**](https:
 VeloX Free is architected around clean WordPress action and filter hooks, allowing extensions (like VeloX Pro) to extend functionality without modifying core code:
 
 ```php
-// Unlock unlimited currencies
+// Filter maximum allowed currencies (default: 0 = unlimited)
 add_filter( 'velox_mc_max_currencies', function( $limit ) {
-    return PHP_INT_MAX;
+    return 0; // 0 = unlimited
 });
 
 // Unlock additional gateway routing modes
