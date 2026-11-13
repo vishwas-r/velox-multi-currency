@@ -250,29 +250,6 @@ class SettingsPage {
 		<div class="velox-panel">
 			<div class="velox-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
 				<h2><?php esc_html_e( 'Configured Currencies', 'velox-multi-currency' ); ?></h2>
-				<?php
-				$max_currencies = $this->currency_registry->get_max_currencies();
-				$enabled_count  = count( $enabled );
-				$is_at_limit    = ( $max_currencies > 0 && $enabled_count >= $max_currencies );
-				if ( $is_at_limit ) :
-					?>
-					<div class="notice notice-info inline" style="margin:10px 0; width:100%;">
-						<p>
-							<strong>
-								<?php
-								echo esc_html(
-									sprintf(
-										/* translators: 1: Configured currencies count, 2: Maximum currencies count */
-										__( 'You have configured %1$d of %2$d currencies.', 'velox-multi-currency' ),
-										absint( $enabled_count ),
-										absint( $max_currencies )
-									)
-								);
-								?>
-							</strong>
-						</p>
-					</div>
-				<?php endif; ?>
 				<div class="velox-sync-actions" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
 					<span class="velox-last-sync" style="font-size:12px; color:#666;">
 						<?php
@@ -373,8 +350,8 @@ class SettingsPage {
 
 				<div class="velox-add-row" id="velox-add-currency-wrapper">
 					<label for="new_currency_select"><?php esc_html_e( 'Add Currency:', 'velox-multi-currency' ); ?></label>
-					<select id="new_currency_select" <?php echo $is_at_limit ? 'disabled' : ''; ?>>
-						<option value=""><?php echo $is_at_limit ? esc_html__( '-- Free Limit Reached (3/3) --', 'velox-multi-currency' ) : esc_html__( '-- Choose Currency --', 'velox-multi-currency' ); ?></option>
+					<select id="new_currency_select">
+						<option value=""><?php esc_html_e( '-- Choose Currency --', 'velox-multi-currency' ); ?></option>
 						<?php foreach ( $all as $c_code => $c_data ) : ?>
 							<?php if ( ! isset( $enabled[ $c_code ] ) ) : ?>
 								<option value="<?php echo esc_attr( $c_code ); ?>" data-name="<?php echo esc_attr( $c_data['name'] ); ?>" data-symbol="<?php echo esc_attr( $c_data['symbol'] ); ?>">
@@ -383,13 +360,10 @@ class SettingsPage {
 							<?php endif; ?>
 						<?php endforeach; ?>
 					</select>
-					<button type="button" class="button button-secondary velox-btn-add" id="velox-add-currency-btn" <?php echo $is_at_limit ? 'disabled' : ''; ?>>
+					<button type="button" class="button button-secondary velox-btn-add" id="velox-add-currency-btn">
 						<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/></svg>
 						<?php esc_html_e( 'Add to List', 'velox-multi-currency' ); ?>
 					</button>
-					<span id="velox-limit-message" style="display:<?php echo $is_at_limit ? 'inline-block' : 'none'; ?>; margin-left:12px; font-size:12px; color:#e11d48; font-weight:600;">
-						<?php esc_html_e( 'Maximum limit reached (3 currencies).', 'velox-multi-currency' ); ?>
-					</span>
 				</div>
 
 				<p class="submit" style="margin-top:20px; margin-bottom:0;">

@@ -26,7 +26,7 @@ Show prices in customer currencies, eliminate floating-point rounding errors wit
 
 ### Key Features
 
-* **Multi-Currency Support:** Configure your store base currency plus two additional international currencies (e.g. USD + EUR + GBP) with zero fees.
+* **Multi-Currency Support:** Configure unlimited customer currencies with custom exchange rate markups and precision rounding rules.
 * **Dedicated Payment Gateway Routing:** Lock any currency exclusively to specific payment gateways (e.g. INR -> Razorpay only, USD -> PayPal only). Incompatible payment methods are automatically suppressed at checkout to prevent payment declines.
 * **Cache-Safe Price Rendering:** Automatically embeds `data-velox-base` HTML attributes and emits `Vary: Cookie` headers so caching engines never serve frozen currency prices.
 * **Deterministic Integer Money Math:** Stores and calculates values in ISO-4217 minor units with an anti-zero guard to prevent small exchange rates from ever rounding down to 0.00.
@@ -44,7 +44,8 @@ When synchronizing rates, the plugin transmits an HTTP GET request to download t
 * **Service Purpose:** Provides daily Euro foreign exchange reference rates published by the European Central Bank.
 * **Data Sent:** An HTTP GET request to download the public daily XML reference rates table. No user or store data is transmitted.
 * **Service Provider:** European Central Bank.
-* **Terms of Use & Privacy Policy:** https://www.ecb.europa.eu/services/terms/html/index.en.html
+* **Terms of Use & Disclaimer:** https://www.ecb.europa.eu/services/using-our-site/disclaimer/html/index.en.html
+* **Privacy Policy:** https://www.ecb.europa.eu/services/data-protection/privacy-statements/html/ecb.privacy_statement_website.en.html
 
 == Installation ==
 
@@ -71,7 +72,7 @@ Rates are fetched automatically via WordPress Cron or on-demand from the officia
 Yes. You can edit the exchange rate and buffer markup percentage (e.g. +2.5%) for any currency directly in the settings table.
 
 = How many currencies can I configure? =
-You can configure and switch between up to 3 active currencies simultaneously.
+You can configure and switch between unlimited active currencies across your store.
 
 == Screenshots ==
 
@@ -84,7 +85,7 @@ You can configure and switch between up to 3 active currencies simultaneously.
 
 = 1.0.0 =
 * Initial public release.
-* Support for up to 3 active configured currencies with zero fees.
+* Support for unlimited configured currencies with zero fees.
 * Dedicated Payment Gateway Routing (lock currency to allowed gateways; hide incompatible gateways).
 * Deterministic ISO 4217 minor-unit integer money math with anti-zero rounding guard.
 * Edge-cache safe price rendering via `data-velox-base` HTML attributes and `Vary: Cookie` header.

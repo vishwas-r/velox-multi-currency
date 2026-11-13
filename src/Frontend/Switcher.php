@@ -131,10 +131,10 @@ class Switcher {
 		}
 
 		if ( 'raw' === $atts['type'] ) {
-			return (string) $price;
+			return esc_html( (string) $price );
 		}
 
-		return function_exists( 'wc_price' ) ? wc_price( $price ) : (string) $price;
+		return function_exists( 'wc_price' ) ? wp_kses_post( wc_price( $price ) ) : esc_html( (string) $price );
 	}
 
 	/**

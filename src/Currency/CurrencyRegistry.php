@@ -58,12 +58,12 @@ class CurrencyRegistry {
 	/**
 	 * Get maximum allowed enabled currencies.
 	 *
-	 * Default: 3 currencies. Filterable via velox_mc_max_currencies hook.
+	 * Default: 0 (unlimited).
 	 *
 	 * @return int
 	 */
 	public function get_max_currencies(): int {
-		return (int) apply_filters( 'velox_mc_max_currencies', 3 );
+		return (int) apply_filters( 'velox_mc_max_currencies', 0 );
 	}
 
 	/**
@@ -233,7 +233,7 @@ class CurrencyRegistry {
 	 */
 	public function save_enabled_currencies( array $currencies ): bool {
 		$max = $this->get_max_currencies();
-		if ( count( $currencies ) > $max ) {
+		if ( $max > 0 && count( $currencies ) > $max ) {
 			$currencies = array_slice( $currencies, 0, $max, true );
 		}
 		$this->enabled_currencies = null;
