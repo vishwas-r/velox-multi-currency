@@ -39,6 +39,7 @@ class Plugin {
 	 * Services.
 	 */
 	public CurrencyRegistry $currency_registry;
+	public CurrencyRegistry $registry;
 	public RateService $rate_service;
 	public PriceConverter $price_converter;
 	public DiscountShippingConverter $discount_shipping_converter;
@@ -70,6 +71,7 @@ class Plugin {
 	protected function __construct() {
 		// Initialize service container dependencies.
 		$this->currency_registry           = new CurrencyRegistry();
+		$this->registry                    = $this->currency_registry;
 		$this->rate_service                = new RateService( $this->currency_registry );
 		$this->price_converter             = new PriceConverter( $this->currency_registry );
 		$this->discount_shipping_converter = new DiscountShippingConverter( $this->currency_registry );
@@ -131,6 +133,19 @@ class Plugin {
 			$cookies[] = CurrencyRegistry::COOKIE_NAME;
 		}
 		return $cookies;
+	}
+
+	/**
+	 * Backwards compatibility for dynamic property access.
+	 *
+	 * @param string $name Property name.
+	 * @return mixed
+	 */
+	public function __get( string $name ) {
+		if ( 'registry' === $name ) {
+			return $this->currency_registry;
+		}
+		return null;
 	}
 
 	public function get_currency_registry(): CurrencyRegistry {

@@ -75,13 +75,70 @@ class PriceConverter {
 	protected static bool $filtering_symbol   = false;
 
 	/**
+	 * Determine if current request is within an admin screen, admin AJAX, or reporting/analytics context.
+	 *
+	 * @return bool
+	 */
+	public function is_admin_or_reporting_context(): bool {
+		// 1. Standard WP Admin screen (non-AJAX).
+		if ( is_admin() && ! wp_doing_ajax() ) {
+			return true;
+		}
+
+		// 2. Admin AJAX requests (order editing, dashboard widget loads, etc.).
+		if ( wp_doing_ajax() ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$action = sanitize_text_field( wp_unslash( $_REQUEST['action'] ?? '' ) );
+			if ( ! empty( $action ) && (
+				0 === strpos( $action, 'woocommerce_load_' ) ||
+				0 === strpos( $action, 'woocommerce_admin_' ) ||
+				0 === strpos( $action, 'woocommerce_dashboard_' ) ||
+				0 === strpos( $action, 'woocommerce_status_' ) ||
+				'woocommerce_calc_line_taxes' === $action
+			) ) {
+				return true;
+			}
+
+			// If authenticated user can view reports or manage WooCommerce, and it is NOT a customer cart/checkout AJAX action.
+			if ( function_exists( 'current_user_can' ) && ( current_user_can( 'view_woocommerce_reports' ) || current_user_can( 'manage_woocommerce' ) ) ) {
+				$frontend_actions = array( 'woocommerce_add_to_cart', 'woocommerce_get_refreshed_fragments', 'woocommerce_checkout', 'velox_set_currency' );
+				if ( ! in_array( $action, $frontend_actions, true ) && ! isset( $_GET['wc-ajax'] ) ) {
+					return true;
+				}
+			}
+		}
+
+		// 3. REST API Requests for Analytics and Reports (WC Admin widgets, WC Analytics, Mobile App).
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			$rest_route = $GLOBALS['wp']->query_vars['rest_route'] ?? '';
+			if ( empty( $rest_route ) && isset( $_SERVER['REQUEST_URI'] ) ) {
+				// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				$rest_route = wp_unslash( $_SERVER['REQUEST_URI'] );
+			}
+			if ( is_string( $rest_route ) && (
+				false !== strpos( $rest_route, '/wc-analytics' ) ||
+				false !== strpos( $rest_route, '/wc/v3/reports' )
+			) ) {
+				return true;
+			}
+		}
+
+		// 4. CLI / Cron requests.
+		if ( ( defined( 'WP_CLI' ) && WP_CLI ) || ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Override the active WooCommerce currency for customer requests.
 	 *
 	 * @param string $currency Base store currency.
 	 * @return string Active customer currency.
 	 */
 	public function filter_woocommerce_currency( $currency ) {
-		if ( self::$filtering_currency || ( is_admin() && ! wp_doing_ajax() ) ) {
+		if ( self::$filtering_currency || $this->is_admin_or_reporting_context() ) {
 			return $currency;
 		}
 
@@ -105,7 +162,13 @@ class PriceConverter {
 		}
 
 		self::$filtering_symbol = true;
-		$code    = ! empty( $currency ) ? strtoupper( (string) $currency ) : $this->registry->get_active_currency();
+		if ( ! empty( $currency ) ) {
+			$code = strtoupper( (string) $currency );
+		} elseif ( $this->is_admin_or_reporting_context() ) {
+			$code = $this->registry->get_base_currency();
+		} else {
+			$code = $this->registry->get_active_currency();
+		}
 		$enabled = $this->registry->get_enabled_currencies();
 
 		$result = $currency_symbol;
@@ -125,7 +188,7 @@ class PriceConverter {
 	 * @return mixed Converted price string or float.
 	 */
 	public function filter_price( $price, $product = null ) {
-		if ( '' === $price || null === $price || false === $price ) {
+		if ( '' === $price || null === $price || false === $price || $this->is_admin_or_reporting_context() ) {
 			return $price;
 		}
 
@@ -225,6 +288,24 @@ class PriceConverter {
 	 * @return array
 	 */
 	public function filter_wc_price_args( array $args ): array {
+		if ( $this->is_admin_or_reporting_context() ) {
+			// In admin or reporting contexts, if no explicit currency is specified, format using store base currency.
+			if ( empty( $args['currency'] ) ) {
+				$base_currency = $this->registry->get_base_currency();
+				$enabled       = $this->registry->get_enabled_currencies();
+				$config        = $enabled[ $base_currency ] ?? null;
+
+				$args['currency'] = $base_currency;
+				if ( $config ) {
+					$args['decimals']           = isset( $config['decimals'] ) ? (int) $config['decimals'] : Money::get_decimals( $base_currency );
+					$args['price_format']       = $this->get_price_format_string( $config['position'] ?? (string) get_option( 'woocommerce_currency_pos', 'left' ) );
+					$args['decimal_separator']  = $config['decimal_sep'] ?? (string) get_option( 'woocommerce_price_decimal_sep', '.' );
+					$args['thousand_separator'] = $config['thousand_sep'] ?? (string) get_option( 'woocommerce_price_thousand_sep', ',' );
+				}
+				return $args;
+			}
+		}
+
 		$target_currency = ! empty( $args['currency'] ) ? $args['currency'] : $this->registry->get_active_currency();
 		$enabled         = $this->registry->get_enabled_currencies();
 		$config          = $enabled[ $target_currency ] ?? null;
@@ -248,7 +329,7 @@ class PriceConverter {
 	 * @return mixed
 	 */
 	public function filter_regular_price( $price, $product = null ) {
-		if ( '' === $price || null === $price || false === $price ) {
+		if ( '' === $price || null === $price || false === $price || $this->is_admin_or_reporting_context() ) {
 			return $price;
 		}
 
@@ -277,7 +358,7 @@ class PriceConverter {
 	 * @return mixed
 	 */
 	public function filter_sale_price( $price, $product = null ) {
-		if ( '' === $price || null === $price || false === $price ) {
+		if ( '' === $price || null === $price || false === $price || $this->is_admin_or_reporting_context() ) {
 			return $price;
 		}
 
@@ -392,7 +473,7 @@ class PriceConverter {
 	 * @return string Modified HTML.
 	 */
 	public function filter_wc_price_html( $return, $price, $args = array(), $unformatted_price = 0.0, $original_price = 0.0 ) {
-		if ( empty( $return ) || ! is_string( $return ) ) {
+		if ( empty( $return ) || ! is_string( $return ) || $this->is_admin_or_reporting_context() ) {
 			return $return;
 		}
 
