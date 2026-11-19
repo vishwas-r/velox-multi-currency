@@ -76,10 +76,14 @@ You can configure and switch between unlimited active currencies across your sto
 
 == Screenshots ==
 
-1. Currency management table with exchange rates, buffer markups, and rounding rules.
-2. Dedicated Payment Gateway Routing with currency-to-gateway locking.
-3. Frontend floating currency switcher and top navigation bar integration.
-4. WooCommerce Cart & Checkout Blocks integration with real-time gateway filtering.
+1. Currencies & Rates — Manage unlimited currencies with live ECB exchange rates, auto-sync schedules, and custom rounding rules.
+2. Gateway Routing Matrix — Dedicated payment gateway routing restricting Razorpay, PayPal, and Stripe per active currency.
+3. Switcher & Display — Customize floating currency switcher widgets, top header navigation bar, flag icons, and placement presets.
+4. Sales by Currency — Real-time multi-currency sales reports, converted revenue analytics, and currency share metrics.
+5. Product Pricing Overrides — Set fixed custom currency prices directly within WooCommerce product edit panels.
+6. Storefront Product Conversion — Instant live currency conversion on single product pages with interactive floating switcher.
+7. Multi-Currency Cart — Dynamic converted cart totals, shipping calculations, and currency-specific free shipping progress.
+8. Smart Reactive Checkout — Dynamically displays only compatible payment gateways for the customer's selected currency.
 
 == Changelog ==
 
