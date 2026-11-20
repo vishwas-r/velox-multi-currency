@@ -23,3 +23,7 @@ tests/_output/
 woocommerce/
 woocommerce*.zip
 
+
+# Local internal docs
+docs/ARCHITECTURE_AND_PLAN.md
+
